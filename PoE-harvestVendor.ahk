@@ -49,12 +49,22 @@
 			;socket colour
 			;Reforge a Rare item, being much more likely to receive the same modifier types
 			;Reforge a Rare item, being much less likely to receive the same modifier types
-		}
+		} 
 		;Enchant
+		else if InStr(Arrayed[index], "Enchant") = 1 {
 			;flask
+			if InStr(Arrayed[index], "Flask") > 1 {
+				out .= RegExReplace(Arrayed[index],"(a modifier that grants|The magnitude of this effect decreases with each use)","") . "`r`n"
+			}
 			;weapon
+			else if InStr(Arrayed[index], "Weapon") > 1 {
+				out .= RegExReplace(Arrayed[index],"( Quality does not increase its Physical Damage,)","") . "`r`n"
+			}			
 			;body armour
-
+			else if InStr(Arrayed[index], "Armour") > 1 {
+				out .= RegExReplace(Arrayed[index],"( Quality does not increase its Defences,)","") . "`r`n"
+			}	
+		}
 		;Attempt
 			;awaken
 			;scarab upgrade

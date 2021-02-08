@@ -1,1 +1,1 @@
-﻿<Error>
+﻿Augment an item with a new Cold modifier  Augment an item with a new Cold modifier .  Remove a random non-Fire modifier from an item and add a new Fire modifier  Remove a random non-Fire modifier from an item and add a new Fire modifier  Remove a random Defence modifier from an item and add a new Defence ‘ modifier
