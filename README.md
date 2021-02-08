@@ -1,4 +1,4 @@
-# PoE-harvestVendor
+# PoE-HarvestVendor
  - uses AHK to call the http://capture2text.sourceforge.net/ OCR tool on a specific region
  - Trims OCR-ed text to just the basic stuff (Augment a Magic or Rare item with a new Caster modifier -> Augment Caster)
  - puts the result into clipboard (for now, later maybe some gui to add prices and other info to it and then clipboard)

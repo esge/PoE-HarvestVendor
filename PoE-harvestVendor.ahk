@@ -19,7 +19,7 @@
 
 	FileRead, temp, temp.txt
 
-	NewLined := RegExReplace(temp, "(Reforge|Randomise|Remove|Augment|Improves|Upgrades|Upgrade|Set|Change|Exchange|Sacrifice|Attempt|Enchant|Reroll)" , "`r`n$1")
+	NewLined := RegExReplace(temp, "(Reforge|Randomise|Remove|Augment|Improves|Upgrades|Upgrade|Set|Change|Exchange|Sacrifice|Attempt|Enchant|Reroll|Fracture )" , "`r`n$1")
 	Arrayed := StrSplit(NewLined, "`r`n")
 
 	for index in Arrayed{	
@@ -92,6 +92,10 @@
 				out .= Arrayed[index] . "`r`n"
 			}
 		
+		} 
+		;just add unknown stuff as is
+		else {
+			out .= Arrayed[index] . "`r`n"
 		}
 		;Set
 			;sockets
@@ -101,6 +105,7 @@
 			;gem quality
 			;flask quality
 
+		;Fracture
 
 ;;== not doing for now, not very sellable afaik==
 		;Randomise 
