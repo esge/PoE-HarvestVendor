@@ -12,10 +12,10 @@
 +^q::
 	out := ""
 		
-	getSelectionCoords(x_start, x_end, y_start, y_end)
+	;getSelectionCoords(x_start, x_end, y_start, y_end)
   
-	command = Capture2Text\Capture2Text.exe -s `"%x_start% %y_start% %x_end% %y_end%`" -o temp.txt
-	RunWait, %command%
+	;command = Capture2Text\Capture2Text.exe -s `"%x_start% %y_start% %x_end% %y_end%`" -o temp.txt
+	;RunWait, %command%
 
 	FileRead, temp, temp.txt
 
@@ -39,13 +39,19 @@
 			out .= RegExReplace(Arrayed[index],"(a random|modifier|from an item|and|a new)","") . "`r`n"		
 		}
 		;Reforge
-		else if InStr(Arrayed[index], "Reforge") = 1 {		
+		else if InStr(Arrayed[index], "Reforge") = 1 {
+			;prefixes, suffixes
 			if (InStr(Arrayed[index], "Prefixes") > 0 or InStr(Arrayed[index], "Suffixes") > 0 ){
 				out .= RegExReplace(Arrayed[index],"(a Rare item, |ing all|a Rare item with|modifier values,)|(Prefixes|Suffixes)","$2") . "`r`n"	
+			}
+			;links
+			else if InStr(Arrayed[index], "links") > 0 {
+				out .= RegExReplace(Arrayed[index],"( between sockets on an item,)","") . "`r`n"	
+			
 			} else {
 				out .= RegExReplace(Arrayed[index],"(as a Rare item|item|random modifiers,|new random modifiers, |including an|including a|ifier|modifiers are)","") . "`r`n"	
 			}
-			;links
+			
 			;socket colour
 			;Reforge a Rare item, being much more likely to receive the same modifier types
 			;Reforge a Rare item, being much less likely to receive the same modifier types
@@ -76,13 +82,20 @@
 				out .= RegExReplace(Arrayed[index],"(, with a chance for it to become Winged)","") . "`r`n"
 			}	
 		}
+		;Change
+		else if InStr(Arrayed[index], "Change") = 1 {
+			; res mods
+			if InStr(Arrayed[index], "Resistance") > 0 {
+				out .= RegExReplace(Arrayed[index],"(a modifier that grants| a similar-tier modifier that grants)","") . "`r`n"
+			} else {
+			; ignore others ?
+				out .= Arrayed[index] . "`r`n"
+			}
+		
+		}
 		;Set
 			;sockets
-			;jewel implicits
-
-		;Change
-			; res mods
-			; ignore others ?
+			;jewel implicits	
 
 		;Improves
 			;gem quality
