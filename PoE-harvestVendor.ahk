@@ -1,4 +1,5 @@
  ; ©Esge 2021-
+ ; v0.2 - smarter string handling - regex replace and separated by craft types
  ; v0.1 - basic prototype functionality
  
  
@@ -9,46 +10,78 @@
 
 ;hotkey to activate OCR
 +^q::
+	out := ""
+		
 	getSelectionCoords(x_start, x_end, y_start, y_end)
-  ; msgbox,  %x_start% %y_start% %x_end% %y_end%
-;RunWait, C:\Users\stani\Dropbox\ahk\scripts\Capture2Text\Capture2Text_CLI.exe %x_start% %y_start% %x_end% %y_end% --clipboard	
-command = Capture2Text\Capture2Text.exe -s `"%x_start% %y_start% %x_end% %y_end%`" -o temp.txt
-;msgbox, %command%
-RunWait, %command%
+  
+	command = Capture2Text\Capture2Text.exe -s `"%x_start% %y_start% %x_end% %y_end%`" -o temp.txt
+	RunWait, %command%
 
-;temp:= ComObjCreate("WScript.Shell").Exec(command).StdOut.ReadAll()
-;msgbox, %temp%
-FileRead, temp, temp.txt
-input := StrReplace(temp,"`r`n")
-;remove new lines from ocr grab   
+	FileRead, temp, temp.txt
 
-;input := StrReplace(clipboard, "`r`n")
+	NewLined := RegExReplace(temp, "(Reforge|Randomise|Remove|Augment|Improves|Upgrades|Upgrade|Set|Change|Exchange|Sacrifice|Attempt|Enchant|Reroll)" , "`r`n$1")
+	Arrayed := StrSplit(NewLined, "`r`n")
 
-;remove all the not needed extra words
-out := StrReplace(input, "a random")
-out := StrReplace(out, "modifier")
-out := StrReplace(out, "from")
-out := StrReplace(out, "an item")
-out := StrReplace(out, "with")
-out := StrReplace(out, "and")
-out := StrReplace(out, "a new")
-out := StrReplace(out, "a Rare item")
-out := StrReplace(out, "values,")
-out := StrReplace(out, "Quality does notincrease its Defences, grants ")
+	for index in Arrayed{	
+		if (Arrayed[index] == "") {
+			;skip empty fields
+		}
+		;Augment
+		else if InStr(Arrayed[index], "Augment") = 1 {
+			if InStr(Arrayed[index], "Influence") > 0 {
+				out .= RegExReplace(Arrayed[index],"(an item with a new|ifier|with|values)","") . "`r`n"
+			} else {	
+			out .= RegExReplace(Arrayed[index],"(a Magic or Rare item with a new|a Rare item with a new modifier, with||an item with a new|modifier|with|values)","") . "`r`n"
+			}
+		}
+		;Remove
+		else if InStr(Arrayed[index], "Remove") = 1 {		
+			out .= RegExReplace(Arrayed[index],"(a random|modifier|from an item|and|a new)","") . "`r`n"		
+		}
+		;Reforge
+		else if InStr(Arrayed[index], "Reforge") = 1 {		
+			if (InStr(Arrayed[index], "Prefixes") > 0 or InStr(Arrayed[index], "Suffixes") > 0 ){
+				out .= RegExReplace(Arrayed[index],"(a Rare item, |ing all|a Rare item with|modifier values,)|(Prefixes|Suffixes)","$2") . "`r`n"	
+			} else {
+				out .= RegExReplace(Arrayed[index],"(as a Rare item|item|random modifiers,|new random modifiers, |including an|including a|ifier|modifiers are)","") . "`r`n"	
+			}
+			;links
+			;socket colour
+			;Reforge a Rare item, being much more likely to receive the same modifier types
+			;Reforge a Rare item, being much less likely to receive the same modifier types
+		}
+		;Enchant
+			;flask
+			;weapon
+			;body armour
 
-;divide into rows based on keywords that are always first in line
-out := StrReplace(out, "Augment", "`r`nAugment")
-out := StrReplace(out, "Remove", "`r`nRemove")
-out := StrReplace(out, "Reforge", "`r`nReforge")
-out := StrReplace(out, "Enchant", "`r`nEnchant")
-out := StrReplace(out, "Sacrifice", "`r`nSacrifice")
+		;Attempt
+			;awaken
+			;scarab upgrade
 
-;remove double and tripple spaces created by text replaces
-out := strreplace(out, "   ", " ")
-out := strreplace(out, "  ", " ")
+		;Set
+			;sockets
+			;jewel implicits
 
-Clipboard = %out%
-msgbox, %out%
+		;Change
+			; res mods
+			; ignore others ?
+
+		;Improves
+			;gem quality
+			;flask quality
+
+
+;;== not doing for now, not very sellable afaik==
+		;Randomise 
+		;Upgrades 
+		;Upgrade 
+		;Exchange 
+		;Sacrifice 
+		;Reroll
+	}
+	Clipboard := RegExReplace(out, " +", " ")
+	;msgbox % RegExReplace(out, " +", " ")
 return
 
 ; creates a click-and-drag selection box to specify an area
