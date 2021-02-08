@@ -6,7 +6,7 @@
 # Install
   - get the above mantioned OCR tool (tested on version 4.6.2)
   - get the .ahk file
-  - put them in the same Folder
+  - put them in the same Folder  
     Folder:
       - Capture2text
       - PoE-harvestVendor.ahk
