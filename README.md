@@ -19,9 +19,13 @@
   
 ![example](examples/example.gif)
 
-![example2](examples/example2.jpg) --> 
-Change Lightning Resistance into Fire Resistance 
-Change Cold Resistance into Lightning Resistance 
-Remove Physical V ~ ‘ 
-Change Fire Resistance into Cold Resistance 
-Remove Fire add Fire 
+![example2](examples/example2.png)
+
+-->  
+Change Lightning Resistance into Fire Resistance  
+Change Cold Resistance into Lightning Resistance   
+Remove Physical V ~ ‘   
+Change Fire Resistance into Cold Resistance   
+Remove Fire add Fire   
+
+- As you can see occasionally there is a stray letter or symbol, thats an issue of the OCR tool, can't really do much with it
