@@ -66,9 +66,16 @@
 			}	
 		}
 		;Attempt
+		else if InStr(Arrayed[index], "Attempt") = 1 {
 			;awaken
+			if InStr(Arrayed[index], "Awaken") > 1 {
+				out .= RegExReplace(Arrayed[index],"(that can be Awakened with a 5% chance. If it does not Awaken, it is destroyed.)","") . "`r`n"
+			}
 			;scarab upgrade
-
+			else if InStr(Arrayed[index], "Scarab") > 1 {
+				out .= RegExReplace(Arrayed[index],"(, with a chance for it to become Winged)","") . "`r`n"
+			}	
+		}
 		;Set
 			;sockets
 			;jewel implicits
