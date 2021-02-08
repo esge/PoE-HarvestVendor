@@ -17,4 +17,11 @@
   - select the area with text (the left side icons mess up OCR)
   - you should have stuff in clipboard now
   
-![example](example.gif)
+![example](examples/example.gif)
+
+![example2](examples/example2.jpg) --> 
+Change Lightning Resistance into Fire Resistance 
+Change Cold Resistance into Lightning Resistance 
+Remove Physical V ~ ‘ 
+Change Fire Resistance into Cold Resistance 
+Remove Fire add Fire 

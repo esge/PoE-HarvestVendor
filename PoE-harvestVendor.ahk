@@ -14,7 +14,7 @@
 		
 	getSelectionCoords(x_start, x_end, y_start, y_end)
   
-	command = Capture2Text\Capture2Text.exe -s `"%x_start% %y_start% %x_end% %y_end%`" -o temp.txt
+	command = Capture2Text\Capture2Text.exe -s `"%x_start% %y_start% %x_end% %y_end%`" -o temp.txt --trim-capture
 	RunWait, %command%
 
 	FileRead, temp, temp.txt
