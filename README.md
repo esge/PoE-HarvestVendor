@@ -16,3 +16,5 @@
   - use the harvestVendor hotkey (TDB for now ctrl+shift+q)
   - select the area with text (the left side icons mess up OCR)
   - you should have stuff in clipboard now
+  
+![example](example.gif)
