@@ -1,7 +1,7 @@
  ; ©Esge 2021-
- ; v0.2 - smarter string handling - regex replace and separated by craft types
- ; v0.1 - basic prototype functionality
- 
+; notes
+; will ignore all sacrifice crafts for the purpose of this tool because they arent sellable effects
+
  
     #NoEnv
     #Warn
@@ -19,7 +19,9 @@
 
 	FileRead, temp, temp.txt
 
-	NewLined := RegExReplace(temp, "(Reforge|Randomise|Remove|Augment|Improves|Upgrades|Upgrade|Set|Change|Exchange|Sacrifice|Attempt|Enchant|Reroll|Fracture |Add)" , "`r`n$1")
+	;FileRead, temp, test.txt
+
+	NewLined := RegExReplace(temp, "(Reforge |Randomise |Remove |Augment |Improves |Upgrades |Upgrade |Set |Change |Exchange |Sacrifice a|Sacrifice up|Attempt |Enchant |Reroll |Fracture |Add a random |Synthesise |Split )" , "`r`n$1")
 	Arrayed := StrSplit(NewLined, "`r`n")
 
 	for index in Arrayed{	
@@ -47,8 +49,11 @@
 			;links
 			else if InStr(Arrayed[index], "links") > 0 {
 				out .= RegExReplace(Arrayed[index],"( between sockets on an item,)","") . "`r`n"	
-			
-			} else {
+			} 
+			else if InStr(Arrayed[index], "colour") > 0 {
+				out .= RegExReplace(Arrayed[index],"(the colour of|on an item,)","") . "`r`n"	
+			} 
+			else {
 				out .= RegExReplace(Arrayed[index],"(as a Rare item|item|random modifiers,|new random modifiers, |including an|including a|ifier|modifiers are)","") . "`r`n"	
 			}
 			
@@ -86,36 +91,85 @@
 		else if InStr(Arrayed[index], "Change") = 1 {
 			; res mods
 			if InStr(Arrayed[index], "Resistance") > 0 {
-				out .= RegExReplace(Arrayed[index],"(a modifier that grants| a similar-tier modifier that grants)","") . "`r`n"
+				out .= RegExReplace(Arrayed[index],"(a modifier that grants| a similar-tier modifier that grants|istance)","") . "`r`n"
 			} else {
 			; ignore others ?
-				out .= Arrayed[index] . "`r`n"
-			}
-		
+				out .= "" ;Arrayed[index] . "`r`n"
+			}		
 		} 
-		;just add unknown stuff as is
-		else {
-			out .= Arrayed[index] . "`r`n"
-		}
-		;Set
-			;sockets
-			;jewel implicits	
+		;sacrifice 
+		else if InStr(Arrayed[index], "Sacrifice") = 1 {
+			;gem for gcp/xp
+			if InStr(Arrayed[index], "Gem") > 1 {
+				out .= RegExReplace(Arrayed[index],"(gain|of the gem's|total|erience stored)","") . "`r`n"
+			} 
+			;div cards gambling
+			else if InStr(Arrayed[index], "Divination") > 1  {
+				out .= RegExReplace(Arrayed[index],"(up to half a stack of|ination)","") . "`r`n"
+			} else {
+				;ignores the rest of sacrifice crafts:
+					;Sacrifice or Mortal Fragment into another random Fragment of that type
+					;Sacrificie Maps for same or lower tier stuff
+					;Sacrifice maps for missions
+					;Sacrifice maps for map device infusions
+					;Sacrifice maps for fragments
+					;Sacrifice maps for map currency
+					;Sacrifice maps for scarabs
+					;sacrifice t14+ map for elder/shaper/synth map
+					;sacrifice weap/ar to make similiar belt/ring/amulet/jewel
+				out .= ""
+			}
+		} 
 
 		;Improves
-			;gem quality
-			;flask quality
-
-		;Fracture
-
-;;== not doing for now, not very sellable afaik==
-		;Randomise 
-		;Upgrades 
-		;Upgrade 
+		else if InStr(Arrayed[index], "Improves") = 1 {			
+			out .= RegExReplace(Arrayed[index],"( by at least 10%. Has greater effect on lower rarity flasks. The maximum quality is 20%| by at least 10%. The maximum quality is 20%)","") . "`r`n"
+		}	
+		else if InStr(Arrayed[index], "Fracture") = 1 {			
+			out .= RegExReplace(Arrayed[index],"(a random|on an item with at least 5 modifiers, locking it in place. This can't be used on Influenced, Synthesised, or Fractured items| on an item with at least 3 Suffixes. This can't be used on Influenced, Synthesised, or Fractured items| on an item with at least 3 Prefixes. This can't be used on Influenced, Synthesised, or Fractured items)","") . "`r`n"
+		} 		
+		else if InStr(Arrayed[index], "Reroll") = 1 {		
+			out .= RegExReplace(Arrayed[index],"(ifier|s on a Rare item, with| modifier values|on a Magic or Rare item, with )","") . "`r`n"
+		}
+		else if InStr(Arrayed[index], "Randomise") = 1 {		
+			out .= RegExReplace(Arrayed[index],"(the numeric|the random|ifier|on a Magic or Rare item)","") . "`r`n"
+		}
+		else if InStr(Arrayed[index], "Add") = 1 {		
+			out .= RegExReplace(Arrayed[index],"(a random|a Normal, Magic or Rare|Normal, Magic or Rare|that isn't influenced)","") . "`r`n"
+		}
+	; ignoring this section of mods
+	; and i do realize i could put them in a single if, but this way its already neatly split if i might want to add them into processing 	
 		;Exchange 
-		;Sacrifice 
-		;Reroll
+		else if InStr(Arrayed[index], "Exchange") = 1 {
+			;skipping all exchange crafts assuming anybody would just use them for themselfs
+			out .= ""
+		} 
+		;Upgrade
+		else if InStr(Arrayed[index], "Upgrade") = 1 {
+			;skipping upgrade crafts
+			out .= ""
+		}	
+		;Synthesise
+		else if InStr(Arrayed[index], "Synthesise") = 1 {
+			;skipping Synthesise craft
+			out .= ""
+		}	
+		else if InStr(Arrayed[index], "Split") = 1 {
+			;skipping Split scarab craft
+			out .= ""
+		}	
+
+
+		;just add unknown stuff as is
+		;else {
+		;	out .= Arrayed[index] . "`r`n"
+		;}		
 	}
 	Clipboard := RegExReplace(out, " +", " ")
+	clipwait
+	Tooltip, List of crafts ready
+	sleep, 2000
+	Tooltip
 	;msgbox % RegExReplace(out, " +", " ")
 return
 
