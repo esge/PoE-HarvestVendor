@@ -1,0 +1,179 @@
+Reforge a Normal or Magic with Caster mod
+Reforge a Rare with Caster mod
+Remove non-Caster add Caster 
+Augment Caster 
+Remove Caster 
+Randomise values of Caster mods 
+Remove Caster add Caster 
+Reforge a Rare with Caster mod. Caster more common
+Augment Caster Lucky 
+Reforge a Normal or Magic with Physical mod
+Reforge a Rare with Physical mod
+Remove non-Physical add Physical 
+Augment Physical 
+Remove Physical 
+Randomise values of Physical mods 
+Remove Physical add Physical 
+Reforge a Rare with Physical mod. Physical more common
+Augment Physical Lucky 
+Reforge a non-Red socket turning it Red
+Reforge a non-Blue socket turning it Blue
+Reforge a non-Green socket turning it Green
+Reforge a non-Red socket turning it Red
+Reforge a non-Blue socket turning it Blue
+Reforge a non-Green socket turning it Green
+Reforge two random sockets turning them Red and Blue
+Reforge two random sockets turning them Red and Green
+Reforge two random sockets turning them Blue and Green
+Reforge three random sockets turning them Red, Blue and Green
+Reforge a random socket turning it White
+Reforge a Normal or Magic with Fire mod
+Reforge a Rare with Fire mod
+Remove non-Fire add Fire 
+Augment Fire 
+Remove Fire 
+Randomise values of Fire mods 
+Remove Fire add Fire 
+Reforge a Rare with Fire mod. Fire more common
+Augment Fire Lucky 
+Reforge the number of sockets on an 10 times, using the outcome with the greatest number of sockets
+Reforge the links between sockets on an item 10 times, using the outcome with the greatest number of linked sockets
+Reforge the colours of sockets on an item 10 times, using the outcome with the greatest number of less-common socket colours
+Improves the Quality of a Flask
+Improves the Quality of a Gem
+Reforge a Rare with new random mods 10 times, using the outcome with the highest average mod level
+Change Fire Res into Cold Res
+Change Cold Res into Lightning Res
+Change Lightning Res into Fire Res
+Change Fire Res into Lightning Res
+Change Cold Res into Fire Res
+Change Lightning Res into Cold Res
+Reforge keep Prefixes
+Reforge keep Suffixes
+Reforge a Rare , being much less likely to receive the same mod types
+Reforge a Rare , being much more likely to receive the same mod types
+Enchant a Weapon. has 1% increased Critical Strike Chance per 4% Quality
+Enchant a Weapon. grants 1% increased Accuracy per 2% Quality
+Enchant a Weapon. has 1% increased Attack Speed per 8% Quality
+Enchant a Melee Weapon. has +1 Weapon Range per 10% Quality
+Enchant a Weapon. grants 1% increased Elemental Damage per 2% Quality
+Enchant a Weapon. grants 1% increased Area of Effect per 4% Quality
+Fracture modifier 
+Fracture Suffix
+Fracture Prefix.
+Reforge a Normal or Magic with Attack mod
+Reforge a Rare with Attack mod
+Remove non-Attack add Attack 
+Augment Attack 
+Remove Attack 
+Randomise values of Attack mods 
+Remove Attack add Attack 
+Reforge a Rare with Attack mod. Attack more common
+Augment Attack Lucky 
+Reforge a Normal or Magic with Life mod
+Reforge a Rare with Life mod
+Remove non-Life add Life 
+Augment Life 
+Remove Life 
+Randomise values of Life mods 
+Remove Life add Life 
+Reforge a Rare with Life mod. Life more common
+Augment Life Lucky 
+Reforge a Normal or Magic with Cold mod
+Reforge a Rare with Cold mod
+Remove non-Cold add Cold 
+Augment Cold 
+Remove Cold 
+Randomise values of Cold mods 
+Remove Cold add Cold 
+Reforge a Rare with Cold mod. Cold more common
+Augment Cold Lucky 
+Reforge a Normal or Magic with Speed mod
+Reforge a Rare with Speed mod
+Remove non-Speed add Speed 
+Augment Speed 
+Remove Speed 
+Randomise values of Speed mods 
+Remove Speed add Speed 
+Reforge a Rare with Speed mod. Speed more common
+Augment Speed Lucky 
+Sacrifice a Corrupted Gem to 20% quality as Gemcutter's Prisms
+Sacrifice a Corrupted Gem to 30% quality as Gemcutter's Prisms
+Sacrifice a Corrupted Gem to 40% quality as Gemcutter's Prisms
+Sacrifice a Corrupted Gem to 50% quality as Gemcutter's Prisms
+Sacrifice a Corrupted Gem to 20% exp as a Facetor's Lens
+Sacrifice a Corrupted Gem to 30% exp as a Facetor's Lens
+Sacrifice a Corrupted Gem to 40% exp as a Facetor's Lens
+Sacrifice a Corrupted Gem to 50% exp as a Facetor's Lens
+Attempt to Awaken a level 20 Support Gem 
+Enchant a Flask with increased Duration. 
+Enchant a Flask with increased Effect. 
+Enchant a Flask with increased Maximum Charges. 
+Enchant a Flask with reduced Charges used. 
+Attempt to upgrade a Scarab
+Reforge a Normal or Magic with Defence mod
+Reforge a Rare with Defence mod
+Remove non-Defence add Defence 
+Augment Defence 
+Remove Defence 
+Randomise values of Defence mods 
+Remove Defence add Defence 
+Reforge a Rare with Defence mod. Defence more common
+Augment Defence Lucky 
+Reforge a Normal or Magic with Lightning mod
+Reforge a Rare with Lightning mod
+Remove non-Lightning add Lightning 
+Augment Lightning 
+Remove Lightning 
+Randomise values of Lightning mods 
+Remove Lightning add Lightning 
+Reforge a Rare with Lightning mod. Lightning more common
+Augment Lightning Lucky 
+Reforge the links linking three sockets
+Reforge the links linking four sockets
+Reforge the links linking five sockets
+Reforge the links linking six sockets
+Reforge a Normal or Magic with Chaos mod
+Reforge a Rare with Chaos mod
+Remove non-Chaos add Chaos 
+Augment Chaos 
+Remove Chaos 
+Randomise values of Chaos mods 
+Remove Chaos add Chaos 
+Reforge a Rare with Chaos mod. Chaos more common
+Augment Chaos Lucky 
+Sacrifice Div Cards to receive between 0 and twice that amount of the same Card
+Sacrifice a stack of Div Cards for that many different Div Cards
+Reforge a Normal or Magic with Critical mod
+Reforge a Rare with Critical mod
+Remove non-Critical add Critical 
+Augment Critical 
+Remove Critical 
+Randomise values of Critical mods 
+Remove Critical add Critical 
+Reforge a Rare with Critical mod. Critical more common
+Augment Critical lucky 
+Reforge Lucky keep Prefixes
+Reforge Lucky keep Suffixes
+Reroll the values of Prefix, Suffix and Implicit mod Lucky
+Augment Lucky 
+Reroll the values of Prefix mods Lucky
+Reroll the values of Suffix mods Lucky
+Add Influence to Weapon 
+Add Influence to Armour 
+Add Influence to Jewellery 
+Enchant Body Armour. grants +1 Maximum Life per 2% quality
+Enchant Body Armour. grants +1 Maximum Mana per 2% quality
+Enchant Body Armour. grants +1 Strength per 2% quality
+Enchant Body Armour. grants +1 Dexterity per 2% quality
+Enchant Body Armour. grants +1 Intelligence per 2% quality
+Enchant Body Armour. grants 1% Fire Resistance per 2% quality
+Enchant Body Armour. grants 1% Cold Resistance per 2% quality
+Enchant Body Armour. grants 1% Lightning Resistance per 2% quality
+Remove non-Influence add Influence 
+Augment Influence mod
+Remove Influence 
+Randomise values of Influence mods 
+Remove Influence add Influence 
+Reforge a Rare with Influence mod. Influence more common
+Augment Influence mod Lucky 
