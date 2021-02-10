@@ -17,16 +17,11 @@
   - select the area with text (the left side icons mess up OCR)
   - you should have stuff in clipboard now
   
-![example](examples/example.gif)
+ <img src="examples/example.gif" width="724" height="540">  
 
-![example2](examples/example2.png)
-
--->  
-Change Lightning Resistance into Fire Resistance  
-Change Cold Resistance into Lightning Resistance   
-Remove Physical V ~ ‘   
-Change Fire Resistance into Cold Resistance   
-Remove Fire add Fire   
+| source | result |
+| --- | --- |
+| ![example2](examples/example2.png) | Change Lightning Resistance into Fire Resistance<br /> Change Cold Resistance into Lightning Resistance<br /> Remove Physical V ~ ‘<br /> Change Fire Resistance into Cold Resistance<br /> Remove Fire add Fire|
 
 - As you can see occasionally there is a stray letter or symbol, thats an issue of the OCR tool, can't really do much with it
 
