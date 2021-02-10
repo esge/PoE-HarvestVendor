@@ -29,3 +29,7 @@ Change Fire Resistance into Cold Resistance
 Remove Fire add Fire   
 
 - As you can see occasionally there is a stray letter or symbol, thats an issue of the OCR tool, can't really do much with it
+
+# FAQ
+ **Q. A craft i have in horticrafting station is not showing up in the result**  
+ A. I arbitrarily decided its not worth to list that one, if you want it listed, contact me or open an issue. [List of ignored crafts](https://github.com/esge/PoE-HarvestVendor/wiki/Crafts-that-are-being-ignored)
