@@ -4,7 +4,7 @@
  - puts the result into clipboard (for now, later maybe some gui to add prices and other info to it and then clipboard)
  
 # Install
-  - get the above mantioned OCR tool (tested on version 4.6.2)
+  - get the above mentioned OCR tool (tested on version 4.6.2)
   - get the .ahk file
   - put them in the same Folder  
     Folder:
