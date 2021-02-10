@@ -1,3 +1,8 @@
+# Note:
+ - This is basically beta version, for now
+ - just reads the crafts and trims away white text, kinda, ish..
+ - looking for input from players (hi there TFT discord:) ) to figure out how we want the output message to look
+ 
 # PoE-HarvestVendor
  - uses AHK to call the http://capture2text.sourceforge.net/ OCR tool on a specific region
  - Trims OCR-ed text to just the basic stuff (Augment a Magic or Rare item with a new Caster modifier -> Augment Caster)
