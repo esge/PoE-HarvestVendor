@@ -10,8 +10,11 @@
 
 ;hotkey to activate OCR
 +^q::
-	out := ""
+	outArrayCount := 0
+	outArray := []
 		
+	outString := ""	
+
 	getSelectionCoords(x_start, x_end, y_start, y_end)
   
 	command = Capture2Text\Capture2Text.exe -s `"%x_start% %y_start% %x_end% %y_end%`" -o temp.txt --trim-capture
@@ -31,33 +34,39 @@
 		;Augment
 		else if InStr(Arrayed[index], "Augment") = 1 {
 			if InStr(Arrayed[index], "Influence") > 0 {
-				out .= RegExReplace(Arrayed[index],"(an item with a new|ifier|with|values)","") . "`r`n"
+				outArrayCount += 1
+				outArray[outArrayCount] := RegExReplace(Arrayed[index],"(an item with a new|ifier|with|values)","")
 			} else {	
-			out .= RegExReplace(Arrayed[index],"(a Magic or Rare item with a new|a Rare item with a new modifier, with||an item with a new|modifier|with|values)","") . "`r`n"
+				outArrayCount += 1
+				outArray[outArrayCount] := RegExReplace(Arrayed[index],"(a Magic or Rare item with a new|a Rare item with a new modifier, with||an item with a new|modifier|with|values)","")
 			}
 		}
 		;Remove
-		else if InStr(Arrayed[index], "Remove") = 1 {		
-			out .= RegExReplace(Arrayed[index],"(a random|modifier|from an item|and|a new)","") . "`r`n"		
+		else if InStr(Arrayed[index], "Remove") = 1 {				
+			outArrayCount += 1
+			outArray[outArrayCount] := RegExReplace(Arrayed[index],"(a random|modifier|from an item|and|a new)","")	
 		}
 		;Reforge
 		else if InStr(Arrayed[index], "Reforge") = 1 {
 			;prefixes, suffixes
-			if (InStr(Arrayed[index], "Prefixes") > 0 or InStr(Arrayed[index], "Suffixes") > 0 ){
-				out .= RegExReplace(Arrayed[index],"(a Rare item, |ing all|a Rare item with|modifier values,)|(Prefixes|Suffixes)","$2") . "`r`n"	
+			if (InStr(Arrayed[index], "Prefixes") > 0 or InStr(Arrayed[index], "Suffixes") > 0 ){					
+				outArrayCount += 1
+				outArray[outArrayCount] := RegExReplace(Arrayed[index],"(a Rare item, |ing all|a Rare item with|modifier values,)|(Prefixes|Suffixes)","$2")
 			}
 			;links
 			else if InStr(Arrayed[index], "links") > 0 {
-				out .= RegExReplace(Arrayed[index],"( between sockets on an item,)","") . "`r`n"	
+				outArrayCount += 1
+				outArray[outArrayCount] := RegExReplace(Arrayed[index],"( between sockets on an item,)","")	
 			} 
-			else if InStr(Arrayed[index], "colour") > 0 {
-				out .= RegExReplace(Arrayed[index],"(the colour of|on an item,)","") . "`r`n"	
+			else if InStr(Arrayed[index], "colour") > 0 {				
+				outArrayCount += 1
+				outArray[outArrayCount] := RegExReplace(Arrayed[index],"(the colour of|on an item,)","")
 			} 
 			else {
-				out .= RegExReplace(Arrayed[index],"(as a Rare item|item|random modifiers,|new random modifiers, |including an|including a|ifier|modifiers are)","") . "`r`n"	
+				outArrayCount += 1
+				outArray[outArrayCount] := RegExReplace(Arrayed[index],"(as a Rare item|item|random modifiers,|new random modifiers, |including an|including a|ifier|modifiers are)","")	
 			}
-			
-			;socket colour
+						
 			;Reforge a Rare item, being much more likely to receive the same modifier types
 			;Reforge a Rare item, being much less likely to receive the same modifier types
 		} 
@@ -65,47 +74,54 @@
 		else if InStr(Arrayed[index], "Enchant") = 1 {
 			;flask
 			if InStr(Arrayed[index], "Flask") > 1 {
-				out .= RegExReplace(Arrayed[index],"(a modifier that grants|The magnitude of this effect decreases with each use)","") . "`r`n"
+				outArrayCount += 1
+				outArray[outArrayCount] := RegExReplace(Arrayed[index],"(a modifier that grants|The magnitude of this effect decreases with each use)","")
 			}
 			;weapon
 			else if InStr(Arrayed[index], "Weapon") > 1 {
-				out .= RegExReplace(Arrayed[index],"( Quality does not increase its Physical Damage,)","") . "`r`n"
+				outArrayCount += 1
+				outArray[outArrayCount] := RegExReplace(Arrayed[index],"( Quality does not increase its Physical Damage,)","")
 			}			
 			;body armour
 			else if InStr(Arrayed[index], "Armour") > 1 {
-				out .= RegExReplace(Arrayed[index],"( Quality does not increase its Defences,)","") . "`r`n"
+				outArrayCount += 1
+				outArray[outArrayCount] := RegExReplace(Arrayed[index],"( Quality does not increase its Defences,)","") 
 			}	
 		}
 		;Attempt
 		else if InStr(Arrayed[index], "Attempt") = 1 {
 			;awaken
 			if InStr(Arrayed[index], "Awaken") > 1 {
-				out .= RegExReplace(Arrayed[index],"(that can be Awakened with a 5% chance. If it does not Awaken, it is destroyed.)","") . "`r`n"
+				outArrayCount += 1
+				outArray[outArrayCount] := RegExReplace(Arrayed[index],"(that can be Awakened with a 5% chance. If it does not Awaken, it is destroyed.)","")
 			}
 			;scarab upgrade
 			else if InStr(Arrayed[index], "Scarab") > 1 {
-				out .= RegExReplace(Arrayed[index],"(, with a chance for it to become Winged)","") . "`r`n"
+				outArrayCount += 1
+				outArray[outArrayCount] := RegExReplace(Arrayed[index],"(, with a chance for it to become Winged)","")
 			}	
 		}
 		;Change
 		else if InStr(Arrayed[index], "Change") = 1 {
 			; res mods
 			if InStr(Arrayed[index], "Resistance") > 0 {
-				out .= RegExReplace(Arrayed[index],"(a modifier that grants| a similar-tier modifier that grants|istance)","") . "`r`n"
+				outArrayCount += 1
+				outArray[outArrayCount] := RegExReplace(Arrayed[index],"(a modifier that grants| a similar-tier modifier that grants|istance)","")
 			} else {
-			; ignore others ?
-				out .= "" ;Arrayed[index] . "`r`n"
+			; ignore others ?				
 			}		
 		} 
 		;sacrifice 
 		else if InStr(Arrayed[index], "Sacrifice") = 1 {
 			;gem for gcp/xp
 			if InStr(Arrayed[index], "Gem") > 1 {
-				out .= RegExReplace(Arrayed[index],"(gain|of the gem's|total|erience stored)","") . "`r`n"
+				outArrayCount += 1
+				outArray[outArrayCount] := RegExReplace(Arrayed[index],"(gain|of the gem's|total|erience stored)","")
 			} 
 			;div cards gambling
 			else if InStr(Arrayed[index], "Divination") > 1  {
-				out .= RegExReplace(Arrayed[index],"(up to half a stack of|ination)","") . "`r`n"
+				outArrayCount += 1
+				outArray[outArrayCount] :=  RegExReplace(Arrayed[index],"(up to half a stack of|ination)","")
 			} else {
 				;ignores the rest of sacrifice crafts:
 					;Sacrifice or Mortal Fragment into another random Fragment of that type
@@ -117,46 +133,50 @@
 					;Sacrifice maps for scarabs
 					;sacrifice t14+ map for elder/shaper/synth map
 					;sacrifice weap/ar to make similiar belt/ring/amulet/jewel
-				out .= ""
+				
 			}
 		} 
 
 		;Improves
 		else if InStr(Arrayed[index], "Improves") = 1 {			
-			out .= RegExReplace(Arrayed[index],"( by at least 10%. Has greater effect on lower rarity flasks. The maximum quality is 20%| by at least 10%. The maximum quality is 20%)","") . "`r`n"
+			outArrayCount += 1
+			outArray[outArrayCount] := RegExReplace(Arrayed[index],"( by at least 10%. Has greater effect on lower rarity flasks. The maximum quality is 20%| by at least 10%. The maximum quality is 20%)","")
 		}	
 		else if InStr(Arrayed[index], "Fracture") = 1 {			
-			out .= RegExReplace(Arrayed[index],"(a random|on an item with at least 5 modifiers, locking it in place. This can't be used on Influenced, Synthesised, or Fractured items| on an item with at least 3 Suffixes. This can't be used on Influenced, Synthesised, or Fractured items| on an item with at least 3 Prefixes. This can't be used on Influenced, Synthesised, or Fractured items)","") . "`r`n"
+			outArrayCount += 1
+			outArray[outArrayCount] := RegExReplace(Arrayed[index],"(a random|on an item with at least 5 modifiers, locking it in place. This can't be used on Influenced, Synthesised, or Fractured items| on an item with at least 3 Suffixes. This can't be used on Influenced, Synthesised, or Fractured items| on an item with at least 3 Prefixes. This can't be used on Influenced, Synthesised, or Fractured items)","")
 		} 		
 		else if InStr(Arrayed[index], "Reroll") = 1 {		
-			out .= RegExReplace(Arrayed[index],"(ifier|s on a Rare item, with| modifier values|on a Magic or Rare item, with )","") . "`r`n"
+			outArrayCount += 1
+			outArray[outArrayCount] := RegExReplace(Arrayed[index],"(ifier|s on a Rare item, with| modifier values|on a Magic or Rare item, with )","")
 		}
 		else if InStr(Arrayed[index], "Randomise") = 1 {		
-			out .= RegExReplace(Arrayed[index],"(the numeric|the random|ifier|on a Magic or Rare item)","") . "`r`n"
+			outArrayCount += 1
+			outArray[outArrayCount] := RegExReplace(Arrayed[index],"(the numeric|the random|ifier|on a Magic or Rare item)","")
 		}
 		else if InStr(Arrayed[index], "Add") = 1 {		
-			out .= RegExReplace(Arrayed[index],"(a random|a Normal, Magic or Rare|Normal, Magic or Rare|that isn't influenced)","") . "`r`n"
+			outArrayCount += 1
+			outArray[outArrayCount] := RegExReplace(Arrayed[index],"(a random|a Normal, Magic or Rare|Normal, Magic or Rare|that isn't influenced)","")
 		}
 	; ignoring this section of mods
 	; and i do realize i could put them in a single if, but this way its already neatly split if i might want to add them into processing 	
 		;Exchange 
 		else if InStr(Arrayed[index], "Exchange") = 1 {
 			;skipping all exchange crafts assuming anybody would just use them for themselfs
-			out .= ""
+			
 		} 
 		;Upgrade
 		else if InStr(Arrayed[index], "Upgrade") = 1 {
 			;skipping upgrade crafts
-			out .= ""
+			
 		}	
 		;Synthesise
 		else if InStr(Arrayed[index], "Synthesise") = 1 {
 			;skipping Synthesise craft
-			out .= ""
+			
 		}	
 		else if InStr(Arrayed[index], "Split") = 1 {
-			;skipping Split scarab craft
-			out .= ""
+			;skipping Split scarab craft			
 		}	
 
 
@@ -165,11 +185,21 @@
 		;	out .= Arrayed[index] . "`r`n"
 		;}		
 	}
-	Clipboard := RegExReplace(out, " +", " ")
+
+for i in outArray{	
+	outString .= outArray[i] . "`r`n"
+}
+
+
+	Clipboard := RegExReplace(outString, " +", " ")
 	clipwait
 	Tooltip, List of crafts ready
 	sleep, 2000
 	Tooltip
+
+
+
+;msgbox %tt%
 	;msgbox % RegExReplace(out, " +", " ")
 return
 
