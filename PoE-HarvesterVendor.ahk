@@ -51,11 +51,11 @@ getLeagues()
     yrow1 := 80
     loop, 10 {
         yrow1_cbOffset := yrow1 + 5
-        Gui Add, Edit, x%Ax_count% y%yrow1% w35 vAug_count_%A_Index%
+        Gui Add, Edit, x%Ax_count% y%yrow1% w35 vA_count_%A_Index%
         Gui Add, UpDown, vAug_UPdn_%A_Index% Range0-20, 0
-        Gui Add, Edit, x%Ax_craft% y%yrow1% w%Awidth% vAug_craft_%A_Index%
-        Gui Add, Edit, x%Ax_price% y%yrow1% w35 vAug_price_%A_Index%
-        Gui Add, CheckBox, x%Ax_checkbox% y%yrow1_cbOffset% w23 vAug_cb_%A_Index%
+        Gui Add, Edit, x%Ax_craft% y%yrow1% w%Awidth% vA_craft_%A_Index%
+        Gui Add, Edit, x%Ax_price% y%yrow1% w35 vA_price_%A_Index%
+        Gui Add, CheckBox, x%Ax_checkbox% y%yrow1_cbOffset% w23 vA_cb_%A_Index%
         yrow1 += 25
     }
 
@@ -76,11 +76,11 @@ getLeagues()
     yrow1 := 80
     loop, 10 {
         yrow1_cbOffset := yrow1 + 5
-        Gui Add, Edit, x%Rx_count% y%yrow1% w35 vRem_count_%A_Index%
+        Gui Add, Edit, x%Rx_count% y%yrow1% w35 vR_count_%A_Index%
         Gui Add, UpDown, vRem_UPdn_%A_Index% Range0-20, 0
-        Gui Add, Edit, x%Rx_craft% y%yrow1% w%Rwidth% vRem_craft_%A_Index%
-        Gui Add, Edit, x%Rx_price% y%yrow1% w35 vRem_price_%A_Index%
-        Gui Add, CheckBox, x%Rx_checkbox% y%yrow1_cbOffset% w23 vRem_cb_%A_Index%
+        Gui Add, Edit, x%Rx_craft% y%yrow1% w%Rwidth% vR_craft_%A_Index%
+        Gui Add, Edit, x%Rx_price% y%yrow1% w35 vR_price_%A_Index%
+        Gui Add, CheckBox, x%Rx_checkbox% y%yrow1_cbOffset% w23 vR_cb_%A_Index%
         yrow1 += 25
     }
 
@@ -367,29 +367,30 @@ return
 
 Clear_all:
     loop, 10 {
-        GuiControl,, Aug_craft_%A_Index%
-        GuiControl,, Rem_craft_%A_Index%
+        GuiControl,, A_craft_%A_Index%
+        GuiControl,, R_craft_%A_Index%
         GuiControl,, RA_craft_%A_Index%
         GuiControl,, O_craft_%A_Index%
-        GuiControl,, Aug_count_%A_Index%, 0
-        GuiControl,, Rem_count_%A_Index%, 0
+        GuiControl,, A_count_%A_Index%, 0
+        GuiControl,, R_count_%A_Index%, 0
         GuiControl,, RA_count_%A_Index%, 0
         GuiControl,, O_count_%A_Index%, 0
-        GuiControl,, Aug_cb_%A_Index%, 0
-        GuiControl,, Rem_cb_%A_Index%, 0
+        GuiControl,, A_cb_%A_Index%, 0
+        GuiControl,, R_cb_%A_Index%, 0
         GuiControl,, RA_cb_%A_Index%, 0
         GuiControl,, O_cb_%A_Index%, 0
-		GuiControl,, Aug_price_%A_Index%
-        GuiControl,, Rem_price_%A_Index%
+		GuiControl,, A_price_%A_Index%
+        GuiControl,, R_price_%A_Index%
         GuiControl,, RA_price_%A_Index%
         GuiControl,, O_price_%A_Index%
+		}
         augmetnCounter := 1
         removeCounter := 1
         raCounter := 1
         otherCounter := 1
         outArray := []
         arr := []
-    }
+    
 return
 
 Aug_Post:
@@ -454,7 +455,21 @@ leagueList(){
     iniRead, selectedL, %A_WorkingDir%/settings.ini, selectedLeague, s
     guicontrol, Choose, League, %selectedL%
 }
+getRowData(group, row) {
+	GuiControlGet, tempCount,, %group%_count_%row%, value
+	GuiControlGet, tempCraft,, %group%_craft_%row%, value
+	GuiControlGet, tempPrice,, %group%_price_%row%, value
+	GuiControlGet, tempCheck,, %group%_cb_%row%, value
 
+	return [tempCount, tempCraft, tempPrice, tempCheck]
+}
+
+readyTT(){
+   ClipWait
+   ToolTip, Post Ready
+	sleep, 2000
+	Tooltip	
+}
 createPost(group){
     tempName := ""
 	GuiControlGet, tempLeague,, League, value
@@ -469,113 +484,71 @@ createPost(group){
     switch group{
         case "A":            
             loop, 10 {
-                GuiControlGet, tempCount,, Aug_count_%A_Index%, value
-                GuiControlGet, tempCraft,, Aug_craft_%A_Index%, value
-                GuiControlGet, tempPrice,, Aug_price_%A_Index%, value
-                GuiControlGet, tempCheck,, Aug_cb_%A_Index%, value
-                if (tempCheck == 1){
-                    outString .= "  " . tempCount . "x " . tempCraft . " - " . tempPrice . "`r`n"                    
-                }   
+				row:= getRowData("A",A_Index)
+				if (row[4] == 1){
+					outString .= "  " . row[1] . "x " . row[2] . " - " . row[3] . "`r`n"
+				}
             }
             Clipboard := "```````r`n" . outString . "``````"
-            ClipWait
-            ToolTip, Post Ready
-            sleep, 2000
-            Tooltip
+            readyTT()
         return
         case "R":            
-            loop, 10 {
-                GuiControlGet, tempCount,, Rem_count_%A_Index%, value
-                GuiControlGet, tempCraft,, Rem_craft_%A_Index%, value
-                GuiControlGet, tempPrice,, Rem_price_%A_Index%, value
-                GuiControlGet, tempCheck,, Rem_cb_%A_Index%, value
-                if (tempCheck == 1){
-                    outString .= "  " . tempCount . "x " . tempCraft . " - " . tempPrice . "`r`n"
-                    
-                }   
+            loop, 10 {                
+				row:= getRowData("R",A_Index)
+                if (row[4] == 1){
+					outString .= "  " . row[1] . "x " . row[2] . " - " . row[3] . "`r`n"
+				}   
             }
             Clipboard := "```````r`n" . outString . "``````"
-            ClipWait
-            ToolTip, Post Ready
-            sleep, 2000
-            Tooltip
+            readyTT()
         return
         case "RA":            
             loop, 10 {
-                GuiControlGet, tempCount,, RA_count_%A_Index%, value
-                GuiControlGet, tempCraft,, RA_craft_%A_Index%, value
-                GuiControlGet, tempPrice,, RA_price_%A_Index%, value
-                GuiControlGet, tempCheck,, RA_cb_%A_Index%, value
-                if (tempCheck == 1){
-                    outString .= "  " .tempCount . "x " . tempCraft . " - " . tempPrice . "`r`n"                    
-                }   
+                row:= getRowData("RA",A_Index)
+                if (row[4] == 1){
+					outString .= "  " . row[1] . "x " . row[2] . " - " . row[3] . "`r`n"
+				}   
             }
             Clipboard := "```````r`n" . outString . "``````"
-            ClipWait
-            ToolTip, Post Ready
-            sleep, 2000
-            Tooltip
+            readyTT()
         return
         case "O":      
             loop, 10 {
-                GuiControlGet, tempCount,, O_count_%A_Index%, value
-                GuiControlGet, tempCraft,, O_craft_%A_Index%, value
-                GuiControlGet, tempPrice,, O_price_%A_Index%, value
-                GuiControlGet, tempCheck,, O_cb_%A_Index%, value
-                if (tempCheck == 1){
-                    outString .= "  " . tempCount . "x " . tempCraft . " - " . tempPrice . "`r`n"                    
-                }   
+                row:= getRowData("O",A_Index)
+                if (row[4] == 1){
+					outString .= "  " . row[1] . "x " . row[2] . " - " . row[3] . "`r`n"
+				}    
             }
             Clipboard := "```````r`n" . outString . "``````"
-            ClipWait
-            ToolTip, Post Ready
-            sleep, 2000
-            Tooltip
+            readyTT()
         return 
 		case "All":
 		 	loop, 10 {
-                GuiControlGet, tempCount,, Aug_count_%A_Index%, value
-                GuiControlGet, tempCraft,, Aug_craft_%A_Index%, value
-                GuiControlGet, tempPrice,, Aug_price_%A_Index%, value
-                GuiControlGet, tempCheck,, Aug_cb_%A_Index%, value
-                if (tempCheck == 1){
-                    outString .= "  " . tempCount . "x " . tempCraft . " - " . tempPrice . "`r`n"                    
-                }   
+               row:= getRowData("A",A_Index)
+                if (row[4] == 1){
+					outString .= "  " . row[1] . "x " . row[2] . " - " . row[3] . "`r`n"
+				}     
             }
 			loop, 10 {
-                GuiControlGet, tempCount,, Rem_count_%A_Index%, value
-                GuiControlGet, tempCraft,, Rem_craft_%A_Index%, value
-                GuiControlGet, tempPrice,, Rem_price_%A_Index%, value
-                GuiControlGet, tempCheck,, Rem_cb_%A_Index%, value
-                if (tempCheck == 1){
-                    outString .= "  " . tempCount . "x " . tempCraft . " - " . tempPrice . "`r`n"
-                    
-                }   
+                row:= getRowData("R",A_Index)
+                if (row[4] == 1){
+					outString .= "  " . row[1] . "x " . row[2] . " - " . row[3] . "`r`n"
+				}   
             }
 			loop, 10 {
-                GuiControlGet, tempCount,, RA_count_%A_Index%, value
-                GuiControlGet, tempCraft,, RA_craft_%A_Index%, value
-                GuiControlGet, tempPrice,, RA_price_%A_Index%, value
-                GuiControlGet, tempCheck,, RA_cb_%A_Index%, value
-                if (tempCheck == 1){
-                    outString .= "  " . tempCount . "x " . tempCraft . " - " . tempPrice . "`r`n"
-                    
-                }   
+                row:= getRowData("RA",A_Index)
+                if (row[4] == 1){
+					outString .= "  " . row[1] . "x " . row[2] . " - " . row[3] . "`r`n"
+				}   
             }
 			loop, 10 {
-                GuiControlGet, tempCount,, O_count_%A_Index%, value
-                GuiControlGet, tempCraft,, O_craft_%A_Index%, value
-                GuiControlGet, tempPrice,, O_price_%A_Index%, value
-                GuiControlGet, tempCheck,, O_cb_%A_Index%, value
-                if (tempCheck == 1){
-                    outString .= "  " . tempCount . "x " . tempCraft . " - " . tempPrice . "`r`n"                    
-                }   
+                row:= getRowData("O",A_Index)
+                if (row[4] == 1){
+					outString .= "  " . row[1] . "x " . row[2] . " - " . row[3] . "`r`n"
+				}    
             }
 			Clipboard := "```````r`n" . outString . "``````"
-            ClipWait
-            ToolTip, Post Ready
-            sleep, 2000
-            Tooltip
+            readyTT()
 		return   
     }    
 }
@@ -584,26 +557,26 @@ incCraftCount(group, craft){
 	switch group {
 		case "A":
 		loop, 10 {
-			GuiControlGet, craftCheck,, Aug_craft_%A_Index%, value
+			GuiControlGet, craftCheck,, A_craft_%A_Index%, value
 			if (craftCheck == craft) {    
 				
-				GuiCOntrolGet, craftCount,, Aug_count_%A_index%
+				GuiCOntrolGet, craftCount,, A_count_%A_index%
 				;msgbox %craftCheck% = %craft% | %craftCount% ;*[PoE-HarvesterVendor-glue]
 				craftCount += 1 ;*[PoE-HarvesterVendor-glue]
-				GuiControl,, Aug_count_%A_Index%, %craftCount% ;*[PoE-HarvesterVendor-glue]
+				GuiControl,, A_count_%A_Index%, %craftCount% ;*[PoE-HarvesterVendor-glue]
 				return true 
 			}			
 		}		
 		return
 		case "R":
 		loop, 10 {
-			GuiControlGet, craftCheck,, Rem_craft_%A_Index%, value
+			GuiControlGet, craftCheck,, R_craft_%A_Index%, value
 			if (craftCheck == craft) {
 				
-				GuiCOntrolGet, craftCount,, Rem_count_%A_index%
+				GuiCOntrolGet, craftCount,, R_count_%A_index%
 				;msgbox %craftCheck% = %craft% | %craftCount%
 				craftCount += 1
-				GuiControl,, Rem_count_%A_Index%, %craftCount%
+				GuiControl,, R_count_%A_Index%, %craftCount%
 				return true
 			}	
 		}
@@ -643,9 +616,9 @@ CraftSort(ar){
         if InStr(ar[k], "Augment") = 1 {       
             tempC := ar[k]
             if not incCraftCount("A", tempC) {
-                GuiControl,, Aug_craft_%augmetnCounter%, %tempC%
-                GuiControl,, Aug_count_%augmetnCounter%, 1
-                GuiControl,, Aug_cb_%augmetnCounter%, 1
+                GuiControl,, A_craft_%augmetnCounter%, %tempC%
+                GuiControl,, A_count_%augmetnCounter%, 1
+                GuiControl,, A_cb_%augmetnCounter%, 1
                 augmetnCounter += 1
             }
         }        
@@ -654,9 +627,9 @@ CraftSort(ar){
             ;msgbox, Remove %removeCounter%
             tempC := ar[k]
             if not incCraftCount("R", tempC) {
-                GuiControl,, Rem_craft_%removeCounter%, %tempC%
-                GuiControl,, Rem_count_%removeCounter%, 1
-                GuiControl,, Rem_cb_%removeCounter%, 1
+                GuiControl,, R_craft_%removeCounter%, %tempC%
+                GuiControl,, R_count_%removeCounter%, 1
+                GuiControl,, R_cb_%removeCounter%, 1
                 removeCounter += 1
             }
         }
