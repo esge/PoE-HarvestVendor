@@ -28,6 +28,7 @@ WTS Ritual Softcore
   - get the .ahk file
   - put them in the same Folder  
   <img src="examples/folder.png">  
+  
 # Use
   - open horticrafting station
   - open harvestVendor (TDB for now ctrl+shift+q)
