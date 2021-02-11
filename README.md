@@ -27,10 +27,7 @@ WTS Ritual Softcore
   - get the above mentioned OCR tool (tested on version 4.6.2)
   - get the .ahk file
   - put them in the same Folder  
-    Folder:
-      - Capture2text
-      - PoE-harvestVendor.ahk
-      
+  <img src="examples/folder.png">  
 # Use
   - open horticrafting station
   - open harvestVendor (TDB for now ctrl+shift+q)
