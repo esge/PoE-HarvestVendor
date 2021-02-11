@@ -1,5 +1,5 @@
 #NoEnv
-#Warn
+;#Warn
 #SingleInstance Force
 SetWorkingDir %A_ScriptDir% 
     global augmetnCounter := 1
@@ -10,7 +10,7 @@ SetWorkingDir %A_ScriptDir%
 	outArray := []		
     newArray := []    
     arr := []
-
+	
 getLeagues()
 +^q::    
     Gui HarvestUI:New
@@ -23,6 +23,9 @@ getLeagues()
 	Gui Add, Text, x340 y15 w25 h23, IGN:
 	gui font
 	IniRead, name, %A_WorkingDir%/settings.ini, IGN, n
+	if (name == "ERROR") {
+		name:=""
+		}
 	Gui Add, Edit, x370 y10 w150 h23 vIGN gIGN, %name%
 	Gui Add, Button, x530 y9 w80 h23 vpostAll gpostAll, Post all
 	allowAll()
