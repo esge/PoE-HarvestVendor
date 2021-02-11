@@ -1,5 +1,6 @@
 # Its BETA there will be issues and lackign features :)
-
+ - Download https://github.com/esge/PoE-HarvestVendor/releases/tag/0.2
+ 
 # PoE-HarvestVendor
   - Convert your Horticrafting station crafts into a post, almost in a smart way
   - Using ahk to call capture2text OCR tool on selected screen region
