@@ -38,7 +38,8 @@ WTS Ritual Softcore
 
 # Use
   - open horticrafting station
-  - open harvestVendor (TDB for now ctrl+shift+q)
+  - open harvestVendor Gui CTRL + SHIFT+ G
+  - or start capture instantly CTRL + G
   - click Add crafts
   - select the area with text (the left side icons mess up OCR)
     - you can include Levels if you wish

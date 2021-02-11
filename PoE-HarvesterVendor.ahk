@@ -2,7 +2,7 @@
 #Warn
 #SingleInstance Force
 SetWorkingDir %A_ScriptDir% 
-version := "0.2.2"
+version := "0.2.3"
     global augmetnCounter := 1
     global removeCounter := 1
     global raCounter := 1
@@ -33,7 +33,10 @@ getLeagues()
 	Gui Add, Button, x530 y9 w80 h23 vpostAll gpostAll, Post all
 	allowAll()
     ;GUI Add, Button, x400 y9 w80 h23 gTest_button, Test button
-    
+	Gui font, s26
+	Gui Add, Button, x1175 y2 w40 h40 gHelp, ?
+	Gui font
+
     ;== Section Augment ==
     Awidth := 175
     Ax_groupbox := 10
@@ -421,6 +424,24 @@ return
 IGN:
 	guiControlGet, lastIGN,,IGN, value
     iniWrite, %lastIGN%, %A_WorkingDir%/settings.ini, IGN, n
+return
+
+help:
+gui Help:new
+
+gui font, s16
+Gui, add, text,, This is the area you want to select
+gui, font
+Gui, Add, ActiveX, x0 y30 w500 h500 vWB1, Shell.Explorer
+
+; This can be an image from a website, or an image from your computer. Just specify the path based off of the current script directory.
+Edit := WebPic(WB1, "https://github.com/esge/PoE-HarvestVendor/blob/master/examples/example3.png?raw=true", "w436 h425 cFFFFFF")
+;Gui, Add, Edit, x0 y105 w750 h215 -Wrap +HScroll vEdit TabStop WantReturn t8
+Gui, Help:Show, w500 h500, Gui Example
+
+
+helpClose:
+Gui, HarvestUI:Default
 return
 ;Test_button:
 ;return
@@ -942,4 +963,35 @@ Jxon_Dump(obj, indent:="", lvl:=1)
 	}
 	
 	return q . obj . q
+}
+
+WebPic(WB, Website, Options := "") {
+	RegExMatch(Options, "i)w\K\d+", W), (W = "") ? W := 50 :
+	RegExMatch(Options, "i)h\K\d+", H), (H = "") ? H := 50 :
+	RegExMatch(Options, "i)c\K\d+", C), (C = "") ? C := "EEEEEE" :
+	WB.Silent := True
+	HTML_Page :=
+	(RTRIM
+	"<!DOCTYPE html>
+		<html>
+			<head>
+				<style>
+					body {
+						background-color: #" C ";
+					}
+					img {
+						top: 0px;
+						left: 0px;
+					}
+				</style>
+			</head>
+			<body>
+				<img src=""" Website """ alt=""Picture"" style=""width:" W "px;height:" H "px;"" />
+			</body>
+		</html>"
+	)
+	While (WB.Busy)
+		Sleep 10
+	WB.Navigate("about:" HTML_Page)
+	Return HTML_Page
 }
