@@ -1,7 +1,8 @@
 #NoEnv
-;#Warn
+#Warn
 #SingleInstance Force
 SetWorkingDir %A_ScriptDir% 
+version := "0.2.1"
     global augmetnCounter := 1
     global removeCounter := 1
     global raCounter := 1
@@ -131,7 +132,7 @@ getLeagues()
         yrow1 += 25
     }
 
-    Gui, HarvestUI:Show, w1230 h350, PoE-HarvestVendor
+    Gui, HarvestUI:Show, w1230 h350, PoE-HarvestVendor v%version%
 Return
 
 GuiEscape:
