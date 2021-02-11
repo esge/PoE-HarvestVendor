@@ -13,7 +13,10 @@ version := "0.2.1"
     arr := []
 	
 getLeagues()
-+^q::    
+^d::goto Add_crafts
+;return
+^+d::
+
     Gui HarvestUI:New
     ;== top stuff ==
     Gui Add, DropDownList, x10 y10 w150 vLeague gLeagueDropdown, 
@@ -501,8 +504,7 @@ createPost(group){
                 GuiControlGet, tempPrice,, RA_price_%A_Index%, value
                 GuiControlGet, tempCheck,, RA_cb_%A_Index%, value
                 if (tempCheck == 1){
-                    outString .= "  " .tempCount . "x " . tempCraft . " - " . tempPrice . "`r`n"
-                    
+                    outString .= "  " .tempCount . "x " . tempCraft . " - " . tempPrice . "`r`n"                    
                 }   
             }
             Clipboard := "```````r`n" . outString . "``````"
