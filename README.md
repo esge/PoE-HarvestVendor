@@ -1,13 +1,26 @@
-# Note:
- - This is basically beta version, for now
- - just reads the crafts and trims away white text, kinda, ish..
- - looking for input from players (hi there TFT discord:) ) to figure out how we want the output message to look
- 
 # PoE-HarvestVendor
- - uses AHK to call the http://capture2text.sourceforge.net/ OCR tool on a specific region
- - Trims OCR-ed text to just the basic stuff (Augment a Magic or Rare item with a new Caster modifier -> Augment Caster)
- - puts the result into clipboard (for now, later maybe some gui to add prices and other info to it and then clipboard)
+  - Convert your Horticrafting station crafts into a post, almost in a smart way
+  - Using ahk to call capture2text OCR tool on selected screen region
+  - then parsing the text
+  - it works as long as OCR doesnt do stupid stuff
+
+# Description
+
+<img src="examples/Description.png">
+
  
+- example output message
+```
+WTS Ritual Softcore 
+  1x Remove Influence lv83 - 100c
+  2x Remove Speed lv83 - 2ex
+```
+
+
+# 3rd Party stuff
+  - http://capture2text.sourceforge.net/ for OCR
+  - https://github.com/cocobelgica/AutoHotkey-JSON jxon function embeded in the main file
+
 # Install
   - get the above mentioned OCR tool (tested on version 4.6.2)
   - get the .ahk file
@@ -18,18 +31,14 @@
       
 # Use
   - open horticrafting station
-  - use the harvestVendor hotkey (TDB for now ctrl+shift+q)
+  - open harvestVendor (TDB for now ctrl+shift+q)
+  - click Add crafts
   - select the area with text (the left side icons mess up OCR)
-  - you should have stuff in clipboard now
+    - you can include Levels if you wish
+  - stuff gets loaded into the GUI fields, add prices, sort out OCR mess if any, click Create Posting
+  - now you have a message ready in clipboard
   
- <img src="examples/example.gif" width="724" height="540">  
-
-| source | result |
-| --- | --- |
-| ![example2](examples/example2.png) | Change Lightning Res into Fire Res<br /> Change Cold Res into Lightning Res<br /> Remove Physical V ~ ‘<br /> Change Fire Res into Cold Res<br /> Remove Fire add Fire|
-
-- As you can see occasionally there is a stray letter or symbol, thats an issue of the OCR tool, can't really do much with it
-
+ 
 # FAQ
  **Q. A craft i have in horticrafting station is not showing up in the result**  
  A. I arbitrarily decided its not worth to list that one, if you want it listed, contact me or open an issue. [List of ignored crafts](https://github.com/esge/PoE-HarvestVendor/wiki/Crafts-that-are-being-ignored)
