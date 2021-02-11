@@ -24,6 +24,8 @@ getLeagues()
 	gui font
 	IniRead, name, %A_WorkingDir%/settings.ini, IGN, n
 	Gui Add, Edit, x370 y10 w150 h23 vIGN gIGN, %name%
+	Gui Add, Button, x530 y9 w80 h23 vpostAll gpostAll, Post all
+	allowAll()
     ;GUI Add, Button, x400 y9 w80 h23 gTest_button, Test button
     
     ;== Section Augment ==
@@ -137,8 +139,7 @@ GuiClose:
 
 Add_crafts:
     Gui, HarvestUI:Hide    
-	;NewLined := []
-	;arrayed := []
+	
 	outArray := []
     ;sleep, 1000   
 	getSelectionCoords(x_start, x_end, y_start, y_end)
@@ -397,9 +398,14 @@ O_Post:
     createPost("O")
 return
 
+postAll:
+	createPost("All")
+return
+
 LeagueDropdown:
     guiControlGet, selectedLeague,,League, value
     iniWrite, %selectedLeague%, %A_WorkingDir%/settings.ini, selectedLeague, s
+	allowAll()
 return
 
 IGN:
@@ -409,15 +415,30 @@ return
 ;Test_button:
 ;return
 
+allowAll(){
+	IniRead selLeague, %A_WorkingDir%/settings.ini, selectedLeague, s
+	if InStr(selLeague, "Standard") = 0 {
+		guicontrol, Disable, postAll
+	} else {
+		guicontrol, Enable, postAll
+	}
+}
+
 leagueList(){
     leagueString := ""
     loop, 8{
         IniRead, tempList, %A_WorkingDir%/settings.ini, Leagues, %A_Index%
        ; msgbox % tempList
+	   
         if InStr(tempList, "Hardcore") = 0 and InStr(tempList, "HC") = 0 {
             tempList .= " Softcore"
-        }
-        leagueString .= tempList . "|"
+        } 
+		if (tempList == "Hardcore") {
+			tempList := "Standard Hardcore"
+		}
+		if InStr(tempList,"SSF") = 0 {
+        	leagueString .= tempList . "|"
+		}
     }
     guicontrol,, League, %leagueString%
     iniRead, selectedL, %A_WorkingDir%/settings.ini, selectedLeague, s
@@ -501,7 +522,52 @@ createPost(group){
             ToolTip, Post Ready
             sleep, 2000
             Tooltip
-        return    
+        return 
+		case "All":
+		 	loop, 10 {
+                GuiControlGet, tempCount,, Aug_count_%A_Index%, value
+                GuiControlGet, tempCraft,, Aug_craft_%A_Index%, value
+                GuiControlGet, tempPrice,, Aug_price_%A_Index%, value
+                GuiControlGet, tempCheck,, Aug_cb_%A_Index%, value
+                if (tempCheck == 1){
+                    outString .= "  " . tempCount . "x " . tempCraft . " - " . tempPrice . "`r`n"                    
+                }   
+            }
+			loop, 10 {
+                GuiControlGet, tempCount,, Rem_count_%A_Index%, value
+                GuiControlGet, tempCraft,, Rem_craft_%A_Index%, value
+                GuiControlGet, tempPrice,, Rem_price_%A_Index%, value
+                GuiControlGet, tempCheck,, Rem_cb_%A_Index%, value
+                if (tempCheck == 1){
+                    outString .= "  " . tempCount . "x " . tempCraft . " - " . tempPrice . "`r`n"
+                    
+                }   
+            }
+			loop, 10 {
+                GuiControlGet, tempCount,, RA_count_%A_Index%, value
+                GuiControlGet, tempCraft,, RA_craft_%A_Index%, value
+                GuiControlGet, tempPrice,, RA_price_%A_Index%, value
+                GuiControlGet, tempCheck,, RA_cb_%A_Index%, value
+                if (tempCheck == 1){
+                    outString .= "  " . tempCount . "x " . tempCraft . " - " . tempPrice . "`r`n"
+                    
+                }   
+            }
+			loop, 10 {
+                GuiControlGet, tempCount,, O_count_%A_Index%, value
+                GuiControlGet, tempCraft,, O_craft_%A_Index%, value
+                GuiControlGet, tempPrice,, O_price_%A_Index%, value
+                GuiControlGet, tempCheck,, O_cb_%A_Index%, value
+                if (tempCheck == 1){
+                    outString .= "  " . tempCount . "x " . tempCraft . " - " . tempPrice . "`r`n"                    
+                }   
+            }
+			Clipboard := "```````r`n" . outString . "``````"
+            ClipWait
+            ToolTip, Post Ready
+            sleep, 2000
+            Tooltip
+		return   
     }    
 }
 
