@@ -2,7 +2,7 @@
 #Warn
 #SingleInstance Force
 SetWorkingDir %A_ScriptDir% 
-version := "0.2.1"
+version := "0.2.2"
     global augmetnCounter := 1
     global removeCounter := 1
     global raCounter := 1
@@ -13,9 +13,9 @@ version := "0.2.1"
     arr := []
 	
 getLeagues()
-^d::goto Add_crafts ;ctrl+d launches straight into the capture, opens gui afterwards
+^f::goto Add_crafts ;ctrl+d launches straight into the capture, opens gui afterwards
 
-^+d:: ;ctrl+shift+d opens the gui, yo go from there
+^+f:: ;ctrl+shift+d opens the gui, yo go from there
     Gui HarvestUI:New
     ;== top stuff ==
     Gui Add, DropDownList, x10 y10 w150 vLeague gLeagueDropdown, 
@@ -141,7 +141,6 @@ GuiEscape:
     Gui, HarvestUI:Show
 GuiClose:
     ExitApp
-
 
 Add_crafts:
     Gui, HarvestUI:Hide    
@@ -657,7 +656,7 @@ getLeagues(){
     ;oWhr.SetRequestHeader("Authorization", "Bearer 80b44ea9c302237f9178a137d9e86deb-20083fb12d9579469f24afa80816066b")
     oWhr.Send()
     parsed := Jxon_load(oWhr.ResponseText) 
-    ;couldnt figure out how to make the number in parsed.1.id work as paramter, id doesnt like %% in there between the dots
+    ;couldnt figure out how to make the number in parsed.1.id work as paramter, it doesnt like %% in there between the dots
         tempParse := parsed.1.id          
         iniWrite, %tempParse%, %A_WorkingDir%/settings.ini, Leagues, 1
         tempParse := parsed.2.id          
