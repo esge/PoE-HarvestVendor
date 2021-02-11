@@ -355,7 +355,7 @@ Add_crafts:
 
     for iFinal in outArray{	    
         outArray[iFinal] := RegExReplace(outArray[iFinal] , "(Level )", "lv")
-        outArray[iFinal] := RegExReplace(outArray[iFinal], "(_+|\.+|,+|-+|~+| ')","")
+        outArray[iFinal] := RegExReplace(outArray[iFinal], "([^\w\s]+|_+)","")
         ; removes multiple spaces, but all all non chars so it gets rid of stray .,' from OCR, we lose the  dash in non-Tag, but we can lve with that)
         outArray[iFinal] := Trim(RegExReplace(outArray[iFinal] , " +", " ")) 
 
