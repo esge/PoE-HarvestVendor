@@ -1,5 +1,7 @@
 # Its BETA there will be issues and lackign features :)
- - Download https://github.com/esge/PoE-HarvestVendor/releases/tag/0.2
+ - Download https://github.com/esge/PoE-HarvestVendor/releases/tag/0.2.1
+ - Requires AHK 1.1.33.02 
+   - not that it wont work on older, but there was a bug where it would say that a piece of code is unreachable in a switch/case and you will get a warning popup everytime you launch it
  
 # PoE-HarvestVendor
   - Convert your Horticrafting station crafts into a post, almost in a smart way
