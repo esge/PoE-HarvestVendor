@@ -8,6 +8,8 @@
 
 <img src="examples/Description.png">
 
+- Recommended area to select
+<img src="examples/snapshotArea.png">
  
 - example output message
 ```
