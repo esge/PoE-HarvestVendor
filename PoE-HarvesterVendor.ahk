@@ -18,7 +18,7 @@ getLeagues()
 ^+g:: ;ctrl+shift+g opens the gui, yo go from there
     Gui HarvestUI:New
     ;== top stuff ==
-    Gui Add, DropDownList, x10 y10 w150 vLeague gLeagueDropdown, 
+    Gui Add, DropDownList, x10 y10 w150 vLeague gLeagueDropdown,
     leagueList() ;populate leagues dropdown and select the last used one
     Gui Add, Button, x165 y9 w80 h23 gAdd_crafts, Add crafts
     Gui Add, Button, x250 y9 w80 h23 gClear_all, Clear
@@ -473,6 +473,7 @@ leagueList(){
 		}
     }
     guicontrol,, League, %leagueString%
+	guicontrol, choose, League, 1
     iniRead, selectedL, %A_WorkingDir%/settings.ini, selectedLeague, s
     guicontrol, Choose, League, %selectedL%
 }
