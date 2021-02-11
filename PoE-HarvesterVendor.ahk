@@ -137,6 +137,9 @@ GuiClose:
 
 Add_crafts:
     Gui, HarvestUI:Hide    
+	;NewLined := []
+	;arrayed := []
+	outArray := []
     ;sleep, 1000   
 	getSelectionCoords(x_start, x_end, y_start, y_end)
 
