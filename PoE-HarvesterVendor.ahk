@@ -13,9 +13,9 @@ version := "0.2.2"
     arr := []
 	
 getLeagues()
-^f::goto Add_crafts ;ctrl+d launches straight into the capture, opens gui afterwards
+^g::goto Add_crafts ;ctrl+g launches straight into the capture, opens gui afterwards
 
-^+f:: ;ctrl+shift+d opens the gui, yo go from there
+^+g:: ;ctrl+shift+g opens the gui, yo go from there
     Gui HarvestUI:New
     ;== top stuff ==
     Gui Add, DropDownList, x10 y10 w150 vLeague gLeagueDropdown, 
