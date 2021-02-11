@@ -112,7 +112,7 @@ getLeagues()
     Gui Add, Button, x1105 y50 w80 h23 vO_Post gO_Post, Create Posting
 
     Gui Font, s10
-    Gui Add, Groupbox, x%Ox_groupbox% y35 w365 h300, Remove/Add
+    Gui Add, Groupbox, x%Ox_groupbox% y35 w365 h300, Other
     Gui Font
 
     yrow1 := 80
