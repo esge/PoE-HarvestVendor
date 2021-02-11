@@ -13,10 +13,9 @@ version := "0.2.1"
     arr := []
 	
 getLeagues()
-^d::goto Add_crafts
-;return
-^+d::
+^d::goto Add_crafts ;ctrl+d launches straight into the capture, opens gui afterwards
 
+^+d:: ;ctrl+shift+d opens the gui, yo go from there
     Gui HarvestUI:New
     ;== top stuff ==
     Gui Add, DropDownList, x10 y10 w150 vLeague gLeagueDropdown, 
@@ -380,6 +379,10 @@ Clear_all:
         GuiControl,, Rem_cb_%A_Index%, 0
         GuiControl,, RA_cb_%A_Index%, 0
         GuiControl,, O_cb_%A_Index%, 0
+		GuiControl,, Aug_price_%A_Index%
+        GuiControl,, Rem_price_%A_Index%
+        GuiControl,, RA_price_%A_Index%
+        GuiControl,, O_price_%A_Index%
         augmetnCounter := 1
         removeCounter := 1
         raCounter := 1
