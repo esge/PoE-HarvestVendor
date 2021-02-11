@@ -1,3 +1,5 @@
+# Its BETA there will be issues and lackign features :)
+
 # PoE-HarvestVendor
   - Convert your Horticrafting station crafts into a post, almost in a smart way
   - Using ahk to call capture2text OCR tool on selected screen region
@@ -28,7 +30,7 @@ WTS Ritual Softcore
   - get the .ahk file
   - put them in the same Folder  
   <img src="examples/folder.png">  
-  
+
 # Use
   - open horticrafting station
   - open harvestVendor (TDB for now ctrl+shift+q)
