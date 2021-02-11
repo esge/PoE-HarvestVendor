@@ -165,12 +165,13 @@ Add_crafts:
 	Arrayed := StrSplit(NewLined, "`r`n")
 
 	for index in Arrayed{	
+		Arrayed[index] := Trim(RegExReplace(Arrayed[index] , " +", " ")) ;remove possible double spaces from ocr
 		if (Arrayed[index] == "") {
 			;skip empty fields
 		}
 		;Augment
 		else if InStr(Arrayed[index], "Augment") = 1 {
-			if InStr(Arrayed[index], "Influence") > 0 {
+			if InStr(Arrayed[index], "Influence") > 0 {				
 				outArrayCount += 1
 				outArray[outArrayCount] := RegExReplace(Arrayed[index],"(an item with a new|ifier|with|values)","")
 			} else {	
@@ -261,7 +262,7 @@ Add_crafts:
 			; res mods
 			if InStr(Arrayed[index], "Resistance") > 0 {
 				outArrayCount += 1
-				outArray[outArrayCount] := RegExReplace(Arrayed[index],"(a modifier that grants| a similar-tier modifier that grants|istance)","")
+				outArray[outArrayCount] := RegExReplace(Arrayed[index],"(a modifier that grants|a similar-tier modifier that grants|istance)","")
 			} else {
 			; ignore others ?				
 			}		
