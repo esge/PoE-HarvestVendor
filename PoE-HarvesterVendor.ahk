@@ -356,7 +356,7 @@ Add_crafts:
 
     for iFinal in outArray{	    
         outArray[iFinal] := RegExReplace(outArray[iFinal] , "(Level )", "lv")
-        outArray[iFinal] := RegExReplace(outArray[iFinal], "(_+|\.+|,+|-+|~+)","")
+        outArray[iFinal] := RegExReplace(outArray[iFinal], "(_+|\.+|,+|-+|~+| ')","")
         ; removes multiple spaces, but all all non chars so it gets rid of stray .,' from OCR, we lose the  dash in non-Tag, but we can lve with that)
         outArray[iFinal] := Trim(RegExReplace(outArray[iFinal] , " +", " ")) 
 
@@ -558,12 +558,10 @@ incCraftCount(group, craft){
 		case "A":
 		loop, 10 {
 			GuiControlGet, craftCheck,, A_craft_%A_Index%, value
-			if (craftCheck == craft) {    
-				
-				GuiCOntrolGet, craftCount,, A_count_%A_index%
-				;msgbox %craftCheck% = %craft% | %craftCount% ;*[PoE-HarvesterVendor-glue]
-				craftCount += 1 ;*[PoE-HarvesterVendor-glue]
-				GuiControl,, A_count_%A_Index%, %craftCount% ;*[PoE-HarvesterVendor-glue]
+			if (craftCheck == craft) {    				
+				GuiCOntrolGet, craftCount,, A_count_%A_index%				
+				craftCount += 1 
+				GuiControl,, A_count_%A_Index%, %craftCount% 
 				return true 
 			}			
 		}		
@@ -571,10 +569,8 @@ incCraftCount(group, craft){
 		case "R":
 		loop, 10 {
 			GuiControlGet, craftCheck,, R_craft_%A_Index%, value
-			if (craftCheck == craft) {
-				
-				GuiCOntrolGet, craftCount,, R_count_%A_index%
-				;msgbox %craftCheck% = %craft% | %craftCount%
+			if (craftCheck == craft) {				
+				GuiCOntrolGet, craftCount,, R_count_%A_index%				
 				craftCount += 1
 				GuiControl,, R_count_%A_Index%, %craftCount%
 				return true
@@ -584,10 +580,8 @@ incCraftCount(group, craft){
 		case "RA":
 		loop, 10 { 
 			GuiControlGet, craftCheck,, RA_craft_%A_Index%, value
-			if (craftCheck == craft) {
-				
-				GuiCOntrolGet, craftCount,, RA_count_%A_index%
-				;msgbox %craftCheck% = %craft% | %craftCount%
+			if (craftCheck == craft) {				
+				GuiCOntrolGet, craftCount,, RA_count_%A_index%				
 				craftCount += 1
 				GuiControl,, RA_count_%A_Index%, %craftCount%
 				return true
@@ -598,8 +592,7 @@ incCraftCount(group, craft){
 		loop, 10 {
 			GuiControlGet, craftCheck,, O_craft_%A_Index%, value
 			if (craftCheck == craft) {				
-				GuiCOntrolGet, craftCount,, O_count_%A_index%
-				;msgbox %craftCheck% = %craft% | %craftCount%
+				GuiCOntrolGet, craftCount,, O_count_%A_index%				
 				craftCount += 1
 				GuiControl,, O_count_%A_Index%, %craftCount%
 				return true
@@ -609,6 +602,12 @@ incCraftCount(group, craft){
 	}
 }
 
+insertIntoRow(group, rowCounter, craft){
+    GuiControl,, %group%_craft_%rowCounter%, %craft%
+    GuiControl,, %group%_count_%rowCounter%, 1
+    GuiControl,, %group%_cb_%rowCounter%, 1
+}
+
 CraftSort(ar){
     tempC := ""
     for k in ar {        
@@ -616,9 +615,7 @@ CraftSort(ar){
         if InStr(ar[k], "Augment") = 1 {       
             tempC := ar[k]
             if not incCraftCount("A", tempC) {
-                GuiControl,, A_craft_%augmetnCounter%, %tempC%
-                GuiControl,, A_count_%augmetnCounter%, 1
-                GuiControl,, A_cb_%augmetnCounter%, 1
+				insertIntoRow("A",augmetnCounter,tempC)                
                 augmetnCounter += 1
             }
         }        
@@ -627,9 +624,7 @@ CraftSort(ar){
             ;msgbox, Remove %removeCounter%
             tempC := ar[k]
             if not incCraftCount("R", tempC) {
-                GuiControl,, R_craft_%removeCounter%, %tempC%
-                GuiControl,, R_count_%removeCounter%, 1
-                GuiControl,, R_cb_%removeCounter%, 1
+                insertIntoRow("R",removeCounter,tempC)  
                 removeCounter += 1
             }
         }
@@ -638,9 +633,7 @@ CraftSort(ar){
             ;msgbox, RA %raCounter%
             tempC := ar[k]
             if not incCraftCount("RA", tempC) {
-                GuiControl,, RA_craft_%raCounter%, %tempC%
-                GuiControl,, RA_count_%RACounter%, 1
-                GuiControl,, RA_cb_%RACounter%, 1
+                insertIntoRow("RA",raCounter,tempC)
                 raCounter += 1
             }
         }
@@ -650,9 +643,7 @@ CraftSort(ar){
             ;msgbox, O %otherCounter%
             tempC := ar[k]
             if not incCraftCount("O", tempC) {
-                GuiControl,, O_craft_%otherCounter%, %tempC%
-                GuiControl,, O_count_%otherCounter%, 1
-                GuiControl,, O_cb_%otherCounter%, 1
+                insertIntoRow("O",otherCounter,tempC)
                 otherCounter += 1
             }
         }
