@@ -325,6 +325,18 @@ Add_crafts:
 			outArrayCount += 1
 			outArray[outArrayCount] := RegExReplace(Arrayed[index],"(a random|a Normal, Magic or Rare|Normal, Magic or Rare|that isn't influenced)","")
 		}
+		else if InStr(Arrayed[index], "Set") = 1 {		
+			SJtemp := RegExReplace(Arrayed[index],"(Cobalt, Crimson, Viridian or Prismatic)","basic")
+			SJtemp := RegExReplace(SJtemp,"(a new|modifier on an|modifier on a|Jewel or)","")
+			outArrayCount += 1
+			outArray[outArrayCount] := SJtemp
+		}
+		;Synthesise
+		else if InStr(Arrayed[index], "Synthesise") = 1 {			
+			outArrayCount += 1
+			outArray[outArrayCount] := RegExReplace(Arrayed[index],"(, giving random Synthesised implicits. Cannot be used on Unique, Influenced, Synthesised or Fractured items)","")
+		}
+
 		else if InStr(Arrayed[index], "Corrupt") = 1 {	
 			;Corrupt an item 10 times, or until getting a corrupted implicit modifier
 
@@ -343,11 +355,7 @@ Add_crafts:
 			;skipping upgrade crafts
 			
 		}	
-		;Synthesise
-		else if InStr(Arrayed[index], "Synthesise") = 1 {
-			;skipping Synthesise craft
-			
-		}	
+	
 		else if InStr(Arrayed[index], "Split") = 1 {
 			;skipping Split scarab craft			
 		}	
