@@ -8,9 +8,10 @@ version := "0.2.3"
     global raCounter := 1
     global otherCounter := 1
     outArrayCount := 0
-	outArray := []		
+	global outArray := []		
     newArray := []    
-    arr := []
+    global arr := []
+	global outstring := ""
 	
 getLeagues()
 ^g::goto Add_crafts ;ctrl+g launches straight into the capture, opens gui afterwards
@@ -138,6 +139,7 @@ getLeagues()
     }
 
     Gui, HarvestUI:Show, w1230 h350, PoE-HarvestVendor v%version%
+	clearAll()
 Return
 
 GuiEscape:
@@ -357,9 +359,9 @@ Add_crafts:
 		;}		
 	}
 
-    for iFinal in outArray{	    
-        outArray[iFinal] := RegExReplace(outArray[iFinal] , "(Level )", "lv")
+    for iFinal in outArray{	            
         outArray[iFinal] := RegExReplace(outArray[iFinal], "([^\w\s]+|_+)","")
+		outArray[iFinal] := RegExReplace(outArray[iFinal] , "(Level )", "lv")
         ; removes multiple spaces, but all all non chars so it gets rid of stray .,' from OCR, we lose the  dash in non-Tag, but we can lve with that)
         outArray[iFinal] := Trim(RegExReplace(outArray[iFinal] , " +", " ")) 
 
@@ -369,31 +371,7 @@ Add_crafts:
 return
 
 Clear_all:
-    loop, 10 {
-        GuiControl,, A_craft_%A_Index%
-        GuiControl,, R_craft_%A_Index%
-        GuiControl,, RA_craft_%A_Index%
-        GuiControl,, O_craft_%A_Index%
-        GuiControl,, A_count_%A_Index%, 0
-        GuiControl,, R_count_%A_Index%, 0
-        GuiControl,, RA_count_%A_Index%, 0
-        GuiControl,, O_count_%A_Index%, 0
-        GuiControl,, A_cb_%A_Index%, 0
-        GuiControl,, R_cb_%A_Index%, 0
-        GuiControl,, RA_cb_%A_Index%, 0
-        GuiControl,, O_cb_%A_Index%, 0
-		GuiControl,, A_price_%A_Index%
-        GuiControl,, R_price_%A_Index%
-        GuiControl,, RA_price_%A_Index%
-        GuiControl,, O_price_%A_Index%
-		}
-        augmetnCounter := 1
-        removeCounter := 1
-        raCounter := 1
-        otherCounter := 1
-        outArray := []
-        arr := []
-    
+	clearAll()    
 return
 
 Aug_Post:
@@ -447,6 +425,34 @@ return
 ;Test_button:
 ;return
 
+clearAll(){
+    loop, 10 {
+        GuiControl,, A_craft_%A_Index%
+        GuiControl,, R_craft_%A_Index%
+        GuiControl,, RA_craft_%A_Index%
+        GuiControl,, O_craft_%A_Index%
+        GuiControl,, A_count_%A_Index%, 0
+        GuiControl,, R_count_%A_Index%, 0
+        GuiControl,, RA_count_%A_Index%, 0
+        GuiControl,, O_count_%A_Index%, 0
+        GuiControl,, A_cb_%A_Index%, 0
+        GuiControl,, R_cb_%A_Index%, 0
+        GuiControl,, RA_cb_%A_Index%, 0
+        GuiControl,, O_cb_%A_Index%, 0
+		GuiControl,, A_price_%A_Index%
+        GuiControl,, R_price_%A_Index%
+        GuiControl,, RA_price_%A_Index%
+        GuiControl,, O_price_%A_Index%
+		}
+        augmetnCounter := 1
+        removeCounter := 1
+        raCounter := 1
+        otherCounter := 1
+        outArray := []
+        arr := []
+}
+
+
 allowAll(){
 	IniRead selLeague, %A_WorkingDir%/settings.ini, selectedLeague, s
 	if InStr(selLeague, "Standard") = 0 {
@@ -492,6 +498,20 @@ readyTT(){
 	sleep, 2000
 	Tooltip	
 }
+
+createPostRow(count,craft,price){
+	if regexmatch(craft,"(lv\d\d)") > 0 {
+	 	craft := RegExReplace(craft,"(lv\d\d)","][$1")
+	}
+	else {
+		craft := craft . "][-"
+	}
+	outString .= "  (" . count . "x) [" . craft . "] - < " . price . " >`r`n"
+}
+codeblockWrap(){
+	return "``````md`r`n" . outString . "``````"
+}
+
 createPost(group){
     tempName := ""
 	GuiControlGet, tempLeague,, League, value
@@ -499,77 +519,78 @@ createPost(group){
     outString := ""
 
 	if (tempName != "") {
-    	outString .= "WTS " . tempLeague . " - IGN: " . tempName . "`r`n" 
+    	outString .= "#WTS " . tempLeague . " - IGN: " . tempName . "`r`n" 
 	} else {
-		outString .= "WTS " . tempLeague . "`r`n"
+		outString .= "#WTS " . tempLeague . "`r`n"
 	}
     switch group{
         case "A":            
             loop, 10 {
 				row:= getRowData("A",A_Index)
 				if (row[4] == 1){
-					outString .= "  " . row[1] . "x " . row[2] . " - " . row[3] . "`r`n"
+					createPostRow(row[1],row[2],row[3])
+					;outString .= "  " . row[1] . "x " . row[2] . " - " . row[3] . "`r`n"
 				}
             }
-            Clipboard := "```````r`n" . outString . "``````"
+            Clipboard := codeblockWrap()
             readyTT()
         return
         case "R":            
             loop, 10 {                
 				row:= getRowData("R",A_Index)
                 if (row[4] == 1){
-					outString .= "  " . row[1] . "x " . row[2] . " - " . row[3] . "`r`n"
+					createPostRow(row[1],row[2],row[3])
 				}   
             }
-            Clipboard := "```````r`n" . outString . "``````"
+            Clipboard := codeblockWrap()
             readyTT()
         return
         case "RA":            
             loop, 10 {
                 row:= getRowData("RA",A_Index)
                 if (row[4] == 1){
-					outString .= "  " . row[1] . "x " . row[2] . " - " . row[3] . "`r`n"
+					createPostRow(row[1],row[2],row[3])
 				}   
             }
-            Clipboard := "```````r`n" . outString . "``````"
+            Clipboard := codeblockWrap()
             readyTT()
         return
         case "O":      
             loop, 10 {
                 row:= getRowData("O",A_Index)
                 if (row[4] == 1){
-					outString .= "  " . row[1] . "x " . row[2] . " - " . row[3] . "`r`n"
+					createPostRow(row[1],row[2],row[3])
 				}    
             }
-            Clipboard := "```````r`n" . outString . "``````"
+            Clipboard := codeblockWrap()
             readyTT()
         return 
 		case "All":
 		 	loop, 10 {
                row:= getRowData("A",A_Index)
                 if (row[4] == 1){
-					outString .= "  " . row[1] . "x " . row[2] . " - " . row[3] . "`r`n"
+					createPostRow(row[1],row[2],row[3])
 				}     
             }
 			loop, 10 {
                 row:= getRowData("R",A_Index)
                 if (row[4] == 1){
-					outString .= "  " . row[1] . "x " . row[2] . " - " . row[3] . "`r`n"
+					createPostRow(row[1],row[2],row[3])
 				}   
             }
 			loop, 10 {
                 row:= getRowData("RA",A_Index)
                 if (row[4] == 1){
-					outString .= "  " . row[1] . "x " . row[2] . " - " . row[3] . "`r`n"
+					createPostRow(row[1],row[2],row[3])
 				}   
             }
 			loop, 10 {
                 row:= getRowData("O",A_Index)
                 if (row[4] == 1){
-					outString .= "  " . row[1] . "x " . row[2] . " - " . row[3] . "`r`n"
+					createPostRow(row[1],row[2],row[3])
 				}    
             }
-			Clipboard := "```````r`n" . outString . "``````"
+			Clipboard := codeblockWrap()
             readyTT()
 		return   
     }    
