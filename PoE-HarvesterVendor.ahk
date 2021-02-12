@@ -2,7 +2,7 @@
 #Warn
 #SingleInstance Force
 SetWorkingDir %A_ScriptDir% 
-version := "0.2.3"
+global version := "0.2.3"
 global augmetnCounter := 1
 global removeCounter := 1
 global raCounter := 1
@@ -12,136 +12,20 @@ global outArray := []
 ;global newArray := []    
 global arr := []
 global outstring := ""
+global firstGuiOpen := 0
 getLeagues()
-firstGuiOpen := 0
 
-^g::goto Add_crafts ;ctrl+g launches straight into the capture, opens gui afterwards
-
+^g:: ;ctrl+g launches straight into the capture, opens gui afterwards
+    processCrafts()
+    if (firstGuiOpen == 0) {
+        buildGUI()
+    } 
+    Gui, HarvestUI:Show, w1230 h350
+    craftSort(outArray)
+return
 ^+g:: ;ctrl+shift+g opens the gui, yo go from there
-
-
-    Gui HarvestUI:New
-    ;== top stuff ==
-    Gui Add, DropDownList, x10 y10 w150 vLeague gLeagueDropdown,
-    leagueList() ;populate leagues dropdown and select the last used one
-    Gui Add, Button, x165 y9 w80 h23 gAdd_crafts, Add crafts
-    Gui Add, Button, x250 y9 w80 h23 gClear_all, Clear
-	gui font, s10
-	Gui Add, Text, x340 y15 w25 h23, IGN:
-	gui font
-	IniRead, name, %A_WorkingDir%/settings.ini, IGN, n
-	if (name == "ERROR") {
-		name:=""
-		}
-	Gui Add, Edit, x370 y10 w150 h23 vIGN gIGN, %name%
-	Gui Add, Button, x530 y9 w80 h23 vpostAll gpostAll, Post all
-	allowAll()
-    ;GUI Add, Button, x400 y9 w80 h23 gTest_button, Test button
-	Gui font, s26
-	Gui Add, Button, x1175 y2 w40 h40 gHelp, ?
-	Gui font
-
-    ;== Section Augment ==
-    Awidth := 175
-    Ax_groupbox := 10
-    Ax_count := Ax_groupbox + 5 ;groupbox x+5
-    Ax_craft := Ax_count + 40 ;count + 40
-    Ax_price := Awidth + Ax_craft + 5 ; width+craft + 5
-    Ax_checkbox := Ax_price + 35 + 5 ; price + 35 + 5
-
-    Gui Add, Button, x190 y50 w80 h23 vAug_Post gAug_Post, Create Posting
-
-    Gui Font, s10
-    Gui Add, Groupbox, x%Ax_groupbox% y35 w290 h300, Augment
-    Gui Font
-
-    yrow1 := 80
-    loop, 10 {
-        yrow1_cbOffset := yrow1 + 5
-        Gui Add, Edit, x%Ax_count% y%yrow1% w35 vA_count_%A_Index%
-        Gui Add, UpDown, vAug_UPdn_%A_Index% Range0-20, 0
-        Gui Add, Edit, x%Ax_craft% y%yrow1% w%Awidth% vA_craft_%A_Index%
-        Gui Add, Edit, x%Ax_price% y%yrow1% w35 vA_price_%A_Index%
-        Gui Add, CheckBox, x%Ax_checkbox% y%yrow1_cbOffset% w23 vA_cb_%A_Index%
-        yrow1 += 25
-    }
-
-    ;== Section Remove ==
-    Rwidth := 120
-    Rx_groupbox := 305
-    Rx_count := Rx_groupbox + 5
-    Rx_craft := Rx_count + 40
-    Rx_price := Rwidth + Rx_craft + 5
-    Rx_checkbox := Rx_price + 35 + 5 
-
-    Gui Add, Button, x430 y50 w80 h23 vRem_Post gRem_Post, Create Posting
-
-    Gui Font, s10
-    Gui Add, Groupbox, x%Rx_groupbox% y35 w235 h300, Remove
-    Gui Font
-
-    yrow1 := 80
-    loop, 10 {
-        yrow1_cbOffset := yrow1 + 5
-        Gui Add, Edit, x%Rx_count% y%yrow1% w35 vR_count_%A_Index%
-        Gui Add, UpDown, vRem_UPdn_%A_Index% Range0-20, 0
-        Gui Add, Edit, x%Rx_craft% y%yrow1% w%Rwidth% vR_craft_%A_Index%
-        Gui Add, Edit, x%Rx_price% y%yrow1% w35 vR_price_%A_Index%
-        Gui Add, CheckBox, x%Rx_checkbox% y%yrow1_cbOffset% w23 vR_cb_%A_Index%
-        yrow1 += 25
-    }
-
-    ;== Section Rem/Add ==
-    RAwidth := 185
-    RAx_groupbox := 545
-    RAx_count := RAx_groupbox + 5
-    RAx_craft := RAx_count + 40
-    RAx_price := RAwidth + RAx_craft + 5
-    RAx_checkbox :=  RAx_price + 35 + 5 
-
-    Gui Add, Button, x735 y50 w80 h23 vRA_Post gRA_Post, Create Posting
-
-    Gui Font, s10
-    Gui Add, Groupbox, x%RAx_groupbox% y35 w300 h300, Remove/Add
-    Gui Font
-
-    yrow1 := 80
-    loop, 10 {
-        yrow1_cbOffset := yrow1 + 5
-        Gui Add, Edit, x%RAx_count% y%yrow1% w35 vRA_count_%A_Index%
-        Gui Add, UpDown, vRA_UPdn_%A_Index% Range0-20, 0
-        Gui Add, Edit, x%RAx_craft% y%yrow1% w%RAwidth% vRA_craft_%A_Index%
-        Gui Add, Edit, x%RAx_price% y%yrow1% w35 vRA_price_%A_Index%
-        Gui Add, CheckBox, x%RAx_checkbox% y%yrow1_cbOffset% w23 vRA_cb_%A_Index%
-        yrow1 += 25
-    }
-
-    ;== Section Other ==
-    Owidth := 250
-    Ox_groupbox := 850
-    Ox_count := Ox_groupbox + 5
-    Ox_craft := Ox_count + 40
-    Ox_price := Owidth + Ox_craft + 5
-    Ox_checkbox := Ox_price + 35 + 5 
-
-    Gui Add, Button, x1105 y50 w80 h23 vO_Post gO_Post, Create Posting
-
-    Gui Font, s10
-    Gui Add, Groupbox, x%Ox_groupbox% y35 w365 h300, Other
-    Gui Font
-
-    yrow1 := 80
-    loop, 10 {
-        yrow1_cbOffset := yrow1 + 5
-        Gui Add, Edit, x%Ox_count% y%yrow1% w35 vO_count_%A_Index%
-        Gui Add, UpDown, vO_UPdn_%A_Index% Range0-20, 0
-        Gui Add, Edit, x%Ox_craft% y%yrow1% w%Owidth% vO_craft_%A_Index%
-        Gui Add, Edit, x%Ox_price% y%yrow1% w35 vO_price_%A_Index%
-        Gui Add, CheckBox, x%Ox_checkbox% y%yrow1_cbOffset% w23 vO_cb_%A_Index%
-        yrow1 += 25
-    }
-
-    Gui, HarvestUI:Show, w1230 h350, PoE-HarvestVendor v%version%
+    buildGUI()
+    Gui, HarvestUI:Show, w1230 h350
 	clearAll()
 Return
 
@@ -209,9 +93,133 @@ Gui, HarvestUI:Default
 return
 ;Test_button:
 ;return
+buildGUI(){    
+    firstGuiOpen := 1
+    Gui HarvestUI:New,, PoE-HarvestVendor v%version%
+    ;== top stuff ==
+    Gui Add, DropDownList, x10 y10 w150 vLeague gLeagueDropdown,
+    leagueList() ;populate leagues dropdown and select the last used one
+    Gui Add, Button, x165 y9 w80 h23 gAdd_crafts, Add crafts
+    Gui Add, Button, x250 y9 w80 h23 gClear_all, Clear
+	gui font, s10
+	Gui Add, Text, x340 y15 w25 h23, IGN:
+	gui font
+	IniRead, name, %A_WorkingDir%/settings.ini, IGN, n
+	if (name == "ERROR") {
+		name:=""
+		}
+	Gui Add, Edit, x370 y10 w150 h23 vIGN gIGN, %name%
+	Gui Add, Button, x530 y9 w80 h23 vpostAll gpostAll, Post all
+	allowAll()
+    ;GUI Add, Button, x400 y9 w80 h23 gTest_button, Test button
+	Gui font, s26
+	Gui Add, Button, x1175 y2 w40 h40 gHelp, ?
+	Gui font
 
+    ;== Section Augment ==
+    Awidth := 175
+    Ax_groupbox := 10
+    Ax_count := Ax_groupbox + 5 ;groupbox x+5
+    Ax_craft := Ax_count + 40 ;count + 40
+    Ax_price := Awidth + Ax_craft + 5 ; width+craft + 5
+    Ax_checkbox := Ax_price + 35 + 5 ; price + 35 + 5
+
+    Gui Add, Button, x190 y50 w80 h23 gAug_Post, Create Posting
+
+    Gui Font, s10
+    Gui Add, Groupbox, x%Ax_groupbox% y35 w290 h300, Augment
+    Gui Font
+
+    yrow1 := 80
+    loop, 10 {
+        yrow1_cbOffset := yrow1 + 5
+        Gui Add, Edit, x%Ax_count% y%yrow1% w35 vA_count_%A_Index%
+        Gui Add, UpDown, Range0-20, 0
+        Gui Add, Edit, x%Ax_craft% y%yrow1% w%Awidth% vA_craft_%A_Index%
+        Gui Add, Edit, x%Ax_price% y%yrow1% w35 vA_price_%A_Index%
+        Gui Add, CheckBox, x%Ax_checkbox% y%yrow1_cbOffset% w23 vA_cb_%A_Index%
+        yrow1 += 25
+    }
+
+    ;== Section Remove ==
+    Rwidth := 120
+    Rx_groupbox := 305
+    Rx_count := Rx_groupbox + 5
+    Rx_craft := Rx_count + 40
+    Rx_price := Rwidth + Rx_craft + 5
+    Rx_checkbox := Rx_price + 35 + 5 
+
+    Gui Add, Button, x430 y50 w80 h23 gRem_Post, Create Posting
+
+    Gui Font, s10
+    Gui Add, Groupbox, x%Rx_groupbox% y35 w235 h300, Remove
+    Gui Font
+
+    yrow1 := 80
+    loop, 10 {
+        yrow1_cbOffset := yrow1 + 5
+        Gui Add, Edit, x%Rx_count% y%yrow1% w35 vR_count_%A_Index%
+        Gui Add, UpDown, Range0-20, 0
+        Gui Add, Edit, x%Rx_craft% y%yrow1% w%Rwidth% vR_craft_%A_Index%
+        Gui Add, Edit, x%Rx_price% y%yrow1% w35 vR_price_%A_Index%
+        Gui Add, CheckBox, x%Rx_checkbox% y%yrow1_cbOffset% w23 vR_cb_%A_Index%
+        yrow1 += 25
+    }
+
+    ;== Section Rem/Add ==
+    RAwidth := 185
+    RAx_groupbox := 545
+    RAx_count := RAx_groupbox + 5
+    RAx_craft := RAx_count + 40
+    RAx_price := RAwidth + RAx_craft + 5
+    RAx_checkbox :=  RAx_price + 35 + 5 
+
+    Gui Add, Button, x735 y50 w80 h23 gRA_Post, Create Posting
+
+    Gui Font, s10
+    Gui Add, Groupbox, x%RAx_groupbox% y35 w300 h300, Remove/Add
+    Gui Font
+
+    yrow1 := 80
+    loop, 10 {
+        yrow1_cbOffset := yrow1 + 5
+        Gui Add, Edit, x%RAx_count% y%yrow1% w35 vRA_count_%A_Index%
+        Gui Add, UpDown, Range0-20, 0
+        Gui Add, Edit, x%RAx_craft% y%yrow1% w%RAwidth% vRA_craft_%A_Index%
+        Gui Add, Edit, x%RAx_price% y%yrow1% w35 vRA_price_%A_Index%
+        Gui Add, CheckBox, x%RAx_checkbox% y%yrow1_cbOffset% w23 vRA_cb_%A_Index%
+        yrow1 += 25
+    }
+
+    ;== Section Other ==
+    Owidth := 250
+    Ox_groupbox := 850
+    Ox_count := Ox_groupbox + 5
+    Ox_craft := Ox_count + 40
+    Ox_price := Owidth + Ox_craft + 5
+    Ox_checkbox := Ox_price + 35 + 5 
+
+    Gui Add, Button, x1105 y50 w80 h23 gO_Post, Create Posting
+
+    Gui Font, s10
+    Gui Add, Groupbox, x%Ox_groupbox% y35 w365 h300, Other
+    Gui Font
+
+    yrow1 := 80
+    loop, 10 {
+        yrow1_cbOffset := yrow1 + 5
+        Gui Add, Edit, x%Ox_count% y%yrow1% w35 vO_count_%A_Index%
+        Gui Add, UpDown, Range0-20, 0
+        Gui Add, Edit, x%Ox_craft% y%yrow1% w%Owidth% vO_craft_%A_Index%
+        Gui Add, Edit, x%Ox_price% y%yrow1% w35 vO_price_%A_Index%
+        Gui Add, CheckBox, x%Ox_checkbox% y%yrow1_cbOffset% w23 vO_cb_%A_Index%
+        yrow1 += 25
+    }
+
+    
+}
 processCrafts(){
-	 Gui, HarvestUI:Hide    
+	Gui, HarvestUI:Hide    
 	
 	outArray := []
     ;sleep, 1000   
@@ -435,8 +443,6 @@ processCrafts(){
 		outArray[iFinal] := RegExReplace(outArray[iFinal] , "(Level )", "lv")
         ; removes multiple spaces, but all all non chars so it gets rid of stray .,' from OCR, we lose the  dash in non-Tag, but we can lve with that)
         outArray[iFinal] := Trim(RegExReplace(outArray[iFinal] , " +", " ")) 
-
-
     }
 }
 
@@ -1034,3 +1040,168 @@ WebPic(WB, Website, Options := "") {
 	WB.Navigate("about:" HTML_Page)
 	Return HTML_Page
 }
+
+; === all variables for GUI elements have to be global if i wanna run it from a function, so here we go ===
+global League
+global IGN
+global postAll
+global A_count_1
+global A_count_2
+global A_count_3
+global A_count_4
+global A_count_5
+global A_count_6
+global A_count_7
+global A_count_8
+global A_count_9
+global A_count_10
+global A_craft_1
+global A_craft_2
+global A_craft_3
+global A_craft_4
+global A_craft_5
+global A_craft_6
+global A_craft_7
+global A_craft_8
+global A_craft_9
+global A_craft_10
+global A_price_1
+global A_price_2
+global A_price_3
+global A_price_4
+global A_price_5
+global A_price_6
+global A_price_7
+global A_price_8
+global A_price_9
+global A_price_10
+global A_cb_1
+global A_cb_2
+global A_cb_3
+global A_cb_4
+global A_cb_5
+global A_cb_6
+global A_cb_7
+global A_cb_8
+global A_cb_9
+global A_cb_10
+global R_count_1
+global R_count_2
+global R_count_3
+global R_count_4
+global R_count_5
+global R_count_6
+global R_count_7
+global R_count_8
+global R_count_9
+global R_count_10
+global R_craft_1
+global R_craft_2
+global R_craft_3
+global R_craft_4
+global R_craft_5
+global R_craft_6
+global R_craft_7
+global R_craft_8
+global R_craft_9
+global R_craft_10
+global R_price_1
+global R_price_2
+global R_price_3
+global R_price_4
+global R_price_5
+global R_price_6
+global R_price_7
+global R_price_8
+global R_price_9
+global R_price_10
+global R_cb_1
+global R_cb_2
+global R_cb_3
+global R_cb_4
+global R_cb_5
+global R_cb_6
+global R_cb_7
+global R_cb_8
+global R_cb_9
+global R_cb_10
+global RA_count_1
+global RA_count_2
+global RA_count_3
+global RA_count_4
+global RA_count_5
+global RA_count_6
+global RA_count_7
+global RA_count_8
+global RA_count_9
+global RA_count_10
+global RA_craft_1
+global RA_craft_2
+global RA_craft_3
+global RA_craft_4
+global RA_craft_5
+global RA_craft_6
+global RA_craft_7
+global RA_craft_8
+global RA_craft_9
+global RA_craft_10
+global RA_price_1
+global RA_price_2
+global RA_price_3
+global RA_price_4
+global RA_price_5
+global RA_price_6
+global RA_price_7
+global RA_price_8
+global RA_price_9
+global RA_price_10
+global RA_cb_1
+global RA_cb_2
+global RA_cb_3
+global RA_cb_4
+global RA_cb_5
+global RA_cb_6
+global RA_cb_7
+global RA_cb_8
+global RA_cb_9
+global RA_cb_10
+global O_count_1
+global O_count_2
+global O_count_3
+global O_count_4
+global O_count_5
+global O_count_6
+global O_count_7
+global O_count_8
+global O_count_9
+global O_count_10
+global O_craft_1
+global O_craft_2
+global O_craft_3
+global O_craft_4
+global O_craft_5
+global O_craft_6
+global O_craft_7
+global O_craft_8
+global O_craft_9
+global O_craft_10
+global O_price_1
+global O_price_2
+global O_price_3
+global O_price_4
+global O_price_5
+global O_price_6
+global O_price_7
+global O_price_8
+global O_price_9
+global O_price_10
+global O_cb_1
+global O_cb_2
+global O_cb_3
+global O_cb_4
+global O_cb_5
+global O_cb_6
+global O_cb_7
+global O_cb_8
+global O_cb_9
+global O_cb_10
