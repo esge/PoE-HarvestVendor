@@ -113,7 +113,14 @@ buildGUI(){
 	allowAll()
 
 	gui add, CheckBox, x630 y14 vcanStream, Can Stream
-    ;GUI Add, Button, x400 y9 w80 h23 gTest_button, Test button
+    
+	if (version != getVersion()) {
+		gui Font, s14
+		gui add, Link, x950 y10 vVersionLink, <a href="https://github.com/esge/PoE-HarvestVendor/releases">! New Version Available !</a>
+		gui font
+	}
+
+
 	Gui font, s26
 	Gui Add, Button, x1175 y2 w40 h40 gHelp, ?
 	Gui font
@@ -747,6 +754,15 @@ getLeagues(){
         iniWrite, %tempParse%, %A_WorkingDir%/settings.ini, Leagues, 8
 }
 
+getVersion(){
+	ver := ComObjCreate("WinHttp.WinHttpRequest.5.1")
+    ver.Open("GET", "https://raw.githubusercontent.com/esge/PoE-HarvestVendor/master/version.txt", false)
+    ver.SetRequestHeader("Content-Type", "application/json")
+    ;oWhr.SetRequestHeader("Authorization", "Bearer 80b44ea9c302237f9178a137d9e86deb-20083fb12d9579469f24afa80816066b")
+    ver.Send()
+    return StrReplace(StrReplace(ver.ResponseText,"`r"),"`n")
+}
+
 getSelectionCoords(ByRef x_start, ByRef x_end, ByRef y_start, ByRef y_end) {
 	;Mask Screen
     Gui, Select:New
@@ -1052,6 +1068,7 @@ global League
 global IGN
 global postAll
 global canStream
+global VersionLink
 global A_count_1
 global A_count_2
 global A_count_3
