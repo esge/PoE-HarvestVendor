@@ -532,7 +532,7 @@ readyTT(){
 
 createPostRow(count,craft,price){
 	if regexmatch(craft,"(lv\d\d)") > 0 {
-	 	craft := RegExReplace(craft,"(lv\d\d)","][$1")
+	 	craft := RegExReplace(craft,"( lv\d\d)","][$1")
 	}
 	else {
 		craft := craft . "][-"
