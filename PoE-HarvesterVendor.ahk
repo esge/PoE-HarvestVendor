@@ -2,7 +2,7 @@
 #Warn
 #SingleInstance Force
 SetWorkingDir %A_ScriptDir% 
-global version := "0.2.4"
+global version := "0.3"
 global augmetnCounter := 1
 global removeCounter := 1
 global raCounter := 1
@@ -13,6 +13,8 @@ global outArray := []
 global arr := []
 global outstring := ""
 global firstGuiOpen := 0
+global str := ""
+
 getLeagues()
 
 ^g:: ;ctrl+g launches straight into the capture, opens gui afterwards
@@ -93,7 +95,7 @@ Gui, HarvestUI:Default
 return
 ;Test_button:
 ;return
-buildGUI(){    
+buildGUI() {    
     firstGuiOpen := 1
     Gui HarvestUI:New,, PoE-HarvestVendor v%version%	
     ;== top stuff ==
@@ -227,25 +229,37 @@ buildGUI(){
 
     
 }
-processCrafts(){
+processCrafts() {
 	Gui, HarvestUI:Hide    
 	
 	outArray := []
     ;sleep, 1000   
 	getSelectionCoords(x_start, x_end, y_start, y_end)
-
-	command = Capture2Text\Capture2Text.exe -s `"%x_start% %y_start% %x_end% %y_end%`" -o temp.txt --trim-capture
+	Tooltip, Please Wait
+	command = Capture2Text\Capture2Text.exe -s `"%x_start% %y_start% %x_end% %y_end%`" -o temp.txt -l English --trim-capture 
 	RunWait, %command%
     
     sleep, 1000 ;sleep cos if i show the Gui too quick the capture will grab screenshot of gui    
     Gui, HarvestUI:Show
-
+	Tooltip
 	FileRead, temp, temp.txt
-	;FileRead, temp, test2.txt
+	;FileRead, temp, test.txt
 
 	NewLined := RegExReplace(temp, "(Reforge |Randomise |Remove |Augment |Improves |Upgrades |Upgrade |Set |Change |Exchange |Sacrifice a|Sacrifice up|Attempt |Enchant |Reroll |Fracture |Add a random |Synthesise |Split |Corrupt )" , "`r`n$1")
 	Arrayed := StrSplit(NewLined, "`r`n")
 
+	
+	augments := ["Caster","Physical","Fire","Attack","Life","Cold","Speed","Defence","Lightning","Chaos","Critical","Influence","a new modifier"]
+	remAddsClean := ["Caster","Physical","Fire","Attack","Life","Cold","Speed","Defence","Lightning","Chaos","Critical","Influence"]
+	remAddsNon := ["non-Caster","non-Physical","non-Fire","non-Attack","non-Life","non-Cold","non-Speed","non-Defence","non-Lightning","non-Chaos","non-Critical","non-Influence"]
+	reforgeNonColor := ["non-Red","non-Blue","non-Green"]
+	reforge2color := ["Red and Blue","Red and Green","them Blue and Green","Red, Blue and Green","White"]
+	flaskEnchants := ["Duration.","Effect.","Maximum Charges.","Charges used."]
+	weapEnchants := ["Critical Strike Chance","Accuracy","Attack Speed","+1 Weapon Range","Elemental Damage","Area of Effect"]
+	bodyEnchants := ["Maximum Life","Maximum Mana","Strength","Dexterity","Intelligence","Fire Resistance","Cold Resistance","Lightning Resistance"]
+	gemPerc := ["20%","30%","40%","50%"]
+	fracture := ["modifier","Suffix","Prefix"]	
+	addInfluence := ["Weapon", "Armour","Jewellery"]	
 	for index in Arrayed {	
 		Arrayed[index] := Trim(RegExReplace(Arrayed[index] , " +", " ")) ;remove possible double spaces from ocr
 		if (Arrayed[index] == "") {
@@ -253,44 +267,94 @@ processCrafts(){
 		}
 		;Augment
 		else if InStr(Arrayed[index], "Augment") = 1 {
-			if InStr(Arrayed[index], "Influence") > 0 {				
-				outArrayCount += 1
-				outArray[outArrayCount] := RegExReplace(Arrayed[index],"(an item with a new|ifier|with|values)","")
-			} else {	
-				outArrayCount += 1
-				outArray[outArrayCount] := RegExReplace(Arrayed[index],"(a Magic or Rare item with a new|a Rare item with a new modifier, with||an item with a new|modifier|with|values)","")
+			for a in augments {
+				if InStr(Arrayed[index], augments[a]) > 0 {
+					if InStr(Arrayed[index], "Lucky") > 0 {											
+						outArrayCount += 1
+						outArray[outArrayCount] := "Augment " . augments[a] . " Lucky lv" . getLVL(Arrayed[index]) 
+					} 
+					else {
+						outArrayCount += 1
+						outArray[outArrayCount] := "Augment " . augments[a] . " lv" . getLVL(Arrayed[index])
+					}
+				}
 			}
 		}
 		;Remove
-		else if InStr(Arrayed[index], "Remove") = 1 {				
-			outArrayCount += 1
-			outArray[outArrayCount] := RegExReplace(Arrayed[index],"(a random|modifier|from an item|and|a new)","")	
+		else if InStr(Arrayed[index], "Remove") = 1 {
+			if InStr(Arrayed[index], "add") > 0 {
+				for a in remAddsNon {
+					if InStr(Arrayed[index], remAddsNon[a]) > 0  {
+						outArrayCount += 1
+						outArray[outArrayCount] := "Remove " . remAddsNon[a] . " add " . StrReplace(remAddsNon[a], "non-") . " lv" . getLVL(Arrayed[index]) 
+					}
+				}
+				for a in remAddsClean {
+					if InStr(Arrayed[index], remAddsClean[a]) > 0 and instr(Arrayed[index],"non-") = 0 {
+						outArrayCount += 1
+						outArray[outArrayCount] := "Remove " . remAddsClean[a] . " add " . remAddsClean[a] . " lv" . getLVL(Arrayed[index]) 
+					}
+				}		
+			} 
+			else {
+				for a in augments {
+					if InStr(Arrayed[index], augments[a]) > 0 {
+						outArrayCount += 1
+						outArray[outArrayCount] := "Remove " . augments[a] . " lv" . getLVL(Arrayed[index]) 
+					}
+				}	
+
+			}			
+			;outArrayCount += 1
+			;outArray[outArrayCount] := RegExReplace(Arrayed[index],"(a random|modifier|from an item|and|a new)","")	
 		}
 		;Reforge
 		else if InStr(Arrayed[index], "Reforge") = 1 {
 			;prefixes, suffixes
-			if (InStr(Arrayed[index], "Prefixes") > 0 or InStr(Arrayed[index], "Suffixes") > 0 ){					
-				outArrayCount += 1
-				outArray[outArrayCount] := RegExReplace(Arrayed[index],"(a Rare item, |ing all|a Rare item with|modifier values,)|(Prefixes|Suffixes)","$2")
+			if InStr(Arrayed[index], "Prefixes") > 0 {
+				if InStr(Arrayed[index], "Lucky") > 0 {
+					outArrayCount += 1
+					outArray[outArrayCount] := "Reforge keep Prefixes Lucky lv" . getLVL(Arrayed[index])
+				} 
+				else {
+					outArrayCount += 1
+					outArray[outArrayCount] := "Reforge keep Prefixes lv" . getLVL(Arrayed[index])
+				}			
 			}
+			else if InStr(Arrayed[index], "Suffixes") > 0 {	
+				if InStr(Arrayed[index], "Lucky") > 0 {
+					outArrayCount += 1
+					outArray[outArrayCount] := "Reforge keep Suffixes Lucky lv" . getLVL(Arrayed[index])
+				}
+				else {
+					outArrayCount += 1
+					outArray[outArrayCount] := "Reforge keep Suffixes lv" . getLVL(Arrayed[index])	
+				}
+			}			
 			;links
-			else if (InStr(Arrayed[index], "links") > 0 and InStr(Arrayed[index], "10 times") = 0){
+			else if (InStr(Arrayed[index], "links") > 0 and InStr(Arrayed[index], "10 times") = 0) {
 				if InStr(Arrayed[index],"six") > 0 {
 					outArrayCount += 1
-					outArray[outArrayCount] := "Six link (6-link)"
+					outArray[outArrayCount] := "Six link (6-link) lv" . getLVL(Arrayed[index])
 				}	
 			} 
-			else if (InStr(Arrayed[index], "colour") > 0 and InStr(Arrayed[index], "10 times") = 0){		
-				RCtemp := RegExReplace(Arrayed[index],"(random|the colour of|on an item,)","")
-				RCtemp := RegExReplace(RCtemp,"(turning them)"," > ")	
-				outArrayCount += 1
-				outArray[outArrayCount] := RCtemp
+			else if (InStr(Arrayed[index], "colour") > 0 and InStr(Arrayed[index], "10 times") = 0) {		
+				for a in reforgeNonColor {
+					if InStr(Arrayed[index], reforgeNonColor[a]) > 0 {
+						outArrayCount += 1
+						outArray[outArrayCount] := "Reforge " . reforgeNonColor[a] . " into " . StrReplace(reforgeNonColor[a], "non-") . " lv" . getLVL(Arrayed[index])
+					} 
+				}
+				for b in reforge2color {
+					if InStr(Arrayed[index], reforge2color[b]) > 0 {
+						outArrayCount += 1
+						outArray[outArrayCount] := "Reforge into " . StrReplace(reforge2color[b],"them ") . " lv" . getLVL(Arrayed[index])
+					}
+				}	
 			} 
-			else if InStr(Arrayed[index], "Influence") > 0 {
-				RItemp := RegExReplace(Arrayed[index],"(a Rare item|new random modifiers, including an|ifier. Influence modifiers are)","")
-				RItemp := RegExReplace(Arrayed[index],"(a Rare item|new random modifiers, including an|ifier. influence modifiers are)","")
+			else if InStr(Arrayed[index], "Influence") > 0 {				
 				outArrayCount += 1
-				outArray[outArrayCount] := RItemp			
+				outArray[outArrayCount] := "Reforge with Influence mod more common lv" . getLVL(Arrayed[index])
 			}
 			else {
 				;outArrayCount += 1
@@ -301,45 +365,57 @@ processCrafts(){
 			;Reforge a Rare item, being much less likely to receive the same modifier types
 		} 
 		;Enchant
-		else if InStr(Arrayed[index], "Enchant") = 1 {
+		
+		else if InStr(Arrayed[index], "Enchant") = 1 { ;*[PoE-HarvesterVendor]
 			;flask
-			if InStr(Arrayed[index], "Flask") > 1 {
-				EFtemp:= RegExReplace(Arrayed[index],"(Enchant a Flask)","Enchant Flask:")
-				EFtemp:= RegExReplace(EFtemp,"with a modifier that grants|reased|The magnitude of this effect decreases with each use","")
-				outArrayCount += 1
-				outArray[outArrayCount] := EFtemp
+			if InStr(Arrayed[index], "Flask") > 0 {
+				for a in flaskEnchants {
+					if InStr(Arrayed[index], flaskEnchants[a]) > 0 {
+						tempArray := ["inc","inc","inc","reduced"]
+						outArrayCount += 1
+						outArray[outArrayCount] := "Enchant Flask: " . tempArray[a] . " " . flaskEnchants[a] . " lv" . getLVL(Arrayed[index])
+					}
+				}
 			}
 			;weapon
-			else if InStr(Arrayed[index], "Weapon") > 1 {
-
-				EWtemp := RegExReplace(Arrayed[index],"(Enchant a Weapon.|Enchant a Melee Weapon.)","Enchant weap: ")
-				EWtemp := RegExReplace(EWtemp,"(Quality does not increase its Physical Damage,|has|grants|1% increased|ical Strike| per 4% | per 2% | per 8% | per 10% |Quality)","")
-				;EWtemp := RegExReplace(EWtemp,"( per 4% | per 2% | per 8% | per 10% )","/")
-				outArrayCount += 1
-				outArray[outArrayCount] := EWtemp
+			
+			else if InStr(Arrayed[index], "Weapon") > 0 {			
+				for a in weapEnchants {
+					if InStr(Arrayed[index], weapEnchants[a]) > 0 {
+						outArrayCount += 1
+						outArray[outArrayCount] := "Enchant Weapon: " . weapEnchants[a] . " lv" . getLVL(Arrayed[index])
+					}
+				}
 			}			
 			;body armour
-			else if InStr(Arrayed[index], "Armour") > 1 {
-				EBtemp := RegExReplace(Arrayed[index],"( Armour. )",":")
-				EBtemp := RegExReplace(EBtemp,"(Quality does not increase its Defences, grants| per 2% quality)","" )
-				outArrayCount += 1
-				outArray[outArrayCount] := EBtemp 
+			else if InStr(Arrayed[index], "Armour") > 0 {
+				for a in bodyEnchants {
+					if InStr(Arrayed[index], bodyEnchants[a]) > 0 {
+						outArrayCount += 1
+						outArray[outArrayCount] := "Enchant Body: " . bodyEnchants[a] . " lv" . getLVL(Arrayed[index])
+					}
+				}
 			}	
+			else if InStr(Arrayed[index], "Sextant") > 0 {
+				outArrayCount += 1
+				outArray[outArrayCount] := "Enchants Map: doesn't consume Sextant charges"
+			}
 		}
 		;Attempt
 		else if InStr(Arrayed[index], "Attempt") = 1 {
 			;awaken
-			if InStr(Arrayed[index], "Awaken") > 1 {
+			if InStr(Arrayed[index], "Awaken") > 0 {
 				outArrayCount += 1
-				outArray[outArrayCount] := RegExReplace(Arrayed[index],"(that can be Awakened with a 5% chance. If it does not Awaken, it is destroyed.)","")
+				outArray[outArrayCount] := "Attempt to Awaken a level 20 Support Gem"
 			}
 			;scarab upgrade
-			else if InStr(Arrayed[index], "Scarab") > 1 {
+			else if InStr(Arrayed[index], "Scarab") > 0 {
 				outArrayCount += 1
-				outArray[outArrayCount] := RegExReplace(Arrayed[index],"(, with a chance for it to become Winged)","")
+				outArray[outArrayCount] := "Attempt to upgrade a Scarab"
 			}	
 		}
 		;Change
+		
 		else if InStr(Arrayed[index], "Change") = 1 {
 			; res mods
 			if InStr(Arrayed[index], "Resistance") > 0 {
@@ -349,22 +425,30 @@ processCrafts(){
 			; ignore others ?				
 			}		
 		} 
-		;sacrifice 
+		;sacrifice 		
 		else if InStr(Arrayed[index], "Sacrifice") = 1 {
 			;gem for gcp/xp
-			if InStr(Arrayed[index], "Gem") > 1 {
-				SGtemp := RegExReplace(Arrayed[index],"(Sacrifice a Corrupted Gem to gain)","Sacrifice Corrupted Gem > ")
-				SGtemp := RegExReplace(SGtemp,"(of the gem's quality as Gemcutter's Prisms)","qual as GCP")
-				SGtemp := RegExReplace(SGtemp,"(of the gem's total experience stored as a Facetor's Lens)","exp as Lense")
-				outArrayCount += 1
-				outArray[outArrayCount] := SGtemp
+			if InStr(Arrayed[index], "Gem") > 10 {
+				for a in gemPerc {
+					if InStr(Arrayed[index], gemPerc[a]) > 0 {
+						if InStr(Arrayed[index],"quality")	> 0 {
+							outArrayCount += 1
+							outArray[outArrayCount] := "Sacrifice gem, get " . gemPerc[a] . " qual as GCP"
+						}
+					
+						else if InStr(Arrayed[index],"experience") {
+							outArrayCount += 1
+							outArray[outArrayCount] := "Sacrifice gem, get " . gemPerc[a] . " exp as Lens"
+						}
+					}
+				}		
 			} 
 
 			;div cards gambling
 			else if InStr(Arrayed[index], "Divination") > 1  {
 				if InStr(Arrayed[index], "half a stack") > 1 {
 					outArrayCount += 1
-					outArray[outArrayCount] :=  RegExReplace(Arrayed[index],"(up to half a stack of|ination|to receive between 0 and twice that amount of the same Card)","")
+					outArray[outArrayCount] :=  "Sacrifice Div Cards"
 				}
 				;skipping this:
 				;	Sacrifice a stack of Divination Cards for that many different Divination Cards
@@ -383,38 +467,75 @@ processCrafts(){
 		} 
 
 		;Improves
-		else if InStr(Arrayed[index], "Improves") = 1 {			
-			outArrayCount += 1
-			outArray[outArrayCount] := RegExReplace(Arrayed[index],"( by at least 10%. Has greater effect on lower rarity flasks. The maximum quality is 20%| by at least 10%. The maximum quality is 20%)","")
+		
+		else if InStr(Arrayed[index], "Improves") = 1 {	
+			if InStr(Arrayed[index], "Flask") > 0 {
+				outArrayCount += 1
+				outArray[outArrayCount] := "Improves the Quality of a Flask"
+			}
+			else if InStr(Arrayed[index], "Gem") > 0 {
+				outArrayCount += 1
+				outArray[outArrayCount] := "Improves the Quality of a Gem"
+			}
 		}	
-		else if InStr(Arrayed[index], "Fracture") = 1 {			
-			outArrayCount += 1
-			outArray[outArrayCount] := RegExReplace(Arrayed[index],"(a random|on an item with at least 5 modifiers, locking it in place. This can't be used on Influenced, Synthesised, or Fractured items| on an item with at least 3 Suffixes. This can't be used on Influenced, Synthesised, or Fractured items| on an item with at least 3 Prefixes. This can't be used on Influenced, Synthesised, or Fractured items)","")
+		
+		else if InStr(Arrayed[index], "Fracture") = 1 {		 ;*[PoE-HarvesterVendor]
+			for a in fracture {
+				if InStr(Arrayed[index], fracture[a]) > 0 {
+					outArrayCount += 1
+					outArray[outArrayCount] := "Fracture " . fracture[a] . " lv" . getLVL(Arrayed[index])
+				}
+			}
 		} 		
 		else if InStr(Arrayed[index], "Reroll") = 1 {
-			RERtemp := RegExReplace(Arrayed[index],"(the values of Prefix, Suffix and Implicit modifiers on a Rare item, with Lucky modifier values)","all Lucky")
-			RERtemp := RegExReplace(RERtemp,"(the values of|modifiers on a Magic or Rare item, with|modifier values)","")
-			outArrayCount += 1
-			outArray[outArrayCount] := RERtemp
+			if InStr(Arrayed[index], "Implicit") > 0 {
+				outArrayCount += 1
+				outArray[outArrayCount] := "Reroll All Lucky lv" . getLVL(Arrayed[index])
+			} 
+			else if InStr(Arrayed[index], "Prefix") > 0 {
+				outArrayCount += 1
+				outArray[outArrayCount] := "Reroll Prefix Lucky lv" . getLVL(Arrayed[index])
+			}
+			else if InStr(Arrayed[index], "Suffix") > 0 {
+				outArrayCount += 1
+				outArray[outArrayCount] := "Reroll Suffix Lucky lv" . getLVL(Arrayed[index])
+			}			
 		}
-		else if InStr(Arrayed[index], "Randomise") = 1 {		
-			outArrayCount += 1
-			outArray[outArrayCount] := RegExReplace(Arrayed[index],"(the numeric|the random|ifier|on a Magic or Rare item)","")
+		else if InStr(Arrayed[index], "Randomise") = 1 {
+			for a in augments {
+				if InStr(Arrayed[index], augments[a]) > 0 {
+					outArrayCount += 1
+					outArray[outArrayCount]	:= "Randomise values of " . augments[a] . " mods lv" . getLVL(Arrayed[index])
+				}
+			}		
 		}
+		
 		else if InStr(Arrayed[index], "Add") = 1 {		
-			outArrayCount += 1
-			outArray[outArrayCount] := RegExReplace(Arrayed[index],"(a random|a Normal, Magic or Rare|Normal, Magic or Rare|that isn't influenced)","")
-		}
-		else if InStr(Arrayed[index], "Set") = 1 {		
-			SJtemp := RegExReplace(Arrayed[index],"(Cobalt, Crimson, Viridian or Prismatic)","basic")
-			SJtemp := RegExReplace(SJtemp,"(a new|modifier on an|modifier on a|Jewel or)","")
-			outArrayCount += 1
-			outArray[outArrayCount] := SJtemp
+			for a in addInfluence {
+				if InStr(Arrayed[index],addInfluence[a]) > 0 {
+					outArrayCount += 1
+					outArray[outArrayCount] := 	"Add Influence to " . addInfluence[a] . " lv" . getLVL(Arrayed[index])
+				}
+			}
+		}		
+		else if InStr(Arrayed[index], "Set") = 1 {	
+			if InStr(Arrayed[index], "Prismatic") > 0 {
+				outArrayCount += 1
+				outArray[outArrayCount] := "Set Implicit basic Jewel" . " lv" . getLVL(Arrayed[index])
+			}
+			else if InStr(Arrayed[index], "Timeless") > 0 {
+				outArrayCount += 1
+				outArray[outArrayCount] := "Set Implicit Abyss/Timeless Jewel" . " lv" . getLVL(Arrayed[index])
+			}
+			else if InStr(Arrayed[index], "Cluster") > 0 {
+				outArrayCount += 1
+				outArray[outArrayCount] := "Set Implicit Cluster Jewel"	. " lv" . getLVL(Arrayed[index])
+			}				
 		}
 		;Synthesise
 		else if InStr(Arrayed[index], "Synthesise") = 1 {			
 			outArrayCount += 1
-			outArray[outArrayCount] := RegExReplace(Arrayed[index],"(, giving random Synthesised implicits. Cannot be used on Unique, Influenced, Synthesised or Fractured items)","")
+			outArray[outArrayCount] := "Synthesise an item" . " lv" . getLVL(Arrayed[index])
 		}
 
 		else if InStr(Arrayed[index], "Corrupt") = 1 {	
@@ -448,15 +569,21 @@ processCrafts(){
 	}
 
     for iFinal in outArray {	            
-        outArray[iFinal] := RegExReplace(outArray[iFinal], "([^\w\s]+|_+)","")
-		outArray[iFinal] := RegExReplace(outArray[iFinal] , "(Level )", "lv")
+        ;outArray[iFinal] := RegExReplace(outArray[iFinal], "([^\w\s]+|_+)","")
+		;outArray[iFinal] := RegExReplace(outArray[iFinal] , "(Level )", "lv")
         ; removes multiple spaces, but all all non chars so it gets rid of stray .,' from OCR, we lose the  dash in non-Tag, but we can lve with that)
         outArray[iFinal] := Trim(RegExReplace(outArray[iFinal] , " +", " ")) 
     }
+	
+	for s in outArray {
+		str .= outArray[s] . "`r`n"
+	}
+	Clipboard := str
+
 }
 
 
-clearAll(){
+clearAll() {
     loop, 10 {
         GuiControl,, A_craft_%A_Index%
         GuiControl,, R_craft_%A_Index%
@@ -484,7 +611,7 @@ clearAll(){
 }
 
 
-allowAll(){
+allowAll() {
 	IniRead selLeague, %A_WorkingDir%/settings.ini, selectedLeague, s
 	if InStr(selLeague, "Standard") = 0 {
 		guicontrol, Disable, postAll
@@ -493,7 +620,7 @@ allowAll(){
 	}
 }
 
-leagueList(){
+leagueList() {
     leagueString := ""
     loop, 8 {
         IniRead, tempList, %A_WorkingDir%/settings.ini, Leagues, %A_Index%
@@ -523,14 +650,14 @@ getRowData(group, row) {
 	return [tempCount, tempCraft, tempPrice, tempCheck]
 }
 
-readyTT(){
+readyTT() {
    ClipWait
    ToolTip, Post Ready
 	sleep, 2000
 	Tooltip	
 }
 
-createPostRow(count,craft,price){
+createPostRow(count,craft,price) {
 	if regexmatch(craft,"(lv\d\d)") > 0 {
 	 	craft := RegExReplace(craft,"( lv\d\d)","][$1")
 	}
@@ -539,11 +666,11 @@ createPostRow(count,craft,price){
 	}
 	outString .= "  (" . count . "x) [" . craft . "] - < " . price . " >`r`n"
 }
-codeblockWrap(){
+codeblockWrap() {
 	return "``````md`r`n" . outString . "``````"
 }
 
-createPost(group){
+createPost(group) {
     tempName := ""
 	GuiControlGet, tempLeague,, League, value
 	GuiControlGet, tempName,, IGN, value
@@ -555,14 +682,14 @@ createPost(group){
 	} else {
 		outString .= "#WTS " . tempLeague . "`r`n"
 	}
-	if (tempStream == 1 ){
+	if (tempStream == 1 ) {
 		outString .= "  Can stream if requested `r`n"
 	}
     switch group {
         case "A":            
             loop, 10 {
 				row:= getRowData("A",A_Index)
-				if (row[4] == 1){
+				if (row[4] == 1) {
 					createPostRow(row[1],row[2],row[3])
 					;outString .= "  " . row[1] . "x " . row[2] . " - " . row[3] . "`r`n"
 				}
@@ -573,7 +700,7 @@ createPost(group){
         case "R":            
             loop, 10 {                
 				row:= getRowData("R",A_Index)
-                if (row[4] == 1){
+                if (row[4] == 1) {
 					createPostRow(row[1],row[2],row[3])
 				}   
             }
@@ -583,7 +710,7 @@ createPost(group){
         case "RA":            
             loop, 10 {
                 row:= getRowData("RA",A_Index)
-                if (row[4] == 1){
+                if (row[4] == 1) {
 					createPostRow(row[1],row[2],row[3])
 				}   
             }
@@ -593,7 +720,7 @@ createPost(group){
         case "O":      
             loop, 10 {
                 row:= getRowData("O",A_Index)
-                if (row[4] == 1){
+                if (row[4] == 1) {
 					createPostRow(row[1],row[2],row[3])
 				}    
             }
@@ -603,25 +730,25 @@ createPost(group){
 		case "All":
 		 	loop, 10 {
                row:= getRowData("A",A_Index)
-                if (row[4] == 1){
+                if (row[4] == 1) {
 					createPostRow(row[1],row[2],row[3])
 				}     
             }
 			loop, 10 {
                 row:= getRowData("R",A_Index)
-                if (row[4] == 1){
+                if (row[4] == 1) {
 					createPostRow(row[1],row[2],row[3])
 				}   
             }
 			loop, 10 {
                 row:= getRowData("RA",A_Index)
-                if (row[4] == 1){
+                if (row[4] == 1) {
 					createPostRow(row[1],row[2],row[3])
 				}   
             }
 			loop, 10 {
                 row:= getRowData("O",A_Index)
-                if (row[4] == 1){
+                if (row[4] == 1) {
 					createPostRow(row[1],row[2],row[3])
 				}    
             }
@@ -631,7 +758,8 @@ createPost(group){
     }    
 }
 
-incCraftCount(group, craft){	
+incCraftCount(group, craft) {	
+	craftCheck := ""
 	switch group {
 		case "A":
 		loop, 10 {
@@ -680,13 +808,24 @@ incCraftCount(group, craft){
 	}
 }
 
-insertIntoRow(group, rowCounter, craft){
+getLVL(craft) {
+	lvlpos := RegExMatch(craft, "Level \d\d") + 6
+	lv := substr(craft, lvlpos, 2)
+	if RegExMatch(lv, "\d\d") > 0 {	
+		return lv
+	} 
+	else {
+		return 0
+	}
+}
+
+insertIntoRow(group, rowCounter, craft) {
     GuiControl,, %group%_craft_%rowCounter%, %craft%
     GuiControl,, %group%_count_%rowCounter%, 1
     GuiControl,, %group%_cb_%rowCounter%, 1
 }
 
-CraftSort(ar){
+CraftSort(ar) { ;*[PoE-HarvesterVendor v0.3]
     tempC := ""
     for k in ar {        
         ;augment
@@ -717,7 +856,7 @@ CraftSort(ar){
         }
         ;other
         else {
-        ;if InStr(ar[index], "Augment") = 0 and InStr(ar[index], "add") > 0 and InStr(ar[index], "non") = 0{
+        ;if InStr(ar[index], "Augment") = 0 and InStr(ar[index], "add") > 0 and InStr(ar[index], "non") = 0 {
             ;msgbox, O %otherCounter%
             tempC := ar[k]
             if not incCraftCount("O", tempC) {
@@ -728,7 +867,7 @@ CraftSort(ar){
     }
 }
 
-getLeagues(){
+getLeagues() {
     oWhr := ComObjCreate("WinHttp.WinHttpRequest.5.1")
     oWhr.Open("GET", "http://api.pathofexile.com/leagues?type=main&compact=1", false)
     oWhr.SetRequestHeader("Content-Type", "application/json")
@@ -754,7 +893,7 @@ getLeagues(){
         iniWrite, %tempParse%, %A_WorkingDir%/settings.ini, Leagues, 8
 }
 
-getVersion(){
+getVersion() {
 	ver := ComObjCreate("WinHttp.WinHttpRequest.5.1")
     ver.Open("GET", "https://raw.githubusercontent.com/esge/PoE-HarvestVendor/master/version.txt", false)
     ver.SetRequestHeader("Content-Type", "application/json")
