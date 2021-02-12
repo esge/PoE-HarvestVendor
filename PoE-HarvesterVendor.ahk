@@ -95,7 +95,7 @@ return
 ;return
 buildGUI(){    
     firstGuiOpen := 1
-    Gui HarvestUI:New,, PoE-HarvestVendor v%version%
+    Gui HarvestUI:New,, PoE-HarvestVendor v%version%	
     ;== top stuff ==
     Gui Add, DropDownList, x10 y10 w150 vLeague gLeagueDropdown,
     leagueList() ;populate leagues dropdown and select the last used one
@@ -142,11 +142,11 @@ buildGUI(){
     yrow1 := 80
     loop, 10 {
         yrow1_cbOffset := yrow1 + 5
-        Gui Add, Edit, x%Ax_count% y%yrow1% w35 vA_count_%A_Index%
+        Gui Add, Edit, x%Ax_count% y%yrow1% w35 vA_count_%A_Index% 
         Gui Add, UpDown, Range0-20, 0
-        Gui Add, Edit, x%Ax_craft% y%yrow1% w%Awidth% vA_craft_%A_Index%
-        Gui Add, Edit, x%Ax_price% y%yrow1% w35 vA_price_%A_Index%
-        Gui Add, CheckBox, x%Ax_checkbox% y%yrow1_cbOffset% w23 vA_cb_%A_Index%
+        Gui Add, Edit, x%Ax_craft% y%yrow1% w%Awidth% vA_craft_%A_Index% 
+        Gui Add, Edit, x%Ax_price% y%yrow1% w35 vA_price_%A_Index% 
+        Gui Add, CheckBox, x%Ax_checkbox% y%yrow1_cbOffset% w23 vA_cb_%A_Index% 
         yrow1 += 25
     }
 
@@ -246,7 +246,7 @@ processCrafts(){
 	NewLined := RegExReplace(temp, "(Reforge |Randomise |Remove |Augment |Improves |Upgrades |Upgrade |Set |Change |Exchange |Sacrifice a|Sacrifice up|Attempt |Enchant |Reroll |Fracture |Add a random |Synthesise |Split |Corrupt )" , "`r`n$1")
 	Arrayed := StrSplit(NewLined, "`r`n")
 
-	for index in Arrayed{	
+	for index in Arrayed {	
 		Arrayed[index] := Trim(RegExReplace(Arrayed[index] , " +", " ")) ;remove possible double spaces from ocr
 		if (Arrayed[index] == "") {
 			;skip empty fields
@@ -447,7 +447,7 @@ processCrafts(){
 		;}		
 	}
 
-    for iFinal in outArray{	            
+    for iFinal in outArray {	            
         outArray[iFinal] := RegExReplace(outArray[iFinal], "([^\w\s]+|_+)","")
 		outArray[iFinal] := RegExReplace(outArray[iFinal] , "(Level )", "lv")
         ; removes multiple spaces, but all all non chars so it gets rid of stray .,' from OCR, we lose the  dash in non-Tag, but we can lve with that)
@@ -495,7 +495,7 @@ allowAll(){
 
 leagueList(){
     leagueString := ""
-    loop, 8{
+    loop, 8 {
         IniRead, tempList, %A_WorkingDir%/settings.ini, Leagues, %A_Index%
        ; msgbox % tempList
 	   
@@ -558,7 +558,7 @@ createPost(group){
 	if (tempStream == 1 ){
 		outString .= "  can stream if requested `r`n"
 	}
-    switch group{
+    switch group {
         case "A":            
             loop, 10 {
 				row:= getRowData("A",A_Index)
