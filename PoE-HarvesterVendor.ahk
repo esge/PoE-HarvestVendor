@@ -556,7 +556,7 @@ createPost(group){
 		outString .= "#WTS " . tempLeague . "`r`n"
 	}
 	if (tempStream == 1 ){
-		outString .= "  can stream if requested `r`n"
+		outString .= "  Can stream if requested `r`n"
 	}
     switch group {
         case "A":            
