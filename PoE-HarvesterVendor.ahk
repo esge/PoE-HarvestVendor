@@ -2,7 +2,7 @@
 #Warn
 #SingleInstance Force
 SetWorkingDir %A_ScriptDir% 
-global version := "0.2.3"
+global version := "0.2.4"
 global augmetnCounter := 1
 global removeCounter := 1
 global raCounter := 1
