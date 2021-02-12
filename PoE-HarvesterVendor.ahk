@@ -111,6 +111,8 @@ buildGUI(){
 	Gui Add, Edit, x370 y10 w150 h23 vIGN gIGN, %name%
 	Gui Add, Button, x530 y9 w80 h23 vpostAll gpostAll, Post all
 	allowAll()
+
+	gui add, CheckBox, x630 y14 vcanStream, Can Stream
     ;GUI Add, Button, x400 y9 w80 h23 gTest_button, Test button
 	Gui font, s26
 	Gui Add, Button, x1175 y2 w40 h40 gHelp, ?
@@ -538,12 +540,16 @@ createPost(group){
     tempName := ""
 	GuiControlGet, tempLeague,, League, value
 	GuiControlGet, tempName,, IGN, value
+	guiControlGet, tempStream,, canStream, value
     outString := ""
 
 	if (tempName != "") {
     	outString .= "#WTS " . tempLeague . " - IGN: " . tempName . "`r`n" 
 	} else {
 		outString .= "#WTS " . tempLeague . "`r`n"
+	}
+	if (tempStream == 1 ){
+		outString .= "  can stream if requested `r`n"
 	}
     switch group{
         case "A":            
@@ -1045,6 +1051,7 @@ WebPic(WB, Website, Options := "") {
 global League
 global IGN
 global postAll
+global canStream
 global A_count_1
 global A_count_2
 global A_count_3
