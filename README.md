@@ -20,7 +20,8 @@ Warning: This line will never execute, due to Return precceding it
 - Download last release of Capture2Text: https://sourceforge.net/projects/capture2text/files/Capture2Text/
 - Download last release: https://github.com/esge/PoE-HarvestVendor/releases/latest
 - Create a new folder with the `.ahk` script
-- Extract the Capture2Text archive in that same folder
+- Extract the Capture2Text archive in that same folder  
+    ![](examples/folder.png)  
 - Run `.ahk` script 🎉
 
 ## Usage
