@@ -3,20 +3,23 @@
 #SingleInstance Force
 SetWorkingDir %A_ScriptDir% 
 version := "0.2.3"
-    global augmetnCounter := 1
-    global removeCounter := 1
-    global raCounter := 1
-    global otherCounter := 1
-    outArrayCount := 0
-	global outArray := []		
-    newArray := []    
-    global arr := []
-	global outstring := ""
-	
+global augmetnCounter := 1
+global removeCounter := 1
+global raCounter := 1
+global otherCounter := 1
+global outArrayCount := 0
+global outArray := []		
+;global newArray := []    
+global arr := []
+global outstring := ""
 getLeagues()
+firstGuiOpen := 0
+
 ^g::goto Add_crafts ;ctrl+g launches straight into the capture, opens gui afterwards
 
 ^+g:: ;ctrl+shift+g opens the gui, yo go from there
+
+
     Gui HarvestUI:New
     ;== top stuff ==
     Gui Add, DropDownList, x10 y10 w150 vLeague gLeagueDropdown,
@@ -148,7 +151,67 @@ GuiClose:
     ExitApp
 
 Add_crafts:
-    Gui, HarvestUI:Hide    
+    processCrafts()
+    CraftSort(outArray)
+return
+
+Clear_all:
+	clearAll()    
+return
+
+Aug_Post:
+    createPost("A")
+return
+
+Rem_Post:
+    createPost("R")
+return
+
+RA_Post:
+    createPost("RA")
+return
+
+O_Post:
+    createPost("O")
+return
+
+postAll:
+	createPost("All")
+return
+
+LeagueDropdown:
+    guiControlGet, selectedLeague,,League, value
+    iniWrite, %selectedLeague%, %A_WorkingDir%/settings.ini, selectedLeague, s
+	allowAll()
+return
+
+IGN:
+	guiControlGet, lastIGN,,IGN, value
+    iniWrite, %lastIGN%, %A_WorkingDir%/settings.ini, IGN, n
+return
+
+help:
+gui Help:new
+
+gui font, s16
+Gui, add, text,, This is the area you want to select
+gui, font
+Gui, Add, ActiveX, x0 y30 w500 h500 vWB1, Shell.Explorer
+
+; This can be an image from a website, or an image from your computer. Just specify the path based off of the current script directory.
+Edit := WebPic(WB1, "https://github.com/esge/PoE-HarvestVendor/blob/master/examples/example3.png?raw=true", "w436 h425 cFFFFFF")
+;Gui, Add, Edit, x0 y105 w750 h215 -Wrap +HScroll vEdit TabStop WantReturn t8
+Gui, Help:Show, w500 h500, Gui Example
+
+
+helpClose:
+Gui, HarvestUI:Default
+return
+;Test_button:
+;return
+
+processCrafts(){
+	 Gui, HarvestUI:Hide    
 	
 	outArray := []
     ;sleep, 1000   
@@ -375,63 +438,8 @@ Add_crafts:
 
 
     }
-    CraftSort(outArray)
-return
+}
 
-Clear_all:
-	clearAll()    
-return
-
-Aug_Post:
-    createPost("A")
-return
-
-Rem_Post:
-    createPost("R")
-return
-
-RA_Post:
-    createPost("RA")
-return
-
-O_Post:
-    createPost("O")
-return
-
-postAll:
-	createPost("All")
-return
-
-LeagueDropdown:
-    guiControlGet, selectedLeague,,League, value
-    iniWrite, %selectedLeague%, %A_WorkingDir%/settings.ini, selectedLeague, s
-	allowAll()
-return
-
-IGN:
-	guiControlGet, lastIGN,,IGN, value
-    iniWrite, %lastIGN%, %A_WorkingDir%/settings.ini, IGN, n
-return
-
-help:
-gui Help:new
-
-gui font, s16
-Gui, add, text,, This is the area you want to select
-gui, font
-Gui, Add, ActiveX, x0 y30 w500 h500 vWB1, Shell.Explorer
-
-; This can be an image from a website, or an image from your computer. Just specify the path based off of the current script directory.
-Edit := WebPic(WB1, "https://github.com/esge/PoE-HarvestVendor/blob/master/examples/example3.png?raw=true", "w436 h425 cFFFFFF")
-;Gui, Add, Edit, x0 y105 w750 h215 -Wrap +HScroll vEdit TabStop WantReturn t8
-Gui, Help:Show, w500 h500, Gui Example
-
-
-helpClose:
-Gui, HarvestUI:Default
-return
-;Test_button:
-;return
 
 clearAll(){
     loop, 10 {
