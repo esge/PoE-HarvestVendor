@@ -28,13 +28,13 @@ getLeagues()
     if (firstGuiOpen == 0) {
         buildGUI()
     } 
-    Gui, HarvestUI:Show, w1230 h400
+    Gui, HarvestUI:Show, w1225 h370
 	OnMessage(0x200, "WM_MOUSEMOVE") ;activates tooltip function
     craftSort(outArray)
 return
 ^+g:: ;ctrl+shift+g opens the gui, yo go from there
     buildGUI()
-    Gui, HarvestUI:Show, w1230 h400
+    Gui, HarvestUI:Show, w1225 h370
 	OnMessage(0x200, "WM_MOUSEMOVE")
 	clearAll()
 Return
@@ -111,28 +111,16 @@ buildGUI() {
     leagueList() ;populate leagues dropdown and select the last used one
     Gui Add, Button, x165 y9 w80 h23 vAddCrafts gAddcrafts, Add crafts
     Gui Add, Button, x250 y9 w80 h23 gClear_all, Clear
-	;gui font, s10
-	;Gui Add, Text, x340 y15 w25 h23, IGN:
-	;gui font
-	;IniRead, name, %A_WorkingDir%/settings.ini, IGN, n
-	;if (name == "ERROR") {
-	;	name:=""
-	;	}
-	;Gui Add, Edit, x370 y10 w150 h23 vIGN gIGN, %name%		
-	;	global IGN_TT := "Optional, wont show anything if left empty"
-	Gui Add, Button, x530 y9 w80 h23 vpostAll gpostAll, Post all
+
+	Gui Add, Button, x335 y9 w80 h23 vpostAll gpostAll, Post all
 		global postAll_TT := "Puts all crafts into a single post regardless of sorting - allowed only for Standard leagues"
 	allowAll() ;*[PoE-HarvesterVendor]
-
-	gui add, CheckBox, x630 y14 vcanStream, Can Stream
-		global canStream := "Adds: Can stream if requested. under the WTS line"
     
 	if (version != getVersion()) {
 		gui Font, s14
 		gui add, Link, x950 y10 vVersionLink, <a href="https://github.com/esge/PoE-HarvestVendor/releases">! New Version Available !</a>
 		gui font
 	}
-
 
 	Gui font, s26
 	Gui Add, Button, x1175 y2 w40 h40 vHelp gHelp, ?
@@ -143,6 +131,9 @@ buildGUI() {
 	gui add, Text, x15 y345 w200, Custom text added to message: 
 	gui add, edit, x170 y340 w500 vCustomText
 		global CustomText_TT := "If you wish to add extra info to your message, will show under the WTS line"
+
+	gui add, CheckBox, x680 y345 vcanStream, Can Stream
+		global canStream_TT := "Adds: Can stream if requested. under the WTS line"
 
 	Gui Add, Text, x1040 y345 w25 h23, IGN:
 	gui font
