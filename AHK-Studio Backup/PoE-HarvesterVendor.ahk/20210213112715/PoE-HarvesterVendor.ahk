@@ -19,8 +19,6 @@ global RMaxLen := 0
 global RAMaxLen := 0
 global OMaxLen := 0
 
-checkfiles()
-
 getLeagues()
 
 ^g:: ;ctrl+g launches straight into the capture, opens gui afterwards
@@ -107,11 +105,11 @@ buildGUI() {
     firstGuiOpen := 1
     Gui HarvestUI:New,, PoE-HarvestVendor v%version%	
     ;== top stuff ==
-    Gui Add, DropDownList, x10 y10 w150 vLeague gLeagueDropdown, ;*[PoE-HarvesterVendor]
+    Gui Add, DropDownList, x10 y10 w150 vLeague gLeagueDropdown,
     leagueList() ;populate leagues dropdown and select the last used one
     Gui Add, Button, x165 y9 w80 h23 vAddCrafts gAddcrafts, Add crafts
     Gui Add, Button, x250 y9 w80 h23 gClear_all, Clear
-	;gui font, s10
+	gui font, s10
 	;Gui Add, Text, x340 y15 w25 h23, IGN:
 	;gui font
 	;IniRead, name, %A_WorkingDir%/settings.ini, IGN, n
@@ -122,10 +120,9 @@ buildGUI() {
 	;	global IGN_TT := "Optional, wont show anything if left empty"
 	Gui Add, Button, x530 y9 w80 h23 vpostAll gpostAll, Post all
 		global postAll_TT := "Puts all crafts into a single post regardless of sorting - allowed only for Standard leagues"
-	allowAll() ;*[PoE-HarvesterVendor]
+	allowAll()
 
 	gui add, CheckBox, x630 y14 vcanStream, Can Stream
-		global canStream := "Adds: Can stream if requested. under the WTS line"
     
 	if (version != getVersion()) {
 		gui Font, s14
@@ -667,8 +664,8 @@ leagueList() {
     }
     guicontrol,, League, %leagueString%
 	guicontrol, choose, League, 1
-    iniWrite, Standard Softcore, %A_WorkingDir%/settings.ini, selectedLeague, s
-	
+    iniRead, selectedL, %A_WorkingDir%/settings.ini, selectedLeague, s
+    guicontrol, Choose, League, %selectedL%
 }
 getRowData(group, row) {
 	GuiControlGet, tempCount,, %group%_count_%row%, value
@@ -960,23 +957,6 @@ getVersion() {
     return StrReplace(StrReplace(ver.ResponseText,"`r"),"`n")
 }
 
-
-
-checkFiles() {	
-	if !FileExist("Capture2Text") {
-		if FileExist("Capture2Text.exe")	{
-			msgbox, Looks like you put PoE-HarvestVendor.ahk into the Capture2Text folder `r`nThis is wrong `r`nTake the file out of this folder
-		} else {
-			msgbox, I don't see the Capture2Text folder, did you download the tool ? `r`nLink is in the GitHub readme under Installation instructions
-		}
-	}	
-	ExitApp
-}
-
-
-; ========================================================================
-; ======================== stuff i copied from internet ==================
-; ========================================================================
 getSelectionCoords(ByRef x_start, ByRef x_end, ByRef y_start, ByRef y_end) {
 	;Mask Screen
     Gui, Select:New
