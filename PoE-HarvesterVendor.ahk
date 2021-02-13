@@ -949,6 +949,10 @@ getLeagues() {
         iniWrite, %tempParse%, %A_WorkingDir%/settings.ini, Leagues, 7
         tempParse := parsed.8.id          
         iniWrite, %tempParse%, %A_WorkingDir%/settings.ini, Leagues, 8
+	
+	if !FileExist("settings.ini"){
+		MsgBox, Looks like AHK was unable to create settings.ini`r`nThis might be because the place you have the script is write protected by Windows`r`nYou will need to place this somewhere else
+	}
 }
 
 getVersion() {
@@ -966,11 +970,13 @@ checkFiles() {
 	if !FileExist("Capture2Text") {
 		if FileExist("Capture2Text.exe")	{
 			msgbox, Looks like you put PoE-HarvestVendor.ahk into the Capture2Text folder `r`nThis is wrong `r`nTake the file out of this folder
+			ExitApp
 		} else {
 			msgbox, I don't see the Capture2Text folder, did you download the tool ? `r`nLink is in the GitHub readme under Installation instructions
+			ExitApp
 		}
 	}	
-	ExitApp
+
 }
 
 
