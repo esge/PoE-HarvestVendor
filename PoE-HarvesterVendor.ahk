@@ -717,10 +717,10 @@ createPostRow(count,craft,price,group) {
 		mySpaces := " "
 		spacesCount := 0
 		if (group == "All") {
-			spacesCount := Max(AMaxLen,RMaxLen,RAMaxLen,OMaxLen) - strlen(craft)
+			spacesCount := Max(AMaxLen,RMaxLen,RAMaxLen,OMaxLen) - strlen(craft) + 1
 		} 
 		else {
-			spacesCount := %group%MaxLen - StrLen(craft)
+			spacesCount := %group%MaxLen - StrLen(craft) + 1
 		}			
 		loop, %spacesCount% {
 			mySpaces .= " "
