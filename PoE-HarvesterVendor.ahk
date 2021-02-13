@@ -14,6 +14,10 @@ global arr := []
 global outstring := ""
 global firstGuiOpen := 0
 global str := ""
+global AMaxLen := 0
+global RMaxLen := 0
+global RAMaxLen := 0
+global OMaxLen := 0
 
 getLeagues()
 
@@ -366,7 +370,7 @@ processCrafts() {
 		} 
 		;Enchant
 		
-		else if InStr(Arrayed[index], "Enchant") = 1 { ;*[PoE-HarvesterVendor]
+		else if InStr(Arrayed[index], "Enchant") = 1 { 
 			;flask
 			if InStr(Arrayed[index], "Flask") > 0 {
 				for a in flaskEnchants {
@@ -398,7 +402,7 @@ processCrafts() {
 			}	
 			else if InStr(Arrayed[index], "Sextant") > 0 {
 				outArrayCount += 1
-				outArray[outArrayCount] := "Enchants Map: doesn't consume Sextant charges"
+				outArray[outArrayCount] := "Enchant Map: no Sextant use" . " lv" . getLVL(Arrayed[index])
 			}
 		}
 		;Attempt
@@ -406,12 +410,12 @@ processCrafts() {
 			;awaken
 			if InStr(Arrayed[index], "Awaken") > 0 {
 				outArrayCount += 1
-				outArray[outArrayCount] := "Attempt to Awaken a level 20 Support Gem"
+				outArray[outArrayCount] := "Attempt to Awaken a level 20 Support Gem" . " lv" . getLVL(Arrayed[index])
 			}
 			;scarab upgrade
 			else if InStr(Arrayed[index], "Scarab") > 0 {
 				outArrayCount += 1
-				outArray[outArrayCount] := "Attempt to upgrade a Scarab"
+				outArray[outArrayCount] := "Attempt to upgrade a Scarab" . " lv" . getLVL(Arrayed[index])
 			}	
 		}
 		;Change
@@ -433,12 +437,12 @@ processCrafts() {
 					if InStr(Arrayed[index], gemPerc[a]) > 0 {
 						if InStr(Arrayed[index],"quality")	> 0 {
 							outArrayCount += 1
-							outArray[outArrayCount] := "Sacrifice gem, get " . gemPerc[a] . " qual as GCP"
+							outArray[outArrayCount] := "Sacrifice gem, get " . gemPerc[a] . " qual as GCP" . " lv" . getLVL(Arrayed[index])
 						}
 					
 						else if InStr(Arrayed[index],"experience") {
 							outArrayCount += 1
-							outArray[outArrayCount] := "Sacrifice gem, get " . gemPerc[a] . " exp as Lens"
+							outArray[outArrayCount] := "Sacrifice gem, get " . gemPerc[a] . " exp as Lens" . " lv" . getLVL(Arrayed[index])
 						}
 					}
 				}		
@@ -448,7 +452,7 @@ processCrafts() {
 			else if InStr(Arrayed[index], "Divination") > 1  {
 				if InStr(Arrayed[index], "half a stack") > 1 {
 					outArrayCount += 1
-					outArray[outArrayCount] :=  "Sacrifice Div Cards"
+					outArray[outArrayCount] :=  "Sacrifice Div Cards" . " lv" . getLVL(Arrayed[index])
 				}
 				;skipping this:
 				;	Sacrifice a stack of Divination Cards for that many different Divination Cards
@@ -471,15 +475,15 @@ processCrafts() {
 		else if InStr(Arrayed[index], "Improves") = 1 {	
 			if InStr(Arrayed[index], "Flask") > 0 {
 				outArrayCount += 1
-				outArray[outArrayCount] := "Improves the Quality of a Flask"
+				outArray[outArrayCount] := "Improves the Quality of a Flask" . " lv" . getLVL(Arrayed[index])
 			}
 			else if InStr(Arrayed[index], "Gem") > 0 {
 				outArrayCount += 1
-				outArray[outArrayCount] := "Improves the Quality of a Gem"
+				outArray[outArrayCount] := "Improves the Quality of a Gem" . " lv" . getLVL(Arrayed[index])
 			}
 		}	
 		
-		else if InStr(Arrayed[index], "Fracture") = 1 {		 ;*[PoE-HarvesterVendor]
+		else if InStr(Arrayed[index], "Fracture") = 1 {
 			for a in fracture {
 				if InStr(Arrayed[index], fracture[a]) > 0 {
 					outArrayCount += 1
@@ -657,14 +661,26 @@ readyTT() {
 	Tooltip	
 }
 
-createPostRow(count,craft,price) {
+createPostRow(count,craft,price,group) {
+		mySpaces := " "
+		spacesCount := 0
+		if (group == "All") {
+			spacesCount := Max(AMaxLen,RMaxLen,RAMaxLen,OMaxLen) - strlen(craft)
+		} 
+		else {
+			spacesCount := %group%MaxLen - StrLen(craft)
+		}			
+		loop, %spacesCount% {
+			mySpaces .= " "
+		}
+		
 	if regexmatch(craft,"(lv\d\d)") > 0 {
 	 	craft := RegExReplace(craft," (lv\d\d)","][$1")
 	}
 	else {
 		craft := craft . "][-"
 	}
-	outString .= "  (" . count . "x) [" . craft . "] - < " . price . " >`r`n"
+	outString .= "  (" . count . "x) [" . craft . "]" . mySpaces . "< " . price . " >`r`n"
 }
 codeblockWrap() {
 	return "``````md`r`n" . outString . "``````"
@@ -690,7 +706,7 @@ createPost(group) {
             loop, 10 {
 				row:= getRowData("A",A_Index)
 				if (row[4] == 1) {
-					createPostRow(row[1],row[2],row[3])
+					createPostRow(row[1],row[2],row[3],"A")
 					;outString .= "  " . row[1] . "x " . row[2] . " - " . row[3] . "`r`n"
 				}
             }
@@ -701,7 +717,7 @@ createPost(group) {
             loop, 10 {                
 				row:= getRowData("R",A_Index)
                 if (row[4] == 1) {
-					createPostRow(row[1],row[2],row[3])
+					createPostRow(row[1],row[2],row[3],"R")
 				}   
             }
             Clipboard := codeblockWrap()
@@ -711,7 +727,7 @@ createPost(group) {
             loop, 10 {
                 row:= getRowData("RA",A_Index)
                 if (row[4] == 1) {
-					createPostRow(row[1],row[2],row[3])
+					createPostRow(row[1],row[2],row[3],"RA")
 				}   
             }
             Clipboard := codeblockWrap()
@@ -721,7 +737,7 @@ createPost(group) {
             loop, 10 {
                 row:= getRowData("O",A_Index)
                 if (row[4] == 1) {
-					createPostRow(row[1],row[2],row[3])
+					createPostRow(row[1],row[2],row[3],"O")
 				}    
             }
             Clipboard := codeblockWrap()
@@ -731,25 +747,25 @@ createPost(group) {
 		 	loop, 10 {
                row:= getRowData("A",A_Index)
                 if (row[4] == 1) {
-					createPostRow(row[1],row[2],row[3])
+					createPostRow(row[1],row[2],row[3],"All")
 				}     
             }
 			loop, 10 {
                 row:= getRowData("R",A_Index)
                 if (row[4] == 1) {
-					createPostRow(row[1],row[2],row[3])
+					createPostRow(row[1],row[2],row[3],"All")
 				}   
             }
 			loop, 10 {
                 row:= getRowData("RA",A_Index)
                 if (row[4] == 1) {
-					createPostRow(row[1],row[2],row[3])
+					createPostRow(row[1],row[2],row[3],"All")
 				}   
             }
 			loop, 10 {
                 row:= getRowData("O",A_Index)
                 if (row[4] == 1) {
-					createPostRow(row[1],row[2],row[3])
+					createPostRow(row[1],row[2],row[3],"All")
 				}    
             }
 			Clipboard := codeblockWrap()
@@ -825,7 +841,7 @@ insertIntoRow(group, rowCounter, craft) {
     GuiControl,, %group%_cb_%rowCounter%, 1
 }
 
-CraftSort(ar) { ;*[PoE-HarvesterVendor v0.3]
+CraftSort(ar) {
     tempC := ""
     for k in ar {        
         ;augment
@@ -835,6 +851,10 @@ CraftSort(ar) { ;*[PoE-HarvesterVendor v0.3]
 				insertIntoRow("A",augmetnCounter,tempC)                
                 augmetnCounter += 1
             }
+			if (strLen(tempC) > AMaxLen) {
+				AMaxLen := strLen(tempC)
+			}
+
         }        
         ;remove
         else if InStr(ar[k], "Remove") = 1 and InStr(ar[k], "add") = 0 {
@@ -844,6 +864,9 @@ CraftSort(ar) { ;*[PoE-HarvesterVendor v0.3]
                 insertIntoRow("R",removeCounter,tempC)  
                 removeCounter += 1
             }
+			if (strLen(tempC) > RMaxLen) {
+				RMaxLen := strLen(tempC)
+			}
         }
         ;remove/add
         else if InStr(ar[k], "Remove") = 1 and InStr(ar[k], "add") > 0 and InStr(ar[k], "non") = 0 {
@@ -853,6 +876,9 @@ CraftSort(ar) { ;*[PoE-HarvesterVendor v0.3]
                 insertIntoRow("RA",raCounter,tempC)
                 raCounter += 1
             }
+			if (strLen(tempC) > RAMaxLen) {
+				RAMaxLen := strLen(tempC)
+			}
         }
         ;other
         else {
@@ -863,6 +889,9 @@ CraftSort(ar) { ;*[PoE-HarvesterVendor v0.3]
                 insertIntoRow("O",otherCounter,tempC)
                 otherCounter += 1
             }
+			if (strLen(tempC) > OMaxLen) {
+				OMaxLen := strLen(tempC)
+			}
         }
     }
 }
