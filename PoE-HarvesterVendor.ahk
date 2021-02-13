@@ -110,6 +110,7 @@ buildGUI() {
     Gui Add, DropDownList, x10 y10 w150 vLeague gLeagueDropdown, ;*[PoE-HarvesterVendor]
     leagueList() ;populate leagues dropdown and select the last used one
     Gui Add, Button, x165 y9 w80 h23 vAddCrafts gAddcrafts, Add crafts
+		global AddCrafts_TT := "CTRL + G"
     Gui Add, Button, x250 y9 w80 h23 gClear_all, Clear
 
 	Gui Add, Button, x335 y9 w80 h23 vpostAll gpostAll, Post all
@@ -129,14 +130,14 @@ buildGUI() {
 	;== Bottom stuff ==
 
 	gui add, Text, x15 y345 w200, Custom text added to message: 
-	gui add, edit, x170 y340 w500 vCustomText
+	gui add, Edit, x170 y340 w500 vCustomText
 		global CustomText_TT := "If you wish to add extra info to your message, will show under the WTS line"
 
 	gui add, CheckBox, x680 y345 vcanStream, Can Stream
 		global canStream_TT := "Adds: Can stream if requested. under the WTS line"
 
 	Gui Add, Text, x1040 y345 w25 h23, IGN:
-	gui font
+	
 	IniRead, name, %A_WorkingDir%/settings.ini, IGN, n
 	if (name == "ERROR") {
 		name:=""
