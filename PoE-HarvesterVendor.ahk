@@ -2,7 +2,7 @@
 #Warn, LocalSameAsGlobal, off
 #SingleInstance Force
 SetWorkingDir %A_ScriptDir% 
-global version := "0.3"
+global version := "0.3.1"
 global augmetnCounter := 1
 global removeCounter := 1
 global raCounter := 1
@@ -299,20 +299,24 @@ processCrafts() {
 			}
 		}
 		;Remove
-		else if InStr(Arrayed[index], "Remove") = 1 {
-			if InStr(Arrayed[index], "add") > 0 {
-				for a in remAddsNon {
-					if InStr(Arrayed[index], remAddsNon[a]) > 0  {
-						outArrayCount += 1
-						outArray[outArrayCount] := "Remove " . remAddsNon[a] . " add " . StrReplace(remAddsNon[a], "non-") . " lv" . getLVL(Arrayed[index]) 
+		else if InStr(Arrayed[index], "Remove") = 1 { ;*[PoE-HarvesterVendor]
+			if InStr(Arrayed[index], "add") > 0 {				
+				if InStr(Arrayed[index], "non") > 0 {
+					for a in remAddsClean {
+						if InStr(Arrayed[index], remAddsClean[a]) > 0  {
+							outArrayCount += 1
+							outArray[outArrayCount] := "Remove non-" . remAddsClean[a] . " add " . remAddsClean[a] . " lv" . getLVL(Arrayed[index]) 
+						}
 					}
-				}
-				for a in remAddsClean {
-					if InStr(Arrayed[index], remAddsClean[a]) > 0 and instr(Arrayed[index],"non-") = 0 {
-						outArrayCount += 1
-						outArray[outArrayCount] := "Remove " . remAddsClean[a] . " add " . remAddsClean[a] . " lv" . getLVL(Arrayed[index]) 
+				} 
+				else if InStr(Arrayed[index], "non") = 0 {
+					for a in remAddsClean {
+						if InStr(Arrayed[index], remAddsClean[a]) > 0  {
+							outArrayCount += 1
+							outArray[outArrayCount] := "Remove " . remAddsClean[a] . " add " . remAddsClean[a] . " lv" . getLVL(Arrayed[index]) 
+						}
 					}
-				}		
+				}				
 			} 
 			else {
 				for a in augments {
@@ -321,7 +325,6 @@ processCrafts() {
 						outArray[outArrayCount] := "Remove " . augments[a] . " lv" . getLVL(Arrayed[index]) 
 					}
 				}	
-
 			}			
 			;outArrayCount += 1
 			;outArray[outArrayCount] := RegExReplace(Arrayed[index],"(a random|modifier|from an item|and|a new)","")	
@@ -437,8 +440,40 @@ processCrafts() {
 		else if InStr(Arrayed[index], "Change") = 1 {
 			; res mods
 			if InStr(Arrayed[index], "Resistance") > 0 {
-				outArrayCount += 1
-				outArray[outArrayCount] := RegExReplace(Arrayed[index],"(a modifier that grants|a similar-tier modifier that grants|istance)","")
+				fireVal := InStr(Arrayed[index], "Fire")
+				coldVal := InStr(Arrayed[index], "Cold")
+				lightVal := InStr(Arrayed[index], "Lightning")
+
+				if max(fireVal, coldVal, lightVal) == fireVal {
+					if InStr(Arrayed[index], "Cold") > 0 {
+						outArrayCount += 1
+						outArray[outArrayCount] := "Change Cold res to Fire res" . " lv" . getLVL(Arrayed[index])
+					}
+					else if InStr(Arrayed[index], "Lightning") > 0 {
+						outArrayCount += 1
+						outArray[outArrayCount] := "Change Lightning res to Fire res" . " lv" . getLVL(Arrayed[index])
+					}
+				}
+				else if max(fireVal, coldVal, lightVal) == coldVal {
+					if InStr(Arrayed[index], "Fire") > 0 {
+						outArrayCount += 1
+						outArray[outArrayCount] := "Change Fire res to Cold res" . " lv" . getLVL(Arrayed[index])
+					}
+					else if InStr(Arrayed[index], "Lightning") > 0 {
+						outArrayCount += 1
+						outArray[outArrayCount] := "Change Lightning res to Cold res" . " lv" . getLVL(Arrayed[index])
+					}
+				}
+				else if max(fireVal, coldVal, lightVal) == lightVal {
+					if InStr(Arrayed[index], "Fire") > 0 {
+						outArrayCount += 1
+						outArray[outArrayCount] := "Change Fire res to Lightning res" . " lv" . getLVL(Arrayed[index])
+					}
+					else if InStr(Arrayed[index], "Cold") > 0 {
+						outArrayCount += 1
+						outArray[outArrayCount] := "Change Cold res to Lightning res" . " lv" . getLVL(Arrayed[index])
+					}
+				}				
 			} else {
 			; ignore others ?				
 			}		
