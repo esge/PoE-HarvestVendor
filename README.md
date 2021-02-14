@@ -48,6 +48,11 @@ WTS Ritual Softcore
 **Q. A craft i have in horticrafting station is not showing up in the result**  
 A. I arbitrarily decided its not worth to list that one, if you want it listed, contact me or open an issue. [List of ignored crafts](https://github.com/esge/PoE-HarvestVendor/wiki/Crafts-that-are-being-ignored)
 
+**Q. I'm getting error about "WinInet-something"**  
+A. This one?  
+![](examples/https-error.png)  
+Get curl binary from [here](https://curl.se/windows/), extract curl.exe from archive and put in into directory with ahk script. Script now will use this tool for version checking.
+
 ## Used libraries
 
 - http://capture2text.sourceforge.net/ for OCR

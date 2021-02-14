@@ -20,7 +20,7 @@ global RAMaxLen := 0
 global OMaxLen := 0
 
 checkfiles()
-
+winCheck()
 getLeagues()
 
 ^g:: ;ctrl+g launches straight into the capture, opens gui afterwards
@@ -952,13 +952,27 @@ CraftSort(ar) {
     }
 }
 
+winCheck(){
+	if (SubStr(A_OSVersion,1,2) != "10" and !FileExist("curl.exe")) {
+ 		 msgbox, Looks like you aren't running win10. There might be a problem with WinHttpRequest(outdated Certificates).`r`nYou need to download curl, and place the curl.exe (just this 1 file) into the same directory as Harvest Vendor.`r`nLink in the FAQ section in readme on github
+	}
+}
+
 getLeagues() {
-    oWhr := ComObjCreate("WinHttp.WinHttpRequest.5.1")
-    oWhr.Open("GET", "http://api.pathofexile.com/leagues?type=main&compact=1", false)
-    oWhr.SetRequestHeader("Content-Type", "application/json")
-    ;oWhr.SetRequestHeader("Authorization", "Bearer 80b44ea9c302237f9178a137d9e86deb-20083fb12d9579469f24afa80816066b")
-    oWhr.Send()
-    parsed := Jxon_load(oWhr.ResponseText) 
+	leagueAPIurl := "http://api.pathofexile.com/leagues?type=main&compact=1" 
+	if FileExist("curl.exe") {
+		; Hack for people with outdated certificates
+		shell := ComObjCreate("WScript.Shell")
+		exec := shell.Exec("curl.exe -k " . leagueAPIurl)
+		response := exec.StdOut.ReadAll()
+	} else {
+		oWhr := ComObjCreate("WinHttp.WinHttpRequest.5.1")
+    	oWhr.Open("GET", "http://api.pathofexile.com/leagues?type=main&compact=1", false)
+    	oWhr.SetRequestHeader("Content-Type", "application/json")    
+    	oWhr.Send()
+		response := oWhr.ResponseText
+	}
+		parsed := Jxon_load(response) 
     ;couldnt figure out how to make the number in parsed.1.id work as paramter, it doesnt like %% in there between the dots
         tempParse := parsed.1.id          
         iniWrite, %tempParse%, %A_WorkingDir%/settings.ini, Leagues, 1
@@ -983,12 +997,20 @@ getLeagues() {
 }
 
 getVersion() {
-	ver := ComObjCreate("WinHttp.WinHttpRequest.5.1")
-    ver.Open("GET", "https://raw.githubusercontent.com/esge/PoE-HarvestVendor/master/version.txt", false)
-    ver.SetRequestHeader("Content-Type", "application/json")
-    ;oWhr.SetRequestHeader("Authorization", "Bearer 80b44ea9c302237f9178a137d9e86deb-20083fb12d9579469f24afa80816066b")
-    ver.Send()
-    return StrReplace(StrReplace(ver.ResponseText,"`r"),"`n")
+	versionUrl :=  "https://raw.githubusercontent.com/esge/PoE-HarvestVendor/master/version.txt"
+    if FileExist("curl.exe") {
+        ; Hack for people with outdated certificates
+        shell := ComObjCreate("WScript.Shell")
+        exec := shell.Exec("curl.exe -k " . versionUrl)
+        response := exec.StdOut.ReadAll()
+    } else {
+        ver := ComObjCreate("WinHttp.WinHttpRequest.5.1")
+        ver.Open("GET", "https://raw.githubusercontent.com/esge/PoE-HarvestVendor/master/version.txt", false)
+        ver.SetRequestHeader("Content-Type", "application/json")
+        ver.Send()
+        response := ver.ResponseText
+    }
+    return StrReplace(StrReplace(response,"`r"),"`n")
 }
 
 
