@@ -148,7 +148,7 @@ buildGUI() {
     
 	if (version != getVersion()) {
 		gui Font, s14
-		gui add, Link, x950 y10 vVersionLink, <a href="https://github.com/esge/PoE-HarvestVendor/releases">! New Version Available !</a>
+		gui add, Link, x950 y10 vVersionLink, <a href="https://github.com/esge/PoE-HarvestVendor/tree/master">! New Version Available !</a>
 		gui font
 	}
 
