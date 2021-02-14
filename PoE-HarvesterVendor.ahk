@@ -146,7 +146,7 @@ buildGUI() {
     firstGuiOpen := 1
     Gui HarvestUI:New,, PoE-HarvestVendor v%version%	
     ;== top stuff ==
-    Gui Add, DropDownList, x10 y10 w150 vLeague gLeagueDropdown
+    Gui Add, DropDownList, x10 y10 w150 vLeague gLeagueDropdown,
     leagueList() ;populate leagues dropdown and select the last used one
     Gui Add, Button, x165 y9 w80 h23 vAddCrafts gAddcrafts, Add crafts
 		global AddCrafts_TT := "CTRL + G"
@@ -760,9 +760,14 @@ leagueList() {
         	leagueString .= tempList . "|"
 		}
     }
-    guicontrol,, League, %leagueString%
-	guicontrol, choose, League, 1
-    iniWrite, Standard Softcore, %A_WorkingDir%/settings.ini, selectedLeague, s	
+	iniRead, leagueCheck, %A_WorkingDir%/settings.ini, selectedLeague, s
+	guicontrol,, League, %leagueString%
+	if (leagueCheck == "ERROR") {		
+		guicontrol, choose, League, 1	
+    	iniWrite, Standard Softcore, %A_WorkingDir%/settings.ini, selectedLeague, s	
+	} else {
+		guicontrol, choose, League, %leagueCheck%	
+	}
 }
 
 getRowData(group, row) {
