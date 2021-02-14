@@ -2,14 +2,13 @@
 #Warn, LocalSameAsGlobal, off
 #SingleInstance Force
 SetWorkingDir %A_ScriptDir% 
-global version := "0.3.1"
+global version := "0.4"
 global ACounter := 1
 global RCounter := 1
 global RAcounter := 1
 global Ocounter := 1
 global outArrayCount := 0
-global outArray := []		
-;global newArray := []    
+global outArray := []	  
 global arr := []
 global outstring := ""
 global firstGuiOpen := 0
@@ -32,6 +31,7 @@ getLeagues()
 	OnMessage(0x200, "WM_MOUSEMOVE") ;activates tooltip function
     craftSort(outArray)
 return
+
 ^+g:: ;ctrl+shift+g opens the gui, yo go from there
     buildGUI()
     Gui, HarvestUI:Show, w1225 h370
@@ -78,16 +78,12 @@ price:
 	guiControlGet, craftPrice,, %priceField%, value
 	priceFieldArray := strsplit(priceField,"_")
 	
-	if (priceFieldArray[2] == "price") {
-	;vA_price_%A_Index% A price i
+	if (priceFieldArray[2] == "price") {	
 		g := priceFieldArray[1] ;group
 		r := priceFieldArray[3] ;row
 
 		guiControlGet, craftName,, %g%_craft_%r%, value
 		craftName := unlevel(craftName)
-
-		;msgbox % craftPrice . " -- " . craftName . " -- " . priceField
-		;craftName := inify(craftName)
 		iniWrite, %craftPrice%, %A_WorkingDir%/settings.ini, Prices, %craftName%
 	}
 return
@@ -98,10 +94,10 @@ clearRow:
 	g := buttonSplit[1]
 	r := buttonSplit[3]
 
-	 GuiControl,, %g%_craft_%r%
-	 GuiControl,, %g%_count_%r%, 0
-	 GuiControl,, %g%_price_%r%
-	 %g%Counter -= 1
+	GuiControl,, %g%_craft_%r%
+	GuiControl,, %g%_count_%r%, 0
+	GuiControl,, %g%_price_%r%
+	%g%Counter -= 1
 return
 
 LeagueDropdown:
@@ -116,26 +112,21 @@ IGN:
 return
 
 help:
-gui Help:new
+	gui Help:new
 
-gui font, s16
-Gui, add, text,, This is the area you want to select
-gui, font
-Gui, Add, ActiveX, x0 y30 w500 h500 vWB1, Shell.Explorer
+	gui font, s16
+	Gui, add, text,, This is the area you want to select
+	gui, font
+	Gui, Add, ActiveX, x0 y30 w500 h500 vWB1, Shell.Explorer
 
-; This can be an image from a website, or an image from your computer. Just specify the path based off of the current script directory.
-Edit := WebPic(WB1, "https://github.com/esge/PoE-HarvestVendor/blob/master/examples/example3.png?raw=true", "w436 h425 cFFFFFF")
-;Gui, Add, Edit, x0 y105 w750 h215 -Wrap +HScroll vEdit TabStop WantReturn t8
-Gui, Help:Show, w500 h500, Gui Example
+	; This can be an image from a website, or an image from your computer. Just specify the path based off of the current script directory.
+	Edit := WebPic(WB1, "https://github.com/esge/PoE-HarvestVendor/blob/master/examples/example3.png?raw=true", "w436 h425 cFFFFFF")
+	;Gui, Add, Edit, x0 y105 w750 h215 -Wrap +HScroll vEdit TabStop WantReturn t8
+	Gui, Help:Show, w500 h500, Gui Example
 
-
-helpClose:
-Gui, HarvestUI:Default
+	helpClose:
+	Gui, HarvestUI:Default
 return
-;Test_button:
-;return
-
-
 
 unlevel(craft){
 	return regexreplace(craft,"( lv\d{1,2}\+?)")
@@ -145,7 +136,7 @@ buildGUI() {
     firstGuiOpen := 1
     Gui HarvestUI:New,, PoE-HarvestVendor v%version%	
     ;== top stuff ==
-    Gui Add, DropDownList, x10 y10 w150 vLeague gLeagueDropdown, ;*[PoE-HarvesterVendor]
+    Gui Add, DropDownList, x10 y10 w150 vLeague gLeagueDropdown
     leagueList() ;populate leagues dropdown and select the last used one
     Gui Add, Button, x165 y9 w80 h23 vAddCrafts gAddcrafts, Add crafts
 		global AddCrafts_TT := "CTRL + G"
@@ -153,7 +144,7 @@ buildGUI() {
 
 	Gui Add, Button, x335 y9 w80 h23 vpostAll gpostAll, Post all
 		global postAll_TT := "Puts all crafts into a single post regardless of sorting - allowed only for Standard leagues"
-	allowAll() ;*[PoE-HarvesterVendor]
+	allowAll() 
     
 	if (version != getVersion()) {
 		gui Font, s14
@@ -166,20 +157,17 @@ buildGUI() {
 	Gui font
 
 	;== Bottom stuff ==
-
 	gui add, Text, x15 y345 w200, Custom text added to message: 
 	gui add, Edit, x170 y340 w500 vCustomText
 		global CustomText_TT := "If you wish to add extra info to your message, will show under the WTS line"
-
 	gui add, CheckBox, x680 y345 vcanStream, Can Stream
 		global canStream_TT := "Adds: Can stream if requested. under the WTS line"
-
 	Gui Add, Text, x1040 y345 w25 h23, IGN:
 	
 	IniRead, name, %A_WorkingDir%/settings.ini, IGN, n
 	if (name == "ERROR") {
 		name:=""
-		}
+	}
 	Gui Add, Edit, x1065 y340 w150 h23 vIGN gIGN, %name%		
 		global IGN_TT := "Optional, wont show anything if left empty"
 
@@ -196,7 +184,6 @@ buildGUI() {
     Gui Font, s10
     Gui Add, Groupbox, x%Ax_groupbox% y35 w290 h300, Augment
     Gui Font
-
 	
     yrow1 := 80
     loop, 10 {
@@ -286,15 +273,14 @@ buildGUI() {
         
 		gui add, Button, x%Ox_checkbox% y%yrow1_cbOffset% w19 h19 vO_del_%A_Index% gClearRow, X 
         yrow1 += 25
-    }
-
-    
+    }    
 }
+
 processCrafts() {
 	Gui, HarvestUI:Hide    
 	
 	outArray := []
-    ;sleep, 1000   
+    
 	getSelectionCoords(x_start, x_end, y_start, y_end)
 	Tooltip, Please Wait
 	command = Capture2Text\Capture2Text.exe -s `"%x_start% %y_start% %x_end% %y_end%`" -o temp.txt -l English --trim-capture 
@@ -308,7 +294,6 @@ processCrafts() {
 
 	NewLined := RegExReplace(temp, "(Reforge |Randomise |Remove |Augment |Improves |Upgrades |Upgrade |Set |Change |Exchange |Sacrifice a|Sacrifice up|Attempt |Enchant |Reroll |Fracture |Add a random |Synthesise |Split |Corrupt )" , "`r`n$1")
 	Arrayed := StrSplit(NewLined, "`r`n")
-
 	
 	augments := ["Caster","Physical","Fire","Attack","Life","Cold","Speed","Defence","Lightning","Chaos","Critical","Influence","a new modifier"]
 	remAddsClean := ["Caster","Physical","Fire","Attack","Life","Cold","Speed","Defence","Lightning","Chaos","Critical","Influence"]
@@ -344,7 +329,7 @@ processCrafts() {
 			}
 		}
 		;Remove
-		else if InStr(Arrayed[index], "Remove") = 1 { ;*[PoE-HarvesterVendor]
+		else if InStr(Arrayed[index], "Remove") = 1 {
 			if InStr(Arrayed[index], "add") > 0 {				
 				if InStr(Arrayed[index], "non") > 0 {
 					for a in remAddsClean {
@@ -373,9 +358,7 @@ processCrafts() {
 						continue
 					}
 				}	
-			}			
-			;outArrayCount += 1
-			;outArray[outArrayCount] := RegExReplace(Arrayed[index],"(a random|modifier|from an item|and|a new)","")	
+			}					
 		}
 		;Reforge
 		else if InStr(Arrayed[index], "Reforge") = 1 {
@@ -441,8 +424,7 @@ processCrafts() {
 			;Reforge a Rare item, being much more likely to receive the same modifier types
 			;Reforge a Rare item, being much less likely to receive the same modifier types
 		} 
-		;Enchant
-		
+		;Enchant		
 		else if InStr(Arrayed[index], "Enchant") = 1 { 
 			;flask
 			if InStr(Arrayed[index], "Flask") > 0 {
@@ -455,8 +437,7 @@ processCrafts() {
 					}
 				}
 			}
-			;weapon
-			
+			;weapon			
 			else if InStr(Arrayed[index], "Weapon") > 0 {			
 				for a in weapEnchants {
 					if InStr(Arrayed[index], weapEnchants[a]) > 0 {
@@ -566,7 +547,6 @@ processCrafts() {
 					}
 				}		
 			} 
-
 			;div cards gambling
 			else if InStr(Arrayed[index], "Divination") > 1  {
 				if InStr(Arrayed[index], "half a stack") > 1 {
@@ -591,8 +571,7 @@ processCrafts() {
 			}
 		} 
 
-		;Improves
-		
+		;Improves		
 		else if InStr(Arrayed[index], "Improves") = 1 {	
 			if InStr(Arrayed[index], "Flask") > 0 {
 				outArrayCount += 1
@@ -687,42 +666,32 @@ processCrafts() {
 		;Exchange 
 		else if InStr(Arrayed[index], "Exchange") = 1 {
 			continue
-			;skipping all exchange crafts assuming anybody would just use them for themselfs
-			
+			;skipping all exchange crafts assuming anybody would just use them for themselfs			
 		} 
 		;Upgrade
 		else if InStr(Arrayed[index], "Upgrade") = 1 {
 			continue
-			;skipping upgrade crafts
-			
-		}	
-	
+			;skipping upgrade crafts			
+		}		
 		else if InStr(Arrayed[index], "Split") = 1 {
 			continue
 			;skipping Split scarab craft			
-		}	
-
-
+		}
 		;just add unknown stuff as is
 		;else {
 		;	out .= Arrayed[index] . "`r`n"
 		;}		
 	}
-
     for iFinal in outArray {	            
         ;outArray[iFinal] := RegExReplace(outArray[iFinal], "([^\w\s]+|_+)","")
 		;outArray[iFinal] := RegExReplace(outArray[iFinal] , "(Level )", "lv")
         ; removes multiple spaces, but all all non chars so it gets rid of stray .,' from OCR, we lose the  dash in non-Tag, but we can lve with that)
         outArray[iFinal] := Trim(RegExReplace(outArray[iFinal] , " +", " ")) 
-    }
-	
+    }	
 	for s in outArray {
 		str .= outArray[s] . "`r`n"
 	}
-	Clipboard := str
-
 }
-
 
 clearAll() {
     loop, 10 {
@@ -738,15 +707,14 @@ clearAll() {
         GuiControl,, R_price_%A_Index%
         GuiControl,, RA_price_%A_Index%
         GuiControl,, O_price_%A_Index%
-		}
-        ACounter := 1
-        RCounter := 1
-        RAcounter := 1
-        Ocounter := 1
-        outArray := []
-        arr := []
+	}
+	ACounter := 1
+	RCounter := 1
+	RAcounter := 1
+	Ocounter := 1
+	outArray := []
+	arr := []
 }
-
 
 allowAll() {
 	IniRead selLeague, %A_WorkingDir%/settings.ini, selectedLeague, s
@@ -763,8 +731,7 @@ allowAll() {
 leagueList() {
     leagueString := ""
     loop, 8 {
-        IniRead, tempList, %A_WorkingDir%/settings.ini, Leagues, %A_Index%
-       ; msgbox % tempList
+        IniRead, tempList, %A_WorkingDir%/settings.ini, Leagues, %A_Index%     
 	   
         if InStr(tempList, "Hardcore") = 0 and InStr(tempList, "HC") = 0 {
             tempList .= " Softcore"
@@ -778,9 +745,9 @@ leagueList() {
     }
     guicontrol,, League, %leagueString%
 	guicontrol, choose, League, 1
-    iniWrite, Standard Softcore, %A_WorkingDir%/settings.ini, selectedLeague, s
-	
+    iniWrite, Standard Softcore, %A_WorkingDir%/settings.ini, selectedLeague, s	
 }
+
 getRowData(group, row) {
 	GuiControlGet, tempCount,, %group%_count_%row%, value
 	GuiControlGet, tempCraft,, %group%_craft_%row%, value
@@ -788,29 +755,29 @@ getRowData(group, row) {
 	if (tempCount > 0 and tempCraft != ""){
 		tempCheck := 1
 	}
-
 	return [tempCount, tempCraft, tempPrice, tempCheck]
 }
 
 readyTT() {
-   ClipWait
-   ToolTip, Post Ready
+	ClipWait
+    ToolTip, Post Ready
 	sleep, 2000
 	Tooltip	
 }
 
 createPostRow(count,craft,price,group) {
-		mySpaces := " "
-		spacesCount := 0
-		if (group == "All") {
-			spacesCount := Max(AMaxLen,RMaxLen,RAMaxLen,OMaxLen) - strlen(craft) + 1
-		} 
-		else {
-			spacesCount := %group%MaxLen - StrLen(craft) + 1
-		}			
-		loop, %spacesCount% {
-			mySpaces .= " "
-		}
+	mySpaces := " "
+	spacesCount := 0
+	if (group == "All") {
+		spacesCount := Max(AMaxLen,RMaxLen,RAMaxLen,OMaxLen) - strlen(craft) + 1
+	} 
+	else {
+		spacesCount := %group%MaxLen - StrLen(craft) + 1
+	}
+
+	loop, %spacesCount% {
+		mySpaces .= " "
+	}
 		
 	if regexmatch(craft,"(lv\d\d)") > 0 {
 	 	craft := RegExReplace(craft," (lv\d\d)","][$1")
@@ -820,6 +787,7 @@ createPostRow(count,craft,price,group) {
 	}
 	outString .= "  (" . count . "x) [" . craft . "]" . mySpaces . "< " . price . " >`r`n"
 }
+
 codeblockWrap() {
 	return "``````md`r`n" . outString . "``````"
 }
@@ -848,8 +816,7 @@ createPost(group) {
             loop, 10 {
 				row:= getRowData("A",A_Index)
 				if (row[4] == 1) {
-					createPostRow(row[1],row[2],row[3],"A")
-					;outString .= "  " . row[1] . "x " . row[2] . " - " . row[3] . "`r`n"
+					createPostRow(row[1],row[2],row[3],"A")					
 				}
             }
             Clipboard := codeblockWrap()
@@ -920,48 +887,48 @@ incCraftCount(group, craft) {
 	craftCheck := ""
 	switch group {
 		case "A":
-		loop, 10 {
-			GuiControlGet, craftCheck,, A_craft_%A_Index%, value
-			if (craftCheck == craft) {    				
-				GuiCOntrolGet, craftCount,, A_count_%A_index%				
-				craftCount += 1 
-				GuiControl,, A_count_%A_Index%, %craftCount% 
-				return true 
-			}			
-		}		
+			loop, 10 {
+				GuiControlGet, craftCheck,, A_craft_%A_Index%, value
+				if (craftCheck == craft) {    				
+					GuiCOntrolGet, craftCount,, A_count_%A_index%				
+					craftCount += 1 
+					GuiControl,, A_count_%A_Index%, %craftCount% 
+					return true 
+				}			
+			}		
 		return
 		case "R":
-		loop, 10 {
-			GuiControlGet, craftCheck,, R_craft_%A_Index%, value
-			if (craftCheck == craft) {				
-				GuiCOntrolGet, craftCount,, R_count_%A_index%				
-				craftCount += 1
-				GuiControl,, R_count_%A_Index%, %craftCount%
-				return true
-			}	
-		}
+			loop, 10 {
+				GuiControlGet, craftCheck,, R_craft_%A_Index%, value
+				if (craftCheck == craft) {				
+					GuiCOntrolGet, craftCount,, R_count_%A_index%				
+					craftCount += 1
+					GuiControl,, R_count_%A_Index%, %craftCount%
+					return true
+				}	
+			}
 		return
 		case "RA":
-		loop, 10 { 
-			GuiControlGet, craftCheck,, RA_craft_%A_Index%, value
-			if (craftCheck == craft) {				
-				GuiCOntrolGet, craftCount,, RA_count_%A_index%				
-				craftCount += 1
-				GuiControl,, RA_count_%A_Index%, %craftCount%
-				return true
+			loop, 10 { 
+				GuiControlGet, craftCheck,, RA_craft_%A_Index%, value
+				if (craftCheck == craft) {				
+					GuiCOntrolGet, craftCount,, RA_count_%A_index%				
+					craftCount += 1
+					GuiControl,, RA_count_%A_Index%, %craftCount%
+					return true
+				}
 			}
-		}
 		return
 		case "O":
-		loop, 10 {
-			GuiControlGet, craftCheck,, O_craft_%A_Index%, value
-			if (craftCheck == craft) {				
-				GuiCOntrolGet, craftCount,, O_count_%A_index%				
-				craftCount += 1
-				GuiControl,, O_count_%A_Index%, %craftCount%
-				return true
+			loop, 10 {
+				GuiControlGet, craftCheck,, O_craft_%A_Index%, value
+				if (craftCheck == craft) {				
+					GuiCOntrolGet, craftCount,, O_count_%A_index%				
+					craftCount += 1
+					GuiControl,, O_count_%A_Index%, %craftCount%
+					return true
+				}
 			}
-		}
 		return
 	}
 }
@@ -981,20 +948,17 @@ getLVL(craft) {
 		return 0
 	}
 }
-inify(str){
-	return strReplace(str, " ", "_")
-}
+
 insertIntoRow(group, rowCounter, craft) {
     GuiControl,, %group%_craft_%rowCounter%, %craft%
     GuiControl,, %group%_count_%rowCounter%, 1
    
 	craft := unlevel(craft)
 	iniRead, tempP, %A_WorkingDir%/settings.ini, Prices, %craft%
-	;msgbox,  %group%_price_%rowCounter% -- %tempP%
-	if (tempP == "ERROR")
-		{
-			tempP := ""
-		}
+	
+	if (tempP == "ERROR") {
+		tempP := ""
+	}
 	GuiControl,, %group%_price_%rowCounter%, %tempP%
 }
 
@@ -1011,11 +975,9 @@ CraftSort(ar) {
 			if (strLen(tempC) > AMaxLen) {
 				AMaxLen := strLen(tempC)
 			}
-
         }        
         ;remove
-        else if InStr(ar[k], "Remove") = 1 and InStr(ar[k], "add") = 0 {
-            ;msgbox, Remove %RCounter%
+        else if InStr(ar[k], "Remove") = 1 and InStr(ar[k], "add") = 0 {            
             tempC := ar[k]
             if not incCraftCount("R", tempC) {
                 insertIntoRow("R",RCounter,tempC)  
@@ -1026,8 +988,7 @@ CraftSort(ar) {
 			}
         }
         ;remove/add
-        else if InStr(ar[k], "Remove") = 1 and InStr(ar[k], "add") > 0 and InStr(ar[k], "non") = 0 {
-            ;msgbox, RA %RAcounter%
+        else if InStr(ar[k], "Remove") = 1 and InStr(ar[k], "add") > 0 and InStr(ar[k], "non") = 0 {            
             tempC := ar[k]
             if not incCraftCount("RA", tempC) {
                 insertIntoRow("RA",RAcounter,tempC)
@@ -1038,9 +999,7 @@ CraftSort(ar) {
 			}
         }
         ;other
-        else {
-        ;if InStr(ar[index], "Augment") = 0 and InStr(ar[index], "add") > 0 and InStr(ar[index], "non") = 0 {
-            ;msgbox, O %Ocounter%
+        else {        
             tempC := ar[k]
             if not incCraftCount("O", tempC) {
                 insertIntoRow("O",Ocounter,tempC)
@@ -1073,24 +1032,24 @@ getLeagues() {
     	oWhr.Send()
 		response := oWhr.ResponseText
 	}
-		parsed := Jxon_load(response) 
-    ;couldnt figure out how to make the number in parsed.1.id work as paramter, it doesnt like %% in there between the dots
-        tempParse := parsed.1.id          
-        iniWrite, %tempParse%, %A_WorkingDir%/settings.ini, Leagues, 1
-        tempParse := parsed.2.id          
-        iniWrite, %tempParse%, %A_WorkingDir%/settings.ini, Leagues, 2
-        tempParse := parsed.3.id          
-        iniWrite, %tempParse%, %A_WorkingDir%/settings.ini, Leagues, 3
-        tempParse := parsed.4.id          
-        iniWrite, %tempParse%, %A_WorkingDir%/settings.ini, Leagues, 4
-        tempParse := parsed.5.id          
-        iniWrite, %tempParse%, %A_WorkingDir%/settings.ini, Leagues, 5
-        tempParse := parsed.6.id          
-        iniWrite, %tempParse%, %A_WorkingDir%/settings.ini, Leagues, 6
-        tempParse := parsed.7.id          
-        iniWrite, %tempParse%, %A_WorkingDir%/settings.ini, Leagues, 7
-        tempParse := parsed.8.id          
-        iniWrite, %tempParse%, %A_WorkingDir%/settings.ini, Leagues, 8
+	parsed := Jxon_load(response) 
+;couldnt figure out how to make the number in parsed.1.id work as paramter, it doesnt like %% in there between the dots
+	tempParse := parsed.1.id          
+	iniWrite, %tempParse%, %A_WorkingDir%/settings.ini, Leagues, 1
+	tempParse := parsed.2.id          
+	iniWrite, %tempParse%, %A_WorkingDir%/settings.ini, Leagues, 2
+	tempParse := parsed.3.id          
+	iniWrite, %tempParse%, %A_WorkingDir%/settings.ini, Leagues, 3
+	tempParse := parsed.4.id          
+	iniWrite, %tempParse%, %A_WorkingDir%/settings.ini, Leagues, 4
+	tempParse := parsed.5.id          
+	iniWrite, %tempParse%, %A_WorkingDir%/settings.ini, Leagues, 5
+	tempParse := parsed.6.id          
+	iniWrite, %tempParse%, %A_WorkingDir%/settings.ini, Leagues, 6
+	tempParse := parsed.7.id          
+	iniWrite, %tempParse%, %A_WorkingDir%/settings.ini, Leagues, 7
+	tempParse := parsed.8.id          
+	iniWrite, %tempParse%, %A_WorkingDir%/settings.ini, Leagues, 8
 	
 	if !FileExist("settings.ini"){
 		MsgBox, Looks like AHK was unable to create settings.ini`r`nThis might be because the place you have the script is write protected by Windows`r`nYou will need to place this somewhere else
@@ -1114,9 +1073,7 @@ getVersion() {
     return StrReplace(StrReplace(response,"`r"),"`n")
 }
 
-
-
-checkFiles() {	
+checkFiles() {
 	if !FileExist("Capture2Text") {
 		if FileExist("Capture2Text.exe")	{
 			msgbox, Looks like you put PoE-HarvestVendor.ahk into the Capture2Text folder `r`nThis is wrong `r`nTake the file out of this folder
@@ -1125,8 +1082,7 @@ checkFiles() {
 			msgbox, I don't see the Capture2Text folder, did you download the tool ? `r`nLink is in the GitHub readme under Installation instructions
 			ExitApp
 		}
-	}	
-
+	}
 }
 
 
