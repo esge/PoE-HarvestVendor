@@ -18,8 +18,9 @@
 
 ## Getting started
 
-- Requires [AHK 1.1.33.02](https://www.autohotkey.com/download/ahk-install.exe)
-    - not that it wont work on older, but there was a bug where it would say that a piece of code is unreachable in a switch/case and you will get a warning popup everytime you launch it
+<!-- Commenting this becuase this might be fixed with the change from switch case to IFs
+ Requires [AHK 1.1.33.02](https://www.autohotkey.com/download/ahk-install.exe)
+   - not that it wont work on older, but there was a bug where it would say that a piece  of code is unreachable in a switch/case and you will get a warning popup everytime you launch it
     - the error message it shows on older versions is:
 
 ```
@@ -30,7 +31,7 @@ or
 Line Text: switch group {
 Error: This line does not contain a recognized action
 ```
-
+-->
 - Download last release of Capture2Text: https://sourceforge.net/projects/capture2text/files/Capture2Text/
 - Download last release: https://github.com/esge/PoE-HarvestVendor/releases/latest
 - Create a new folder with the `.ahk` script
@@ -60,7 +61,10 @@ WTS Ritual Softcore
 
 # FAQ
 **Q. A craft i have in horticrafting station is not showing up in the result**  
-A. I arbitrarily decided its not worth to list that one, if you want it listed, contact me or open an issue. [List of ignored crafts](https://github.com/esge/PoE-HarvestVendor/wiki/Crafts-that-are-being-ignored)
+A. There are 2 possible reasons:
+  1. text recognition was too messed up and i couldn't recognize the craft  
+    - Solution: Run the scan again and select only that one craft
+  2. I arbitrarily decided its not worth to list that one, if you want it listed, contact me or open an issue. [List of ignored crafts](https://github.com/esge/PoE-HarvestVendor/wiki/Crafts-that-are-being-ignored)
 
 **Q. I'm getting error about "WinInet-something"**  
 A. This one?  
@@ -71,3 +75,7 @@ Get curl binary from [here](https://curl.se/windows/), extract curl.exe from arc
 
 - http://capture2text.sourceforge.net/ for OCR
 - https://github.com/cocobelgica/AutoHotkey-JSON jxon function embeded in the main file
+
+---
+### If you got all the way here and want to throw some beer money my way
+[PayPal.me link](paypal.me/Esge1)

@@ -17,6 +17,16 @@ global AMaxLen := 0
 global RMaxLen := 0
 global RAMaxLen := 0
 global OMaxLen := 0
+; Message about hotkeys on first run
+IniRead, firstRun, %A_WorkingDir%/settings.ini, Other, firstRun
+	if (firstRun == "ERROR") {
+		firstRun := 1
+	}
+if (firstRun == 1) {
+	MsgBox, CTRL + SHIFT + G to open the gui`r`nCTRL + G to go straight into capture`r`n`r`nThis message wont appear again.
+	IniWrite, 0, %A_WorkingDir%/settings.ini, Other, firstRun 
+}
+
 
 checkfiles()
 winCheck()
