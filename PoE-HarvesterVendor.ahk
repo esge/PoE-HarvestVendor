@@ -760,9 +760,10 @@ getRowData(group, row) {
 
 readyTT() {
 	ClipWait
-    ToolTip, Post Ready
+
+    ToolTip, Post Ready,,,1
 	sleep, 2000
-	Tooltip	
+	Tooltip,,,,1
 }
 
 createPostRow(count,craft,price,group) {
@@ -937,7 +938,10 @@ getLVL(craft) {
 	lvlpos := RegExMatch(craft, "Level \d\d") + 6
 	lv := substr(craft, lvlpos, 2)
 	if RegExMatch(lv, "\d\d") > 0 {			
-		if RegExReplace(substr(craft, -1)," +") >= 76 {
+		if (lv < 40) { ;ppl wouldn't sell lv 30 crafts, but sometimes OCR mistakes 8 for a 3 this just bumps it up for the 76+ rule
+			lv += 50
+		}
+		if (lv >= 76) {
 			return "76+"
 		} 
 		else {
@@ -1150,7 +1154,7 @@ WM_MOUSEMOVE()
     
     If (CurrControl <> PrevControl and not InStr(CurrControl, " "))
     {
-        ToolTip  ; Turn off any previous tooltip.
+        ToolTip,,,,2  ; Turn off any previous tooltip.
         SetTimer, DisplayToolTip, 500
         PrevControl := CurrControl
     }
@@ -1158,13 +1162,13 @@ WM_MOUSEMOVE()
 
     DisplayToolTip:
     SetTimer, DisplayToolTip, Off
-    ToolTip % %CurrControl%_TT  ; The leading percent sign tell it to use an expression.
+    ToolTip % %CurrControl%_TT,,,2  ; The leading percent sign tell it to use an expression.
     SetTimer, RemoveToolTip, 7000
     return
 
     RemoveToolTip:
     SetTimer, RemoveToolTip, Off
-    ToolTip
+    ToolTip,,,,2
     return
 }
 
