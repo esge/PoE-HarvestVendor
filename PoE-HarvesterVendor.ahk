@@ -2,7 +2,7 @@
 #Warn, LocalSameAsGlobal, off
 #SingleInstance Force
 SetWorkingDir %A_ScriptDir% 
-global version := "0.4.1"
+global version := "0.4.2"
 global ACounter := 1
 global RCounter := 1
 global RAcounter := 1
