@@ -819,125 +819,121 @@ createPost(group) {
 	if (tempStream == 1 ) {
 		outString .= "  Can stream if requested `r`n"
 	}
-    switch group {
-        case "A":            
-            loop, 10 {
-				row:= getRowData("A",A_Index)
-				if (row[4] == 1) {
-					createPostRow(row[1],row[2],row[3],"A")					
-				}
-            }
-            Clipboard := codeblockWrap()
-            readyTT()
-        return
-        case "R":            
-            loop, 10 {                
-				row:= getRowData("R",A_Index)
-                if (row[4] == 1) {
-					createPostRow(row[1],row[2],row[3],"R")
-				}   
-            }
-            Clipboard := codeblockWrap()
-            readyTT()
-        return
-        case "RA":            
-            loop, 10 {
-                row:= getRowData("RA",A_Index)
-                if (row[4] == 1) {
-					createPostRow(row[1],row[2],row[3],"RA")
-				}   
-            }
-            Clipboard := codeblockWrap()
-            readyTT()
-        return
-        case "O":      
-            loop, 10 {
-                row:= getRowData("O",A_Index)
-                if (row[4] == 1) {
-					createPostRow(row[1],row[2],row[3],"O")
-				}    
-            }
-            Clipboard := codeblockWrap()
-            readyTT()
-        return 
-		case "All":
-		 	loop, 10 {
-               row:= getRowData("A",A_Index)
-                if (row[4] == 1) {
-					createPostRow(row[1],row[2],row[3],"All")
-				}     
-            }
-			loop, 10 {
-                row:= getRowData("R",A_Index)
-                if (row[4] == 1) {
-					createPostRow(row[1],row[2],row[3],"All")
-				}   
-            }
-			loop, 10 {
-                row:= getRowData("RA",A_Index)
-                if (row[4] == 1) {
-					createPostRow(row[1],row[2],row[3],"All")
-				}   
-            }
-			loop, 10 {
-                row:= getRowData("O",A_Index)
-                if (row[4] == 1) {
-					createPostRow(row[1],row[2],row[3],"All")
-				}    
-            }
-			Clipboard := codeblockWrap()
-            readyTT()
-		return   
+    
+	if (group == "A") {	                 
+		loop, 10 {
+			row:= getRowData("A",A_Index)
+			if (row[4] == 1) {
+				createPostRow(row[1],row[2],row[3],"A")					
+			}
+		}
+		Clipboard := codeblockWrap()
+		readyTT()
+    }
+	if (group == "R") {	                  
+		loop, 10 {                
+			row:= getRowData("R",A_Index)
+			if (row[4] == 1) {
+				createPostRow(row[1],row[2],row[3],"R")
+			}   
+		}
+		Clipboard := codeblockWrap()
+		readyTT()
+    }
+	if (group == "RA") {					
+		loop, 10 {
+			row:= getRowData("RA",A_Index)
+			if (row[4] == 1) {
+				createPostRow(row[1],row[2],row[3],"RA")
+			}   
+		}
+		Clipboard := codeblockWrap()
+		readyTT()
+	}
+	if (group == "O") {	     
+		loop, 10 {
+			row:= getRowData("O",A_Index)
+			if (row[4] == 1) {
+				createPostRow(row[1],row[2],row[3],"O")
+			}    
+		}
+		Clipboard := codeblockWrap()
+		readyTT()
+	}
+	if (group == "All") {		
+		loop, 10 {
+			row:= getRowData("A",A_Index)
+			if (row[4] == 1) {
+				createPostRow(row[1],row[2],row[3],"All")
+			}     
+		}
+		loop, 10 {
+			row:= getRowData("R",A_Index)
+			if (row[4] == 1) {
+				createPostRow(row[1],row[2],row[3],"All")
+			}   
+		}
+		loop, 10 {
+			row:= getRowData("RA",A_Index)
+			if (row[4] == 1) {
+				createPostRow(row[1],row[2],row[3],"All")
+			}   
+		}
+		loop, 10 {
+			row:= getRowData("O",A_Index)
+			if (row[4] == 1) {
+				createPostRow(row[1],row[2],row[3],"All")
+			}    
+		}
+		Clipboard := codeblockWrap()
+		readyTT()	  
     }    
 }
 
 incCraftCount(group, craft) {	
-	craftCheck := ""
-	switch group {
-		case "A":
-			loop, 10 {
-				GuiControlGet, craftCheck,, A_craft_%A_Index%, value
-				if (craftCheck == craft) {    				
-					GuiCOntrolGet, craftCount,, A_count_%A_index%				
-					craftCount += 1 
-					GuiControl,, A_count_%A_Index%, %craftCount% 
-					return true 
-				}			
-			}		
-		return
-		case "R":
-			loop, 10 {
-				GuiControlGet, craftCheck,, R_craft_%A_Index%, value
-				if (craftCheck == craft) {				
-					GuiCOntrolGet, craftCount,, R_count_%A_index%				
-					craftCount += 1
-					GuiControl,, R_count_%A_Index%, %craftCount%
-					return true
-				}	
+	craftCheck := ""		
+	if (group == "A") {		
+		loop, 10 {
+			GuiControlGet, craftCheck,, A_craft_%A_Index%, value
+			if (craftCheck == craft) {    				
+				GuiCOntrolGet, craftCount,, A_count_%A_index%				
+				craftCount += 1 
+				GuiControl,, A_count_%A_Index%, %craftCount% 
+				return true 
+			}			
+		}			
+	}
+	if (group == "R") {			
+		loop, 10 {
+			GuiControlGet, craftCheck,, R_craft_%A_Index%, value
+			if (craftCheck == craft) {				
+				GuiCOntrolGet, craftCount,, R_count_%A_index%				
+				craftCount += 1
+				GuiControl,, R_count_%A_Index%, %craftCount%
+				return true
+			}	
+		}
+	}
+	if (group == "RA") {	
+		loop, 10 { 
+			GuiControlGet, craftCheck,, RA_craft_%A_Index%, value
+			if (craftCheck == craft) {				
+				GuiCOntrolGet, craftCount,, RA_count_%A_index%				
+				craftCount += 1
+				GuiControl,, RA_count_%A_Index%, %craftCount%
+				return true
 			}
-		return
-		case "RA":
-			loop, 10 { 
-				GuiControlGet, craftCheck,, RA_craft_%A_Index%, value
-				if (craftCheck == craft) {				
-					GuiCOntrolGet, craftCount,, RA_count_%A_index%				
-					craftCount += 1
-					GuiControl,, RA_count_%A_Index%, %craftCount%
-					return true
-				}
+		}	
+	if (group == "O") {			
+		loop, 10 {
+			GuiControlGet, craftCheck,, O_craft_%A_Index%, value
+			if (craftCheck == craft) {				
+				GuiCOntrolGet, craftCount,, O_count_%A_index%				
+				craftCount += 1
+				GuiControl,, O_count_%A_Index%, %craftCount%
+				return true
 			}
-		return
-		case "O":
-			loop, 10 {
-				GuiControlGet, craftCheck,, O_craft_%A_Index%, value
-				if (craftCheck == craft) {				
-					GuiCOntrolGet, craftCount,, O_count_%A_index%				
-					craftCount += 1
-					GuiControl,, O_count_%A_Index%, %craftCount%
-					return true
-				}
-			}
-		return
+		}		
 	}
 }
 
