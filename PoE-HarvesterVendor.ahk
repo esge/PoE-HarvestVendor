@@ -907,8 +907,13 @@ incCraftCount(group, craft) {
 getLVL(craft) {
 	lvlpos := RegExMatch(craft, "Level \d\d") + 6
 	lv := substr(craft, lvlpos, 2)
-	if RegExMatch(lv, "\d\d") > 0 {	
-		return lv
+	if RegExMatch(lv, "\d\d") > 0 {			
+		if substr(craft, -1) >= 76 {
+			return "76+"
+		} 
+		else {
+			return lv
+		}
 	} 
 	else {
 		return 0

@@ -1,5 +1,9 @@
 # PoE-HarvestVendor
 
+```diff
+- Only works if PoE is in WINDOWED / WINDOWED BORDERLESS mode, doesnt work in Fullscreen
+```
+
 ⚠️ It's a BETA there will be issues and lacking features :)
 
 - Convert your Horticrafting station crafts into a post, almost in a smart way
