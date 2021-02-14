@@ -11,6 +11,10 @@
 - Then parsing the text
 - It works as long as OCR doesn't do stupid stuff
 
+## Known quirks
+ - Text recognition sometimes confuses 8, 3 and 6 
+    - you'll have to adjust craft levels and counts if affected yourself in this case
+
 ## Getting started
 
 - Requires [AHK 1.1.33.02](https://www.autohotkey.com/download/ahk-install.exe)
@@ -19,6 +23,11 @@
 
 ```
 Warning: This line will never execute, due to Return precceding it
+```
+or
+```
+Line Text: switch group {
+Error: This line does not contain a recognized action
 ```
 
 - Download last release of Capture2Text: https://sourceforge.net/projects/capture2text/files/Capture2Text/

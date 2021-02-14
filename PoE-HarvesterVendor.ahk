@@ -3,10 +3,10 @@
 #SingleInstance Force
 SetWorkingDir %A_ScriptDir% 
 global version := "0.3.1"
-global augmetnCounter := 1
-global removeCounter := 1
-global raCounter := 1
-global otherCounter := 1
+global ACounter := 1
+global RCounter := 1
+global RAcounter := 1
+global Ocounter := 1
 global outArrayCount := 0
 global outArray := []		
 ;global newArray := []    
@@ -72,6 +72,7 @@ return
 postAll:
 	createPost("All")
 return
+
 price:
 	GuiControlGet, priceField, FocusV
 	guiControlGet, craftPrice,, %priceField%, value
@@ -90,6 +91,19 @@ price:
 		iniWrite, %craftPrice%, %A_WorkingDir%/settings.ini, Prices, %craftName%
 	}
 return
+
+clearRow:
+	guiControlGet, clearButton, FocusV
+	buttonSplit := StrSplit(clearButton,"_")
+	g := buttonSplit[1]
+	r := buttonSplit[3]
+
+	 GuiControl,, %g%_craft_%r%
+	 GuiControl,, %g%_count_%r%, 0
+	 GuiControl,, %g%_price_%r%
+	 %g%Counter -= 1
+return
+
 LeagueDropdown:
     guiControlGet, selectedLeague,,League, value
     iniWrite, %selectedLeague%, %A_WorkingDir%/settings.ini, selectedLeague, s
@@ -183,14 +197,16 @@ buildGUI() {
     Gui Add, Groupbox, x%Ax_groupbox% y35 w290 h300, Augment
     Gui Font
 
+	
     yrow1 := 80
     loop, 10 {
-        yrow1_cbOffset := yrow1 + 5
+        yrow1_cbOffset := yrow1 + 1
         Gui Add, Edit, x%Ax_count% y%yrow1% w35 vA_count_%A_Index% 
         Gui Add, UpDown, Range0-20, 0
         Gui Add, Edit, x%Ax_craft% y%yrow1% w%Awidth% vA_craft_%A_Index% 
         Gui Add, Edit, x%Ax_price% y%yrow1% w35 vA_price_%A_Index% gprice
-        Gui Add, CheckBox, x%Ax_checkbox% y%yrow1_cbOffset% w23 vA_cb_%A_Index% 
+        
+		gui add, Button, x%Ax_checkbox% y%yrow1_cbOffset% w19 h19 vA_del_%A_Index% gClearRow, X 
         yrow1 += 25
     }
 
@@ -210,12 +226,13 @@ buildGUI() {
 
     yrow1 := 80
     loop, 10 {
-        yrow1_cbOffset := yrow1 + 5
+        yrow1_cbOffset := yrow1 + 1
         Gui Add, Edit, x%Rx_count% y%yrow1% w35 vR_count_%A_Index%
         Gui Add, UpDown, Range0-20, 0
         Gui Add, Edit, x%Rx_craft% y%yrow1% w%Rwidth% vR_craft_%A_Index%
         Gui Add, Edit, x%Rx_price% y%yrow1% w35 vR_price_%A_Index% gprice
-        Gui Add, CheckBox, x%Rx_checkbox% y%yrow1_cbOffset% w23 vR_cb_%A_Index%
+     
+	    gui add, Button, x%Rx_checkbox% y%yrow1_cbOffset% w19 h19 vR_del_%A_Index% gClearRow, X 
         yrow1 += 25
     }
 
@@ -235,12 +252,13 @@ buildGUI() {
 
     yrow1 := 80
     loop, 10 {
-        yrow1_cbOffset := yrow1 + 5
+        yrow1_cbOffset := yrow1 + 1
         Gui Add, Edit, x%RAx_count% y%yrow1% w35 vRA_count_%A_Index%
         Gui Add, UpDown, Range0-20, 0
         Gui Add, Edit, x%RAx_craft% y%yrow1% w%RAwidth% vRA_craft_%A_Index%
         Gui Add, Edit, x%RAx_price% y%yrow1% w35 vRA_price_%A_Index% gprice
-        Gui Add, CheckBox, x%RAx_checkbox% y%yrow1_cbOffset% w23 vRA_cb_%A_Index%
+        
+		gui add, Button, x%RAx_checkbox% y%yrow1_cbOffset% w19 h19 vRA_del_%A_Index% gClearRow, X 
         yrow1 += 25
     }
 
@@ -260,12 +278,13 @@ buildGUI() {
 
     yrow1 := 80
     loop, 10 {
-        yrow1_cbOffset := yrow1 + 5
+        yrow1_cbOffset := yrow1 + 1
         Gui Add, Edit, x%Ox_count% y%yrow1% w35 vO_count_%A_Index%
         Gui Add, UpDown, Range0-20, 0
         Gui Add, Edit, x%Ox_craft% y%yrow1% w%Owidth% vO_craft_%A_Index%
         Gui Add, Edit, x%Ox_price% y%yrow1% w35 vO_price_%A_Index% gprice
-        Gui Add, CheckBox, x%Ox_checkbox% y%yrow1_cbOffset% w23 vO_cb_%A_Index%
+        
+		gui add, Button, x%Ox_checkbox% y%yrow1_cbOffset% w19 h19 vO_del_%A_Index% gClearRow, X 
         yrow1 += 25
     }
 
@@ -314,10 +333,12 @@ processCrafts() {
 					if InStr(Arrayed[index], "Lucky") > 0 {											
 						outArrayCount += 1
 						outArray[outArrayCount] := "Augment " . augments[a] . " Lucky lv" . getLVL(Arrayed[index]) 
+						continue
 					} 
 					else {
 						outArrayCount += 1
 						outArray[outArrayCount] := "Augment " . augments[a] . " lv" . getLVL(Arrayed[index])
+						continue
 					}
 				}
 			}
@@ -330,6 +351,7 @@ processCrafts() {
 						if InStr(Arrayed[index], remAddsClean[a]) > 0  {
 							outArrayCount += 1
 							outArray[outArrayCount] := "Remove non-" . remAddsClean[a] . " add " . remAddsClean[a] . " lv" . getLVL(Arrayed[index]) 
+							continue
 						}
 					}
 				} 
@@ -338,6 +360,7 @@ processCrafts() {
 						if InStr(Arrayed[index], remAddsClean[a]) > 0  {
 							outArrayCount += 1
 							outArray[outArrayCount] := "Remove " . remAddsClean[a] . " add " . remAddsClean[a] . " lv" . getLVL(Arrayed[index]) 
+							continue
 						}
 					}
 				}				
@@ -347,6 +370,7 @@ processCrafts() {
 					if InStr(Arrayed[index], augments[a]) > 0 {
 						outArrayCount += 1
 						outArray[outArrayCount] := "Remove " . augments[a] . " lv" . getLVL(Arrayed[index]) 
+						continue
 					}
 				}	
 			}			
@@ -360,20 +384,24 @@ processCrafts() {
 				if InStr(Arrayed[index], "Lucky") > 0 {
 					outArrayCount += 1
 					outArray[outArrayCount] := "Reforge keep Prefixes Lucky lv" . getLVL(Arrayed[index])
+					continue
 				} 
 				else {
 					outArrayCount += 1
 					outArray[outArrayCount] := "Reforge keep Prefixes lv" . getLVL(Arrayed[index])
+					continue
 				}			
 			}
 			else if InStr(Arrayed[index], "Suffixes") > 0 {	
 				if InStr(Arrayed[index], "Lucky") > 0 {
 					outArrayCount += 1
 					outArray[outArrayCount] := "Reforge keep Suffixes Lucky lv" . getLVL(Arrayed[index])
+					continue
 				}
 				else {
 					outArrayCount += 1
 					outArray[outArrayCount] := "Reforge keep Suffixes lv" . getLVL(Arrayed[index])	
+					continue
 				}
 			}			
 			;links
@@ -381,6 +409,7 @@ processCrafts() {
 				if InStr(Arrayed[index],"six") > 0 {
 					outArrayCount += 1
 					outArray[outArrayCount] := "Six link (6-link) lv" . getLVL(Arrayed[index])
+					continue
 				}	
 			} 
 			else if (InStr(Arrayed[index], "colour") > 0 and InStr(Arrayed[index], "10 times") = 0) {		
@@ -388,18 +417,21 @@ processCrafts() {
 					if InStr(Arrayed[index], reforgeNonColor[a]) > 0 {
 						outArrayCount += 1
 						outArray[outArrayCount] := "Reforge " . reforgeNonColor[a] . " into " . StrReplace(reforgeNonColor[a], "non-") . " lv" . getLVL(Arrayed[index])
+						continue
 					} 
 				}
 				for b in reforge2color {
 					if InStr(Arrayed[index], reforge2color[b]) > 0 {
 						outArrayCount += 1
 						outArray[outArrayCount] := "Reforge into " . StrReplace(reforge2color[b],"them ") . " lv" . getLVL(Arrayed[index])
+						continue
 					}
 				}	
 			} 
 			else if InStr(Arrayed[index], "Influence") > 0 {				
 				outArrayCount += 1
 				outArray[outArrayCount] := "Reforge with Influence mod more common lv" . getLVL(Arrayed[index])
+				continue
 			}
 			else {
 				;outArrayCount += 1
@@ -419,6 +451,7 @@ processCrafts() {
 						tempArray := ["inc","inc","inc","reduced"]
 						outArrayCount += 1
 						outArray[outArrayCount] := "Enchant Flask: " . tempArray[a] . " " . flaskEnchants[a] . " lv" . getLVL(Arrayed[index])
+						continue
 					}
 				}
 			}
@@ -429,6 +462,7 @@ processCrafts() {
 					if InStr(Arrayed[index], weapEnchants[a]) > 0 {
 						outArrayCount += 1
 						outArray[outArrayCount] := "Enchant Weapon: " . weapEnchants[a] . " lv" . getLVL(Arrayed[index])
+						continue
 					}
 				}
 			}			
@@ -438,12 +472,14 @@ processCrafts() {
 					if InStr(Arrayed[index], bodyEnchants[a]) > 0 {
 						outArrayCount += 1
 						outArray[outArrayCount] := "Enchant Body: " . bodyEnchants[a] . " lv" . getLVL(Arrayed[index])
+						continue
 					}
 				}
 			}	
 			else if InStr(Arrayed[index], "Sextant") > 0 {
 				outArrayCount += 1
 				outArray[outArrayCount] := "Enchant Map: no Sextant use" . " lv" . getLVL(Arrayed[index])
+				continue
 			}
 		}
 		;Attempt
@@ -452,11 +488,13 @@ processCrafts() {
 			if InStr(Arrayed[index], "Awaken") > 0 {
 				outArrayCount += 1
 				outArray[outArrayCount] := "Attempt to Awaken a level 20 Support Gem" . " lv" . getLVL(Arrayed[index])
+				continue
 			}
 			;scarab upgrade
 			else if InStr(Arrayed[index], "Scarab") > 0 {
 				outArrayCount += 1
 				outArray[outArrayCount] := "Attempt to upgrade a Scarab" . " lv" . getLVL(Arrayed[index])
+				continue
 			}	
 		}
 		;Change
@@ -472,30 +510,36 @@ processCrafts() {
 					if InStr(Arrayed[index], "Cold") > 0 {
 						outArrayCount += 1
 						outArray[outArrayCount] := "Change Cold res to Fire res" . " lv" . getLVL(Arrayed[index])
+						continue
 					}
 					else if InStr(Arrayed[index], "Lightning") > 0 {
 						outArrayCount += 1
 						outArray[outArrayCount] := "Change Lightning res to Fire res" . " lv" . getLVL(Arrayed[index])
+						continue
 					}
 				}
 				else if max(fireVal, coldVal, lightVal) == coldVal {
 					if InStr(Arrayed[index], "Fire") > 0 {
 						outArrayCount += 1
 						outArray[outArrayCount] := "Change Fire res to Cold res" . " lv" . getLVL(Arrayed[index])
+						continue
 					}
 					else if InStr(Arrayed[index], "Lightning") > 0 {
 						outArrayCount += 1
 						outArray[outArrayCount] := "Change Lightning res to Cold res" . " lv" . getLVL(Arrayed[index])
+						continue
 					}
 				}
 				else if max(fireVal, coldVal, lightVal) == lightVal {
 					if InStr(Arrayed[index], "Fire") > 0 {
 						outArrayCount += 1
 						outArray[outArrayCount] := "Change Fire res to Lightning res" . " lv" . getLVL(Arrayed[index])
+						continue
 					}
 					else if InStr(Arrayed[index], "Cold") > 0 {
 						outArrayCount += 1
 						outArray[outArrayCount] := "Change Cold res to Lightning res" . " lv" . getLVL(Arrayed[index])
+						continue
 					}
 				}				
 			} else {
@@ -511,11 +555,13 @@ processCrafts() {
 						if InStr(Arrayed[index],"quality")	> 0 {
 							outArrayCount += 1
 							outArray[outArrayCount] := "Sacrifice gem, get " . gemPerc[a] . " qual as GCP" . " lv" . getLVL(Arrayed[index])
+							continue
 						}
 					
 						else if InStr(Arrayed[index],"experience") {
 							outArrayCount += 1
 							outArray[outArrayCount] := "Sacrifice gem, get " . gemPerc[a] . " exp as Lens" . " lv" . getLVL(Arrayed[index])
+							continue
 						}
 					}
 				}		
@@ -526,10 +572,12 @@ processCrafts() {
 				if InStr(Arrayed[index], "half a stack") > 1 {
 					outArrayCount += 1
 					outArray[outArrayCount] :=  "Sacrifice Div Cards" . " lv" . getLVL(Arrayed[index])
+					continue
 				}
 				;skipping this:
 				;	Sacrifice a stack of Divination Cards for that many different Divination Cards
 			} else {
+				continue
 				;ignores the rest of sacrifice crafts:
 					;Sacrifice or Mortal Fragment into another random Fragment of that type
 					;Sacrificie Maps for same or lower tier stuff
@@ -549,10 +597,12 @@ processCrafts() {
 			if InStr(Arrayed[index], "Flask") > 0 {
 				outArrayCount += 1
 				outArray[outArrayCount] := "Improves the Quality of a Flask" . " lv" . getLVL(Arrayed[index])
+				continue
 			}
 			else if InStr(Arrayed[index], "Gem") > 0 {
 				outArrayCount += 1
 				outArray[outArrayCount] := "Improves the Quality of a Gem" . " lv" . getLVL(Arrayed[index])
+				continue
 			}
 		}	
 		
@@ -561,6 +611,7 @@ processCrafts() {
 				if InStr(Arrayed[index], fracture[a]) > 0 {
 					outArrayCount += 1
 					outArray[outArrayCount] := "Fracture " . fracture[a] . " lv" . getLVL(Arrayed[index])
+					continue
 				}
 			}
 		} 		
@@ -568,14 +619,17 @@ processCrafts() {
 			if InStr(Arrayed[index], "Implicit") > 0 {
 				outArrayCount += 1
 				outArray[outArrayCount] := "Reroll All Lucky lv" . getLVL(Arrayed[index])
+				continue
 			} 
 			else if InStr(Arrayed[index], "Prefix") > 0 {
 				outArrayCount += 1
 				outArray[outArrayCount] := "Reroll Prefix Lucky lv" . getLVL(Arrayed[index])
+				continue
 			}
 			else if InStr(Arrayed[index], "Suffix") > 0 {
 				outArrayCount += 1
 				outArray[outArrayCount] := "Reroll Suffix Lucky lv" . getLVL(Arrayed[index])
+				continue
 			}			
 		}
 		else if InStr(Arrayed[index], "Randomise") = 1 {
@@ -583,6 +637,7 @@ processCrafts() {
 				if InStr(Arrayed[index], augments[a]) > 0 {
 					outArrayCount += 1
 					outArray[outArrayCount]	:= "Randomise values of " . augments[a] . " mods lv" . getLVL(Arrayed[index])
+					continue
 				}
 			}		
 		}
@@ -592,6 +647,7 @@ processCrafts() {
 				if InStr(Arrayed[index],addInfluence[a]) > 0 {
 					outArrayCount += 1
 					outArray[outArrayCount] := 	"Add Influence to " . addInfluence[a] . " lv" . getLVL(Arrayed[index])
+					continue
 				}
 			}
 		}		
@@ -599,23 +655,28 @@ processCrafts() {
 			if InStr(Arrayed[index], "Prismatic") > 0 {
 				outArrayCount += 1
 				outArray[outArrayCount] := "Set Implicit basic Jewel" . " lv" . getLVL(Arrayed[index])
+				continue
 			}
 			else if InStr(Arrayed[index], "Timeless") > 0 {
 				outArrayCount += 1
 				outArray[outArrayCount] := "Set Implicit Abyss/Timeless Jewel" . " lv" . getLVL(Arrayed[index])
+				continue
 			}
 			else if InStr(Arrayed[index], "Cluster") > 0 {
 				outArrayCount += 1
 				outArray[outArrayCount] := "Set Implicit Cluster Jewel"	. " lv" . getLVL(Arrayed[index])
+				continue
 			}				
 		}
 		;Synthesise
 		else if InStr(Arrayed[index], "Synthesise") = 1 {			
 			outArrayCount += 1
 			outArray[outArrayCount] := "Synthesise an item" . " lv" . getLVL(Arrayed[index])
+			continue
 		}
 
 		else if InStr(Arrayed[index], "Corrupt") = 1 {	
+			continue
 			;Corrupt an item 10 times, or until getting a corrupted implicit modifier
 
 			;outArrayCount += 1
@@ -625,16 +686,19 @@ processCrafts() {
 	 ; and i do realize i could put them in a single if, but this way its already neatly split if i might want to add them into processing 	
 		;Exchange 
 		else if InStr(Arrayed[index], "Exchange") = 1 {
+			continue
 			;skipping all exchange crafts assuming anybody would just use them for themselfs
 			
 		} 
 		;Upgrade
 		else if InStr(Arrayed[index], "Upgrade") = 1 {
+			continue
 			;skipping upgrade crafts
 			
 		}	
 	
 		else if InStr(Arrayed[index], "Split") = 1 {
+			continue
 			;skipping Split scarab craft			
 		}	
 
@@ -670,19 +734,15 @@ clearAll() {
         GuiControl,, R_count_%A_Index%, 0
         GuiControl,, RA_count_%A_Index%, 0
         GuiControl,, O_count_%A_Index%, 0
-        GuiControl,, A_cb_%A_Index%, 0
-        GuiControl,, R_cb_%A_Index%, 0
-        GuiControl,, RA_cb_%A_Index%, 0
-        GuiControl,, O_cb_%A_Index%, 0
 		GuiControl,, A_price_%A_Index%
         GuiControl,, R_price_%A_Index%
         GuiControl,, RA_price_%A_Index%
         GuiControl,, O_price_%A_Index%
 		}
-        augmetnCounter := 1
-        removeCounter := 1
-        raCounter := 1
-        otherCounter := 1
+        ACounter := 1
+        RCounter := 1
+        RAcounter := 1
+        Ocounter := 1
         outArray := []
         arr := []
 }
@@ -725,7 +785,9 @@ getRowData(group, row) {
 	GuiControlGet, tempCount,, %group%_count_%row%, value
 	GuiControlGet, tempCraft,, %group%_craft_%row%, value
 	GuiControlGet, tempPrice,, %group%_price_%row%, value
-	GuiControlGet, tempCheck,, %group%_cb_%row%, value
+	if (tempCount > 0 and tempCraft != ""){
+		tempCheck := 1
+	}
 
 	return [tempCount, tempCraft, tempPrice, tempCheck]
 }
@@ -908,7 +970,7 @@ getLVL(craft) {
 	lvlpos := RegExMatch(craft, "Level \d\d") + 6
 	lv := substr(craft, lvlpos, 2)
 	if RegExMatch(lv, "\d\d") > 0 {			
-		if substr(craft, -1) >= 76 {
+		if RegExReplace(substr(craft, -1)," +") >= 76 {
 			return "76+"
 		} 
 		else {
@@ -925,7 +987,7 @@ inify(str){
 insertIntoRow(group, rowCounter, craft) {
     GuiControl,, %group%_craft_%rowCounter%, %craft%
     GuiControl,, %group%_count_%rowCounter%, 1
-    GuiControl,, %group%_cb_%rowCounter%, 1
+   
 	craft := unlevel(craft)
 	iniRead, tempP, %A_WorkingDir%/settings.ini, Prices, %craft%
 	;msgbox,  %group%_price_%rowCounter% -- %tempP%
@@ -938,13 +1000,13 @@ insertIntoRow(group, rowCounter, craft) {
 
 CraftSort(ar) {
     tempC := ""
-    for k in ar {        
+    for k in ar {   
         ;augment
         if InStr(ar[k], "Augment") = 1 {       
             tempC := ar[k]
             if not incCraftCount("A", tempC) {
-				insertIntoRow("A",augmetnCounter,tempC)                
-                augmetnCounter += 1
+				insertIntoRow("A",ACounter,tempC)                
+                ACounter += 1
             }
 			if (strLen(tempC) > AMaxLen) {
 				AMaxLen := strLen(tempC)
@@ -953,11 +1015,11 @@ CraftSort(ar) {
         }        
         ;remove
         else if InStr(ar[k], "Remove") = 1 and InStr(ar[k], "add") = 0 {
-            ;msgbox, Remove %removeCounter%
+            ;msgbox, Remove %RCounter%
             tempC := ar[k]
             if not incCraftCount("R", tempC) {
-                insertIntoRow("R",removeCounter,tempC)  
-                removeCounter += 1
+                insertIntoRow("R",RCounter,tempC)  
+                RCounter += 1
             }
 			if (strLen(tempC) > RMaxLen) {
 				RMaxLen := strLen(tempC)
@@ -965,11 +1027,11 @@ CraftSort(ar) {
         }
         ;remove/add
         else if InStr(ar[k], "Remove") = 1 and InStr(ar[k], "add") > 0 and InStr(ar[k], "non") = 0 {
-            ;msgbox, RA %raCounter%
+            ;msgbox, RA %RAcounter%
             tempC := ar[k]
             if not incCraftCount("RA", tempC) {
-                insertIntoRow("RA",raCounter,tempC)
-                raCounter += 1
+                insertIntoRow("RA",RAcounter,tempC)
+                RAcounter += 1
             }
 			if (strLen(tempC) > RAMaxLen) {
 				RAMaxLen := strLen(tempC)
@@ -978,11 +1040,11 @@ CraftSort(ar) {
         ;other
         else {
         ;if InStr(ar[index], "Augment") = 0 and InStr(ar[index], "add") > 0 and InStr(ar[index], "non") = 0 {
-            ;msgbox, O %otherCounter%
+            ;msgbox, O %Ocounter%
             tempC := ar[k]
             if not incCraftCount("O", tempC) {
-                insertIntoRow("O",otherCounter,tempC)
-                otherCounter += 1
+                insertIntoRow("O",Ocounter,tempC)
+                Ocounter += 1
             }
 			if (strLen(tempC) > OMaxLen) {
 				OMaxLen := strLen(tempC)
@@ -1439,16 +1501,16 @@ global A_price_7
 global A_price_8
 global A_price_9
 global A_price_10
-global A_cb_1
-global A_cb_2
-global A_cb_3
-global A_cb_4
-global A_cb_5
-global A_cb_6
-global A_cb_7
-global A_cb_8
-global A_cb_9
-global A_cb_10
+global A_del_1
+global A_del_2
+global A_del_3
+global A_del_4
+global A_del_5
+global A_del_6
+global A_del_7
+global A_del_8
+global A_del_9
+global A_del_10
 global R_count_1
 global R_count_2
 global R_count_3
@@ -1479,16 +1541,16 @@ global R_price_7
 global R_price_8
 global R_price_9
 global R_price_10
-global R_cb_1
-global R_cb_2
-global R_cb_3
-global R_cb_4
-global R_cb_5
-global R_cb_6
-global R_cb_7
-global R_cb_8
-global R_cb_9
-global R_cb_10
+global R_del_1
+global R_del_2
+global R_del_3
+global R_del_4
+global R_del_5
+global R_del_6
+global R_del_7
+global R_del_8
+global R_del_9
+global R_del_10
 global RA_count_1
 global RA_count_2
 global RA_count_3
@@ -1519,16 +1581,16 @@ global RA_price_7
 global RA_price_8
 global RA_price_9
 global RA_price_10
-global RA_cb_1
-global RA_cb_2
-global RA_cb_3
-global RA_cb_4
-global RA_cb_5
-global RA_cb_6
-global RA_cb_7
-global RA_cb_8
-global RA_cb_9
-global RA_cb_10
+global RA_del_1
+global RA_del_2
+global RA_del_3
+global RA_del_4
+global RA_del_5
+global RA_del_6
+global RA_del_7
+global RA_del_8
+global RA_del_9
+global RA_del_10
 global O_count_1
 global O_count_2
 global O_count_3
@@ -1559,13 +1621,13 @@ global O_price_7
 global O_price_8
 global O_price_9
 global O_price_10
-global O_cb_1
-global O_cb_2
-global O_cb_3
-global O_cb_4
-global O_cb_5
-global O_cb_6
-global O_cb_7
-global O_cb_8
-global O_cb_9
-global O_cb_10
+global O_del_1
+global O_del_2
+global O_del_3
+global O_del_4
+global O_del_5
+global O_del_6
+global O_del_7
+global O_del_8
+global O_del_9
+global O_del_10
