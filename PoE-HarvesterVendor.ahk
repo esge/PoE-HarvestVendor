@@ -72,7 +72,24 @@ return
 postAll:
 	createPost("All")
 return
+price:
+	GuiControlGet, priceField, FocusV
+	guiControlGet, craftPrice,, %priceField%, value
+	priceFieldArray := strsplit(priceField,"_")
+	
+	if (priceFieldArray[2] == "price") {
+	;vA_price_%A_Index% A price i
+		g := priceFieldArray[1] ;group
+		r := priceFieldArray[3] ;row
 
+		guiControlGet, craftName,, %g%_craft_%r%, value
+		craftName := unlevel(craftName)
+
+		;msgbox % craftPrice . " -- " . craftName . " -- " . priceField
+		;craftName := inify(craftName)
+		iniWrite, %craftPrice%, %A_WorkingDir%/settings.ini, Prices, %craftName%
+	}
+return
 LeagueDropdown:
     guiControlGet, selectedLeague,,League, value
     iniWrite, %selectedLeague%, %A_WorkingDir%/settings.ini, selectedLeague, s
@@ -103,6 +120,13 @@ Gui, HarvestUI:Default
 return
 ;Test_button:
 ;return
+
+
+
+unlevel(craft){
+	return regexreplace(craft,"( lv\d{1,2}\+?)")
+}
+
 buildGUI() {    
     firstGuiOpen := 1
     Gui HarvestUI:New,, PoE-HarvestVendor v%version%	
@@ -165,7 +189,7 @@ buildGUI() {
         Gui Add, Edit, x%Ax_count% y%yrow1% w35 vA_count_%A_Index% 
         Gui Add, UpDown, Range0-20, 0
         Gui Add, Edit, x%Ax_craft% y%yrow1% w%Awidth% vA_craft_%A_Index% 
-        Gui Add, Edit, x%Ax_price% y%yrow1% w35 vA_price_%A_Index% 
+        Gui Add, Edit, x%Ax_price% y%yrow1% w35 vA_price_%A_Index% gprice
         Gui Add, CheckBox, x%Ax_checkbox% y%yrow1_cbOffset% w23 vA_cb_%A_Index% 
         yrow1 += 25
     }
@@ -190,7 +214,7 @@ buildGUI() {
         Gui Add, Edit, x%Rx_count% y%yrow1% w35 vR_count_%A_Index%
         Gui Add, UpDown, Range0-20, 0
         Gui Add, Edit, x%Rx_craft% y%yrow1% w%Rwidth% vR_craft_%A_Index%
-        Gui Add, Edit, x%Rx_price% y%yrow1% w35 vR_price_%A_Index%
+        Gui Add, Edit, x%Rx_price% y%yrow1% w35 vR_price_%A_Index% gprice
         Gui Add, CheckBox, x%Rx_checkbox% y%yrow1_cbOffset% w23 vR_cb_%A_Index%
         yrow1 += 25
     }
@@ -215,7 +239,7 @@ buildGUI() {
         Gui Add, Edit, x%RAx_count% y%yrow1% w35 vRA_count_%A_Index%
         Gui Add, UpDown, Range0-20, 0
         Gui Add, Edit, x%RAx_craft% y%yrow1% w%RAwidth% vRA_craft_%A_Index%
-        Gui Add, Edit, x%RAx_price% y%yrow1% w35 vRA_price_%A_Index%
+        Gui Add, Edit, x%RAx_price% y%yrow1% w35 vRA_price_%A_Index% gprice
         Gui Add, CheckBox, x%RAx_checkbox% y%yrow1_cbOffset% w23 vRA_cb_%A_Index%
         yrow1 += 25
     }
@@ -240,7 +264,7 @@ buildGUI() {
         Gui Add, Edit, x%Ox_count% y%yrow1% w35 vO_count_%A_Index%
         Gui Add, UpDown, Range0-20, 0
         Gui Add, Edit, x%Ox_craft% y%yrow1% w%Owidth% vO_craft_%A_Index%
-        Gui Add, Edit, x%Ox_price% y%yrow1% w35 vO_price_%A_Index%
+        Gui Add, Edit, x%Ox_price% y%yrow1% w35 vO_price_%A_Index% gprice
         Gui Add, CheckBox, x%Ox_checkbox% y%yrow1_cbOffset% w23 vO_cb_%A_Index%
         yrow1 += 25
     }
@@ -890,11 +914,21 @@ getLVL(craft) {
 		return 0
 	}
 }
-
+inify(str){
+	return strReplace(str, " ", "_")
+}
 insertIntoRow(group, rowCounter, craft) {
     GuiControl,, %group%_craft_%rowCounter%, %craft%
     GuiControl,, %group%_count_%rowCounter%, 1
     GuiControl,, %group%_cb_%rowCounter%, 1
+	craft := unlevel(craft)
+	iniRead, tempP, %A_WorkingDir%/settings.ini, Prices, %craft%
+	;msgbox,  %group%_price_%rowCounter% -- %tempP%
+	if (tempP == "ERROR")
+		{
+			tempP := ""
+		}
+	GuiControl,, %group%_price_%rowCounter%, %tempP%
 }
 
 CraftSort(ar) {
