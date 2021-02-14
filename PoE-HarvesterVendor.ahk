@@ -924,6 +924,7 @@ incCraftCount(group, craft) {
 				return true
 			}
 		}	
+	}
 	if (group == "O") {			
 		loop, 10 {
 			GuiControlGet, craftCheck,, O_craft_%A_Index%, value
