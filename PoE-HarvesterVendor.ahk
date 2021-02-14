@@ -281,7 +281,14 @@ processCrafts() {
 	
 	outArray := []
     
-	getSelectionCoords(x_start, x_end, y_start, y_end)
+	;getSelectionCoords(x_start, x_end, y_start, y_end)
+	coordTemp := selectArea("cffc555 t50 ms")
+	x_start := coordTemp[1]
+	y_start := coordTemp[3]
+	x_end := coordTemp[2]
+	y_end := coordTemp[4]
+
+
 	Tooltip, Please Wait
 	command = Capture2Text\Capture2Text.exe -s `"%x_start% %y_start% %x_end% %y_end%`" -o temp.txt -l English --trim-capture 
 	RunWait, %command%
@@ -1093,59 +1100,82 @@ checkFiles() {
 ; ========================================================================
 ; ======================== stuff i copied from internet ==================
 ; ========================================================================
-getSelectionCoords(ByRef x_start, ByRef x_end, ByRef y_start, ByRef y_end) {
-	;Mask Screen
-    Gui, Select:New
-	Gui, Color, FFFFFF
+
+SelectArea(Options="") { ; by Learning one
+/*
+Returns selected area. Return example: 22|13|243|543
+Options: (White space separated)
+- c color. Default: Blue.
+- t transparency. Default: 50.
+- g GUI number. Default: 99.
+- m CoordMode. Default: s. s = Screen, r = Relative
+*/
+;full screen overlay
+	Gui, Select:New
+	Gui, Color, 141414
 	Gui +LastFound
-	WinSet, Transparent, 50
-    Gui, -Caption 
+	gui +ToolWindow
+	WinSet, Transparent, 120
+	Gui, -Caption 
 	Gui, +AlwaysOnTop
 	Gui, Select:Show, x0 y0 h%A_ScreenHeight% w%A_ScreenWidth%,"AutoHotkeySnapshotApp"     
-
-	;Drag Mouse
-	CoordMode, Mouse, Screen
-	CoordMode, Tooltip, Screen
-	WinGet, hw_frame_m,ID,"AutoHotkeySnapshotApp"
-	hdc_frame_m := DllCall( "GetDC", "uint", hw_frame_m)
+	
 	KeyWait, LButton, D 
-	MouseGetPos, scan_x_start, scan_y_start 
-	Loop
+	CoordMode, Mouse, Screen
+	MouseGetPos, MX, MY
+	CoordMode, Mouse, Relative
+	MouseGetPos, rMX, rMY
+	CoordMode, Mouse, Screen
+
+	loop, parse, Options, %A_Space%	
 	{
-		Sleep, 10   
-		KeyIsDown := GetKeyState("LButton")
-		if (KeyIsDown = 1)
+		Field := A_LoopField
+		FirstChar := SubStr(Field,1,1)
+		if FirstChar contains c,t,g,m
 		{
-			MouseGetPos, scan_x, scan_y 
-			DllCall( "gdi32.dll\Rectangle", "uint", hdc_frame_m, "int", 0,"int",0,"int", A_ScreenWidth,"int",A_ScreenWidth)
-			DllCall( "gdi32.dll\Rectangle", "uint", hdc_frame_m, "int", scan_x_start,"int",scan_y_start,"int", scan_x,"int",scan_y)
-		} else {
-			break
+			StringTrimLeft, Field, Field, 1
+			%FirstChar% := Field
 		}
 	}
-
-	;KeyWait, LButton, U
-	MouseGetPos, scan_x_end, scan_y_end
+	c := (c = "") ? "Blue" : c, t := (t = "") ? "50" : t, g := (g = "") ? "99" : g , m := (m = "") ? "s" : m
+	Gui %g%: Destroy
+	Gui %g%: +AlwaysOnTop -caption +Border +ToolWindow +LastFound
+	WinSet, Transparent, %t%
+	Gui %g%: Color, %c%
+	;Hotkey := RegExReplace(A_ThisHotkey,"^(\w* & |\W*)")
+	While, (GetKeyState("LButton"))
+	{
+		Sleep, 10
+		MouseGetPos, MXend, MYend
+		w := abs(MX - MXend), h := abs(MY - MYend)
+		X := (MX < MXend) ? MX : MXend
+		Y := (MY < MYend) ? MY : MYend
+		Gui %g%: Show, x%X% y%Y% w%w% h%h% NA
+	}
+	Gui %g%: Destroy
 	Gui Select:Destroy
 	Gui, HarvestUI:Default
-	if (scan_x_start < scan_x_end)
+	if m = s ; Screen
 	{
-		x_start := scan_x_start
-		x_end := scan_x_end
-	} else {
-		x_start := scan_x_end
-		x_end := scan_x_start
+		MouseGetPos, MXend, MYend
+		If ( MX > MXend )
+			temp := MX, MX := MXend, MXend := temp
+		If ( MY > MYend )
+			temp := MY, MY := MYend, MYend := temp
+		Return [MX,MXend,MY,MYend]
 	}
-	
-	if (scan_y_start < scan_y_end)
+	else ; Relative
 	{
-		y_start := scan_y_start
-		y_end := scan_y_end
-	} else {
-		y_start := scan_y_end
-		y_end := scan_y_start
+		CoordMode, Mouse, Relative
+		MouseGetPos, rMXend, rMYend
+		If ( rMX > rMXend )
+			temp := rMX, rMX := rMXend, rMXend := temp
+		If ( rMY > rMYend )
+			temp := rMY, rMY := rMYend, rMYend := temp
+		Return [rMX,rMXend,rMY,rMYend]
 	}
 }
+
 ;this is for tooltips to work, got it from examples from an AHK webinar
 WM_MOUSEMOVE()
 {
