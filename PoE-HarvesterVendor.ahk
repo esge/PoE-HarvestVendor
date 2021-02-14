@@ -983,11 +983,20 @@ getLeagues() {
 }
 
 getVersion() {
-	ver := ComObjCreate("WinHttp.WinHttpRequest.5.1")
-    ver.Open("GET", "https://raw.githubusercontent.com/esge/PoE-HarvestVendor/master/version.txt", false)
-    ver.SetRequestHeader("Content-Type", "application/json")
-    ;oWhr.SetRequestHeader("Authorization", "Bearer 80b44ea9c302237f9178a137d9e86deb-20083fb12d9579469f24afa80816066b")
-    ver.Send()
+    versionUrl :=  "https://raw.githubusercontent.com/esge/PoE-HarvestVendor/master/version.txt"
+    if FileExist("curl.exe") {
+        ; Hack for people with outdated certificates
+        shell := ComObjCreate("WScript.Shell")
+        exec := shell.Exec("curl.exe -k " . versionUrl)
+        response := exec.StdOut.ReadAll()
+    } else {
+        ver := ComObjCreate("WinHttp.WinHttpRequest.5.1")
+        ver.Open("GET", "https://raw.githubusercontent.com/esge/PoE-HarvestVendor/master/version.txt", false)
+        ver.SetRequestHeader("Content-Type", "application/json")
+        ;oWhr.SetRequestHeader("Authorization", "Bearer 80b44ea9c302237f9178a137d9e86deb-20083fb12d9579469f24afa80816066b")
+        ver.Send()
+        response := ver.ResponseText
+    }
     return StrReplace(StrReplace(ver.ResponseText,"`r"),"`n")
 }
 
