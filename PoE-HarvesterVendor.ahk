@@ -47,10 +47,12 @@ getLeagues()
 return
 
 ^+g:: ;ctrl+shift+g opens the gui, yo go from there
-    buildGUI()
+	 if (firstGuiOpen == 0) {
+    	buildGUI()
+	 }
     Gui, HarvestUI:Show, w1225 h370
 	OnMessage(0x200, "WM_MOUSEMOVE")
-	clearAll()
+	;clearAll()
 Return
 
 GuiEscape:
