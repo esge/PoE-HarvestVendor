@@ -56,11 +56,7 @@ Error: This line does not contain a recognized action
 ![Recommended area](examples/snapshotArea.png)
 - You now have to set all prices for your crafts
 - Then you can click on "Create Posting" buttons to copy your selling message, here is an example:
-```
-WTS Ritual Softcore 
-  1x Remove Influence lv83 - 100c
-  2x Remove Speed lv83 - 2ex
-```
+![](examples/exampleMessage.png)
 
 # FAQ
 **Q. A craft i have in horticrafting station is not showing up in the result**  
