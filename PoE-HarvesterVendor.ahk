@@ -30,7 +30,10 @@ if (firstRun == 1) {
 	MsgBox, CTRL + SHIFT + G to open the gui`r`nCTRL + G to go straight into capture`r`n`r`nThis message will not appear again.
 	IniWrite, 0, %A_WorkingDir%/settings.ini, Other, firstRun 
 }
-
+iniRead, sc, %A_WorkingDir%/settings.ini, Other, scale
+if (sc == "ERROR") {
+	iniWrite, 1, %A_WorkingDir%/settings.ini, Other, scale
+}
 
 checkfiles()
 winCheck()
@@ -353,7 +356,7 @@ processCrafts() {
     sleep, 1000 ;sleep cos if i show the Gui too quick the capture will grab screenshot of gui   	
     Gui, HarvestUI:Show
 	Tooltip
-	if FileExist("temp.txt") {
+	if !FileExist("temp.txt") {
 		MsgBox, - We were unable to create temp.txt to store text recognition results.`r`n- The tool most likely doesnt have permission to write where it is.`r`n- Moving it into a location that isnt write protected, or running as admin will fix this.
 	}
 
@@ -1171,7 +1174,8 @@ Options: (White space separated)
 */
 ;full screen overlay
 iniRead tempMon, %A_WorkingDir%/settings.ini, other, mon
-scale := 1
+iniRead, scale, %A_WorkingDir%/settings.ini, Other, scale
+;scale := 1
 cover := monitorInfo(tempMon)
 coverX := cover[1]
 coverY := cover[2]

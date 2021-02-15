@@ -16,6 +16,10 @@
  - Text recognition sometimes confuses 8, 3 and 6 
     - you'll have to adjust craft levels and counts if affected yourself in this case
 
+ - drag area and darkening overlay are off:
+    - this is due to Display scaling in windows being other than 1
+    - to fix it open `settings.ini`, find the `scale=1` and change it to 1.25 for 125%, 1.5 for 150% and so on. and restart harvest vendor  
+
 ## Getting started
 
  - If you download the `.ahk` file:
