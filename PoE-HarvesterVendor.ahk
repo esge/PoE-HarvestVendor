@@ -828,7 +828,7 @@ getRowData(group, row) {
 readyTT() {
 	ClipWait
 
-    ToolTip, Post Ready,,,1
+    ToolTip, Paste Ready,,,1
 	sleep, 2000
 	Tooltip,,,,1
 }
@@ -950,54 +950,6 @@ createPost(group) {
     }    
 }
 
-incCraftCount(group, craft) {	
-	craftCheck := ""		
-	if (group == "A") {		
-		loop, 10 {
-			GuiControlGet, craftCheck,, A_craft_%A_Index%, value
-			if (craftCheck == craft) {    				
-				GuiCOntrolGet, craftCount,, A_count_%A_index%				
-				craftCount += 1 
-				GuiControl,, A_count_%A_Index%, %craftCount% 
-				return true 
-			}			
-		}			
-	}
-	if (group == "R") {			
-		loop, 10 {
-			GuiControlGet, craftCheck,, R_craft_%A_Index%, value
-			if (craftCheck == craft) {				
-				GuiCOntrolGet, craftCount,, R_count_%A_index%				
-				craftCount += 1
-				GuiControl,, R_count_%A_Index%, %craftCount%
-				return true
-			}	
-		}
-	}
-	if (group == "RA") {	
-		loop, 10 { 
-			GuiControlGet, craftCheck,, RA_craft_%A_Index%, value
-			if (craftCheck == craft) {				
-				GuiCOntrolGet, craftCount,, RA_count_%A_index%				
-				craftCount += 1
-				GuiControl,, RA_count_%A_Index%, %craftCount%
-				return true
-			}
-		}	
-	}
-	if (group == "O") {			
-		loop, 10 {
-			GuiControlGet, craftCheck,, O_craft_%A_Index%, value
-			if (craftCheck == craft) {				
-				GuiCOntrolGet, craftCount,, O_count_%A_index%				
-				craftCount += 1
-				GuiControl,, O_count_%A_Index%, %craftCount%
-				return true
-			}
-		}		
-	}
-}
-
 getLVL(craft) {
 	lvlpos := RegExMatch(craft, "Level \d\d") + 6
 	lv := substr(craft, lvlpos, 2)
@@ -1034,48 +986,72 @@ CraftSort(ar) {
     tempC := ""
     for k in ar {   
         ;augment
-        if InStr(ar[k], "Augment") = 1 {       
-            tempC := ar[k]
-            if not incCraftCount("A", tempC) {
-				insertIntoRow("A",ACounter,tempC)                
-                ACounter += 1
-            }
-			if (strLen(tempC) > AMaxLen) {
-				AMaxLen := strLen(tempC)
-			}
+        if InStr(ar[k], "Augment") = 1 {  
+			tempC := ar[k]  
+			loop, 10 {
+				GuiControlGet, isEmpty,, A_craft_%A_Index%, value
+				if (isEmpty == "") {
+					insertIntoRow("A", A_Index, tempC)	
+					break
+				} 
+				else if (isEmpty == tempC) {
+					GuiCOntrolGet, craftCount,, A_count_%A_index%				
+					craftCount += 1 
+					GuiControl,, A_count_%A_Index%, %craftCount%
+					break
+				}
+			}                
         }        
         ;remove
         else if InStr(ar[k], "Remove") = 1 and InStr(ar[k], "add") = 0 {            
             tempC := ar[k]
-            if not incCraftCount("R", tempC) {
-                insertIntoRow("R",RCounter,tempC)  
-                RCounter += 1
-            }
-			if (strLen(tempC) > RMaxLen) {
-				RMaxLen := strLen(tempC)
-			}
+			loop, 10 {
+				GuiControlGet, isEmpty,, R_craft_%A_Index%, value
+				if (isEmpty == "") {
+					insertIntoRow("R", A_Index, tempC)	
+					break
+				} 
+				else if (isEmpty == tempC) {
+					GuiCOntrolGet, craftCount,, R_count_%A_index%				
+					craftCount += 1 
+					GuiControl,, R_count_%A_Index%, %craftCount%
+					break
+				}
+			}      
         }
         ;remove/add
         else if InStr(ar[k], "Remove") = 1 and InStr(ar[k], "add") > 0 and InStr(ar[k], "non") = 0 {            
             tempC := ar[k]
-            if not incCraftCount("RA", tempC) {
-                insertIntoRow("RA",RAcounter,tempC)
-                RAcounter += 1
-            }
-			if (strLen(tempC) > RAMaxLen) {
-				RAMaxLen := strLen(tempC)
-			}
+            loop, 10 {
+				GuiControlGet, isEmpty,, RA_craft_%A_Index%, value
+				if (isEmpty == "") {
+					insertIntoRow("A", A_Index, tempC)	
+					break
+				} 
+				else if (isEmpty == tempC) {
+					GuiCOntrolGet, craftCount,, RA_count_%A_index%				
+					craftCount += 1 
+					GuiControl,, RA_count_%A_Index%, %craftCount%
+					break
+				}
+			} 			
         }
         ;other
         else {        
             tempC := ar[k]
-            if not incCraftCount("O", tempC) {
-                insertIntoRow("O",Ocounter,tempC)
-                Ocounter += 1
-            }
-			if (strLen(tempC) > OMaxLen) {
-				OMaxLen := strLen(tempC)
-			}
+			loop, 10 {
+				GuiControlGet, isEmpty,, O_craft_%A_Index%, value
+				if (isEmpty == "") {
+					insertIntoRow("O", A_Index, tempC)	
+					break
+				} 
+				else if (isEmpty == tempC) {
+					GuiCOntrolGet, craftCount,, O_count_%A_index%				
+					craftCount += 1 
+					GuiControl,, O_count_%A_Index%, %craftCount%
+					break
+				}
+			}             
         }
     }
 }
