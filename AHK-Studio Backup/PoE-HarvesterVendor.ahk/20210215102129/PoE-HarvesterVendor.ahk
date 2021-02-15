@@ -986,7 +986,7 @@ CraftSort(ar) {
     tempC := ""
     for k in ar {   
         ;augment
-        if InStr(ar[k], "Augment") = 1 { 
+        if InStr(ar[k], "Augment") = 1 {   ;*[PoE-HarvesterVendor]
 			tempC := ar[k]  
 			loop, 10 {
 				GuiControlGet, isEmpty,, A_craft_%A_Index%, value

@@ -986,7 +986,7 @@ CraftSort(ar) {
     tempC := ""
     for k in ar {   
         ;augment
-        if InStr(ar[k], "Augment") = 1 { 
+        if InStr(ar[k], "Augment") = 1 {  
 			tempC := ar[k]  
 			loop, 10 {
 				GuiControlGet, isEmpty,, A_craft_%A_Index%, value
@@ -1025,7 +1025,7 @@ CraftSort(ar) {
             loop, 10 {
 				GuiControlGet, isEmpty,, RA_craft_%A_Index%, value
 				if (isEmpty == "") {
-					insertIntoRow("RA", A_Index, tempC)	
+					insertIntoRow("A", A_Index, tempC)	
 					break
 				} 
 				else if (isEmpty == tempC) {

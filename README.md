@@ -47,7 +47,7 @@ Error: This line does not contain a recognized action
 - To start extracting your Horticrafts you have to press: **CTRL + SHIFT + G**
 
   (You can also start capture directly without using window by using: **CTRL + G**)
-- The tool window will appear, you have to select your league, add your IGN, then start the scanning
+- The tool window will appear, you have to select your league, add your IGN(optional), then start the scanning
   
 ![Tool window](examples/Description.png)
 - After clicking on "Add crafts", you have to drag from the top left corner of your craft to the bottom right. Here is
