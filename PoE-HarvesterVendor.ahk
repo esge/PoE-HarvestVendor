@@ -350,9 +350,13 @@ processCrafts() {
 	command = Capture2Text\Capture2Text.exe -s `"%x_start% %y_start% %x_end% %y_end%`" -o temp.txt -l English --trim-capture 
 	RunWait, %command%
     
-    sleep, 1000 ;sleep cos if i show the Gui too quick the capture will grab screenshot of gui    
+    sleep, 1000 ;sleep cos if i show the Gui too quick the capture will grab screenshot of gui   	
     Gui, HarvestUI:Show
 	Tooltip
+	if FileExist("temp.txt") {
+		MsgBox, - We were unable to create temp.txt to store text recognition results.`r`n- The tool most likely doesnt have permission to write where it is.`r`n- Moving it into a location that isnt write protected, or running as admin will fix this.
+	}
+
 	FileRead, temp, temp.txt
 	;FileRead, temp, test.txt
 
@@ -1125,7 +1129,7 @@ checkFiles() {
 			msgbox, Looks like you put PoE-HarvestVendor.ahk into the Capture2Text folder `r`nThis is wrong `r`nTake the file out of this folder
 			ExitApp
 		} else {
-			msgbox, I don't see the Capture2Text folder, did you download the tool ? `r`nLink is in the GitHub readme under Installation instructions
+			msgbox, I don't see the Capture2Text folder, did you download the tool ? `r`nLink is in the GitHub readme under Getting started section
 			ExitApp
 		}
 	}
@@ -1167,11 +1171,12 @@ Options: (White space separated)
 */
 ;full screen overlay
 iniRead tempMon, %A_WorkingDir%/settings.ini, other, mon
+scale := 1
 cover := monitorInfo(tempMon)
 coverX := cover[1]
 coverY := cover[2]
-coverH := cover[3]
-coverW := cover[4]
+coverH := cover[3] / scale
+coverW := cover[4] / scale
 	Gui, Select:New
 	Gui, Color, 141414
 	Gui +LastFound
@@ -1207,8 +1212,8 @@ coverW := cover[4]
 	While, (GetKeyState("LButton"))
 	{
 		Sleep, 10
-		MouseGetPos, MXend, MYend
-		w := abs(MX - MXend), h := abs(MY - MYend)
+		MouseGetPos, MXend, MYend		
+		w := abs((MX / scale) - (MXend / scale)), h := abs((MY / scale) - (MYend / scale))
 		X := (MX < MXend) ? MX : MXend
 		Y := (MY < MYend) ? MY : MYend
 		Gui %g%: Show, x%X% y%Y% w%w% h%h% NA
@@ -1220,9 +1225,9 @@ coverW := cover[4]
 	{
 		MouseGetPos, MXend, MYend
 		If ( MX > MXend )
-			temp := MX, MX := MXend, MXend := temp
+			temp := MX, MX := MXend, MXend := temp * 1.5
 		If ( MY > MYend )
-			temp := MY, MY := MYend, MYend := temp
+			temp := MY, MY := MYend, MYend := temp * 1.5
 		Return [MX,MXend,MY,MYend]
 	}
 	else ; Relative
