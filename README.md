@@ -69,6 +69,9 @@ A. There are 2 possible reasons:
     - Solution: Run the scan again and select only that one craft
   2. I arbitrarily decided its not worth to list that one, if you want it listed, contact me or open an issue. [List of ignored crafts](https://github.com/esge/PoE-HarvestVendor/wiki/Crafts-that-are-being-ignored)
 
+**Q. Why does it show lvl0?**
+A. If its unable to read the level it says 0. Go ahead and fix it manualy.
+
 **Q. I'm getting error about "WinInet-something"**  
 A. This one?  
 ![](examples/https-error.png)  

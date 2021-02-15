@@ -842,9 +842,41 @@ readyTT() {
 	Tooltip,,,,1
 }
 
+getMaxLenghts(group){
+	if (group == "All") {
+		loop, 10 {
+			GuiControlGet, AforLen,, A_craft_%A_Index%, value
+			if (StrLen(AforLen) > AMaxLen) {
+				AMaxLen := StrLen(AforLen)
+			}
+			GuiControlGet, RforLen,, R_craft_%A_Index%, value
+			if (StrLen(RforLen) > RMaxLen) {
+				RMaxLen := StrLen(RforLen)
+			}
+			GuiControlGet, RAforLen,, RA_craft_%A_Index%, value
+			if (StrLen(RAforLen) > RAMaxLen) {
+				RAMaxLen := StrLen(RAforLen)
+			}
+			GuiControlGet, OforLen,, O_craft_%A_Index%, value
+			if (StrLen(OforLen) > OMaxLen) {
+				OMaxLen := StrLen(OforLen)
+			}
+		}
+	} 
+	else {
+		loop, 10 {
+			GuiControlGet, %group%forLen,, %group%_craft_%A_Index%, value
+			if (StrLen(%group%forLen) > %group%MaxLen) {
+				%group%MaxLen := StrLen(%group%forLen)
+			}
+		}
+	}
+}
+
 createPostRow(count,craft,price,group) {
 	mySpaces := " "
 	spacesCount := 0
+		
 	if (group == "All") {
 		spacesCount := Max(AMaxLen,RMaxLen,RAMaxLen,OMaxLen) - strlen(craft) + 1
 	} 
@@ -876,7 +908,7 @@ createPost(group) {
 	GuiControlGet, tempStream,, canStream, value
 	GuiControlGet, tempCustomText,, CustomText, value
     outString := ""
-
+	getMaxLenghts(group)
 	if (tempName != "") {
     	outString .= "#WTS " . tempLeague . " - IGN: " . tempName . "`r`n" 
 	} else {
