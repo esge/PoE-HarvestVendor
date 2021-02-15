@@ -2,7 +2,7 @@
 #Warn, LocalSameAsGlobal, off
 #SingleInstance Force
 SetWorkingDir %A_ScriptDir% 
-global version := "0.4.2"
+global version := "0.4.3"
 global ACounter := 1
 global RCounter := 1
 global RAcounter := 1
@@ -17,13 +17,17 @@ global AMaxLen := 0
 global RMaxLen := 0
 global RAMaxLen := 0
 global OMaxLen := 0
+
+if (A_AhkVersion > "1.1.27.00"){
+	MsgBox, Please update your AHK `r`nYour version: %A_AhkVersion%`r`nRequired: 1.1.27.00 or more
+}
 ; Message about hotkeys on first run
 IniRead, firstRun, %A_WorkingDir%/settings.ini, Other, firstRun
 	if (firstRun == "ERROR") {
 		firstRun := 1
 	}
 if (firstRun == 1) {
-	MsgBox, CTRL + SHIFT + G to open the gui`r`nCTRL + G to go straight into capture`r`n`r`nThis message wont appear again.
+	MsgBox, CTRL + SHIFT + G to open the gui`r`nCTRL + G to go straight into capture`r`n`r`nThis message will not appear again.
 	IniWrite, 0, %A_WorkingDir%/settings.ini, Other, firstRun 
 }
 
@@ -121,6 +125,16 @@ IGN:
     iniWrite, %lastIGN%, %A_WorkingDir%/settings.ini, IGN, n
 return
 
+CustomText:
+	guiControlGet, cust,,CustomText, value
+	iniWrite, %cust%, %A_WorkingDir%/settings.ini, other, customText
+return
+
+CanStream:
+	guiControlGet, strim,,canStream, value
+	iniWrite, %strim%, %A_WorkingDir%/settings.ini, other, canStream
+return
+
 help:
 	gui Help:new
 
@@ -168,10 +182,22 @@ buildGUI() {
 
 	;== Bottom stuff ==
 	gui add, Text, x15 y345 w200, Custom text added to message: 
-	gui add, Edit, x170 y340 w500 vCustomText
+	iniRead tempCustomText, %A_WorkingDir%/settings.ini, other, customText
+	if (tempCustomText == "ERROR") { 
+		tempCustomText := "" 
+	}
+	gui add, Edit, x170 y340 w500 vCustomText gCustomText, %tempCustomText% 
 		global CustomText_TT := "If you wish to add extra info to your message, will show under the WTS line"
-	gui add, CheckBox, x680 y345 vcanStream, Can Stream
+	
+	
+	iniRead tempStream, %A_WorkingDir%/settings.ini, other, canStream
+	if (tempStream == "ERROR") { 
+		tempStream := 0 
+	}	
+	gui add, CheckBox, x680 y345 vcanStream gCanStream, Can Stream
 		global canStream_TT := "Adds: Can stream if requested. under the WTS line"
+	guicontrol,,canStream, %tempStream%
+
 	Gui Add, Text, x1040 y345 w25 h23, IGN:
 	
 	IniRead, name, %A_WorkingDir%/settings.ini, IGN, n
