@@ -18,6 +18,8 @@
 
 ## Getting started
 
+ - Requires AHK 1.1.27+
+ - link to current [AHK 1.1.33](https://www.autohotkey.com/download/ahk-install.exe)
 <!-- Commenting this becuase this might be fixed with the change from switch case to IFs
  Requires [AHK 1.1.33.02](https://www.autohotkey.com/download/ahk-install.exe)
    - not that it wont work on older, but there was a bug where it would say that a piece  of code is unreachable in a switch/case and you will get a warning popup everytime you launch it
