@@ -18,7 +18,7 @@ global RMaxLen := 0
 global RAMaxLen := 0
 global OMaxLen := 0
 
-if (A_AhkVersion > "1.1.27.00"){
+if (A_AhkVersion < "1.1.27.00"){
 	MsgBox, Please update your AHK `r`nYour version: %A_AhkVersion%`r`nRequired: 1.1.27.00 or more
 }
 ; Message about hotkeys on first run
