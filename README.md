@@ -2,7 +2,6 @@
 
 ```diff
 - Only works if PoE is in WINDOWED / WINDOWED BORDERLESS mode, doesnt work in Fullscreen
-
 ```
 # [DOWNLOAD HERE](https://github.com/esge/PoE-HarvestVendor/releases/latest)
 
@@ -19,8 +18,9 @@
 
 ## Getting started
 
- - Requires AHK 1.1.27+
- - link to current [AHK 1.1.33](https://www.autohotkey.com/download/ahk-install.exe)
+ - If you download the `.ahk` file:
+    - Requires AHK 1.1.27+
+    - link to current [AHK 1.1.33](https://www.autohotkey.com/download/ahk-install.exe)
 <!-- Commenting this becuase this might be fixed with the change from switch case to IFs
  Requires [AHK 1.1.33.02](https://www.autohotkey.com/download/ahk-install.exe)
    - not that it wont work on older, but there was a bug where it would say that a piece  of code is unreachable in a switch/case and you will get a warning popup everytime you launch it
@@ -37,10 +37,10 @@ Error: This line does not contain a recognized action
 -->
 - Download last release of Capture2Text: https://sourceforge.net/projects/capture2text/files/Capture2Text/
 - Download last release: https://github.com/esge/PoE-HarvestVendor/releases/latest
-- Create a new folder with the `.ahk` script
+- Create a new folder with the `.ahk` script or the `.exe` file (depending on what you donwloaded)
 - Extract the Capture2Text archive in that same folder  
     ![](examples/folder.png)  
-- Run `.ahk` script 🎉
+- Run `.ahk`/`.exe` script 🎉
 
 ## Usage
 
