@@ -135,6 +135,11 @@ CanStream:
 	iniWrite, %strim%, %A_WorkingDir%/settings.ini, other, canStream
 return
 
+Monitors:
+	guiControlGet, mon,,Monitors_v, value
+	iniWrite, %mon%, %A_WorkingDir%/settings.ini, other, mon
+return
+
 help:
 	gui Help:new
 
@@ -170,6 +175,20 @@ buildGUI() {
 		global postAll_TT := "Puts all crafts into a single post regardless of sorting - allowed only for Standard leagues"
 	allowAll() 
     
+	monitors := getMonCount()
+
+	if (monitors > 1) {
+		;msgbox % "|" . monitors . "|"
+		Gui add, text, x450 y14, Select monitor:
+		Gui add, dropdownList, x522 y10 w30 vMonitors_v gMonitors, %monitors%
+			global Monitors_v_TT := "For when you aren't running PoE on main monitor"
+		iniRead tempMon, %A_WorkingDir%/settings.ini, other, mon
+		if (tempMon == "ERROR") { 
+			tempMon := 1 
+			iniWrite, %tempMon%, %A_WorkingDir%/settings.ini, other, mon
+		}
+		guicontrol, choose, Monitors_v, %tempMon%
+	}
 	if (version != getVersion()) {
 		gui Font, s14
 		gui add, Link, x950 y10 vVersionLink, <a href="https://github.com/esge/PoE-HarvestVendor/tree/master">! New Version Available !</a>
@@ -1133,6 +1152,26 @@ checkFiles() {
 		}
 	}
 }
+getMonCount(){
+   monOut :=""
+   sysGet, monCount, MonitorCount
+   loop, %monCount% {
+      monOut .= A_Index . "|"
+   }
+   return monOut
+}
+
+monitorInfo(num){
+   SysGet, Mon2, monitor, %num%
+  
+   x := Mon2Left
+   y := Mon2Top
+   height := abs(Mon2Top-Mon2Bottom)
+   width := abs(Mon2Left-Mon2Right)
+
+   return [x,y,height,width]
+
+}
 
 
 ; ========================================================================
@@ -1149,6 +1188,12 @@ Options: (White space separated)
 - m CoordMode. Default: s. s = Screen, r = Relative
 */
 ;full screen overlay
+iniRead tempMon, %A_WorkingDir%/settings.ini, other, mon
+cover := monitorInfo(tempMon)
+coverX := cover[1]
+coverY := cover[2]
+coverH := cover[3]
+coverW := cover[4]
 	Gui, Select:New
 	Gui, Color, 141414
 	Gui +LastFound
@@ -1156,7 +1201,7 @@ Options: (White space separated)
 	WinSet, Transparent, 120
 	Gui, -Caption 
 	Gui, +AlwaysOnTop
-	Gui, Select:Show, x0 y0 h%A_ScreenHeight% w%A_ScreenWidth%,"AutoHotkeySnapshotApp"     
+	Gui, Select:Show, x%coverX% y%coverY% h%coverH% w%coverW%,"AutoHotkeySnapshotApp"     
 	
 	KeyWait, LButton, D 
 	CoordMode, Mouse, Screen
@@ -1499,6 +1544,7 @@ global Apost
 global Rpost
 global RApost
 global Opost
+global Monitors_v
 global A_count_1
 global A_count_2
 global A_count_3
