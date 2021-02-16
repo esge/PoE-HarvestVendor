@@ -84,4 +84,4 @@ Get curl binary from [here](https://curl.se/windows/), extract curl.exe from arc
 
 ---
 ### If you got all the way here and want to throw some beer money my way
-[PayPal.me link](paypal.me/Esge1)
+[PayPal.me link](https://www.paypal.com/paypalme/Esge1)
