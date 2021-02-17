@@ -1,136 +1,138 @@
-Remove non-Caster add Caster 
-Augment Caster 
-Remove Caster 
-Randomise values of Caster mods 
-Remove Caster add Caster 
-Augment Caster Lucky 
-Remove non-Physical add Physical 
-Augment Physical 
-Remove Physical 
-Randomise values of Physical mods 
-Remove Physical add Physical 
-Augment Physical Lucky 
-Reforge a non-Red socket turning it Red
-Reforge a non-Blue socket turning it Blue
-Reforge a non-Green socket turning it Green
-Reforge a non-Red socket turning it Red
-Reforge a non-Blue socket turning it Blue
-Reforge a non-Green socket turning it Green
-Reforge two sockets > Red and Blue
-Reforge two sockets > Red and Green
-Reforge two sockets > Blue and Green
-Reforge three sockets > Red, Blue and Green
-Reforge a socket turning it White
-Remove non-Fire add Fire 
-Augment Fire 
-Remove Fire 
-Randomise values of Fire mods 
-Remove Fire add Fire 
-Augment Fire Lucky 
+Remove non-Caster add Caster
+Augment Caster
+Remove Caster
+Randomise values of Caster mods
+Remove Caster add Caster
+Augment Caster Lucky
+Remove non-Physical add Physical
+Augment Physical
+Remove Physical
+Randomise values of Physical mods
+Remove Physical add Physical
+Augment Physical Lucky
+Reforge non-Red into Red
+Reforge non-Blue into Blue
+Reforge non-Green into Green
+Reforge into Red and Blue
+Reforge into Red and Green
+Reforge into Blue and Green
+Reforge into Red, Blue and Green
+Reforge into White
+Remove non-Fire add Fire
+Augment Fire
+Remove Fire
+Randomise values of Fire mods
+Remove Fire add Fire
+Augment Fire Lucky
 Improves the Quality of a Flask
 Improves the Quality of a Gem
-Change Fire Res into Cold Res
-Change Cold Res into Lightning Res
-Change Lightning Res into Fire Res
-Change Fire Res into Lightning Res
-Change Cold Res into Fire Res
-Change Lightning Res into Cold Res
+Change Fire res to Cold res
+Change Cold res to Lightning res
+Change Lightning res to Fire res
+Change Fire res to Lightning res
+Change Cold res to Fire res
+Change Lightning res to Cold res
 Reforge keep Prefixes
 Reforge keep Suffixes
-Enchant weap: Crit Chance
-Enchant weap: Accuracy
-Enchant weap: Attack Speed
-Enchant weap: +1 Weapon Range
-Enchant weap: Elemental Damage
-Enchant weap: Area of Effect
-Fracture modifier 
+Enchant Weapon: Critical Strike Chance
+Enchant Weapon: Accuracy
+Enchant Weapon: Attack Speed
+Enchant Weapon: +1 Weapon Range
+Enchant Weapon: Elemental Damage
+Enchant Weapon: Area of Effect
+Fracture modifier
 Fracture Suffix
-Fracture Prefix.
-Remove non-Attack add Attack 
-Augment Attack 
-Remove Attack 
-Randomise values of Attack mods 
-Remove Attack add Attack 
-Augment Attack Lucky 
-Remove non-Life add Life 
-Augment Life 
-Remove Life 
-Randomise values of Life mods 
-Remove Life add Life 
-Augment Life Lucky 
-Remove non-Cold add Cold 
-Augment Cold 
-Remove Cold 
-Randomise values of Cold mods 
-Remove Cold add Cold 
-Augment Cold Lucky 
-Remove non-Speed add Speed 
-Augment Speed 
-Remove Speed 
-Randomise values of Speed mods 
-Remove Speed add Speed 
-Augment Speed Lucky 
-Sacrifice Corrupted Gem > 20% qual as GCP
-Sacrifice Corrupted Gem > 30% qual as GCP
-Sacrifice Corrupted Gem > 40% qual as GCP
-Sacrifice Corrupted Gem > 50% qual as GCP
-Sacrifice Corrupted Gem > 20% exp as Lense
-Sacrifice Corrupted Gem > 30% exp as Lense
-Sacrifice Corrupted Gem > 40% exp as Lense
-Sacrifice Corrupted Gem > 50% exp as Lense
-Attempt to Awaken a level 20 Support Gem 
-Enchant Flask: inc Duration. 
-Enchant Flask: inc Effect. 
-Enchant Flask: inc Maximum Charges. 
-Enchant Flask: reduced Charges used. 
+Fracture Prefix
+Remove non-Attack add Attack
+Augment Attack
+Remove Attack
+Randomise values of Attack mods
+Remove Attack add Attack
+Augment Attack Lucky
+Remove non-Life add Life
+Augment Life
+Remove Life
+Randomise values of Life mods
+Remove Life add Life
+Augment Life Lucky
+Remove non-Cold add Cold
+Augment Cold
+Remove Cold
+Randomise values of Cold mods
+Remove Cold add Cold
+Augment Cold Lucky
+Remove non-Speed add Speed
+Augment Speed
+Remove Speed
+Randomise values of Speed mods
+Remove Speed add Speed
+Augment Speed Lucky
+Sacrifice gem, get 20% qual as GCP
+Sacrifice gem, get 30% qual as GCP
+Sacrifice gem, get 40% qual as GCP
+Sacrifice gem, get 50% qual as GCP
+Sacrifice gem, get 20% exp as Lens
+Sacrifice gem, get 30% exp as Lens
+Sacrifice gem, get 40% exp as Lens
+Sacrifice gem, get 50% exp as Lens
+Attempt to Awaken a level 20 Support Gem
+Set Implicit basic Jewel
+Set Implicit Abyss/Timeless Jewel
+Set Implicit Cluster Jewel
+Enchant Flask: inc Duration.
+Enchant Flask: inc Effect.
+Enchant Flask: inc Maximum Charges.
+Enchant Flask: reduced Charges used.
+Enchant Map: no Sextant use
 Attempt to upgrade a Scarab
-Remove non-Defence add Defence 
-Augment Defence 
-Remove Defence 
-Randomise values of Defence mods 
-Remove Defence add Defence 
-Augment Defence Lucky 
-Remove non-Lightning add Lightning 
-Augment Lightning 
-Remove Lightning 
-Randomise values of Lightning mods 
-Remove Lightning add Lightning 
-Augment Lightning Lucky 
+Synthesise an item
+Remove non-Defence add Defence
+Augment Defence
+Remove Defence
+Randomise values of Defence mods
+Remove Defence add Defence
+Augment Defence Lucky
+Remove non-Lightning add Lightning
+Augment Lightning
+Remove Lightning
+Randomise values of Lightning mods
+Remove Lightning add Lightning
+Augment Lightning Lucky
 Six link (6-link)
-Remove non-Chaos add Chaos 
-Augment Chaos 
-Remove Chaos 
-Randomise values of Chaos mods 
-Remove Chaos add Chaos 
-Augment Chaos Lucky 
-Sacrifice Div Cards 
-Remove non-Critical add Critical 
-Augment Critical 
-Remove Critical 
-Randomise values of Critical mods 
-Remove Critical add Critical 
-Augment Critical lucky 
-Reforge Lucky keep Prefixes
-Reforge Lucky keep Suffixes
-Reroll all Lucky
-Augment Lucky 
-Reroll Prefix Lucky 
-Reroll Suffix Lucky 
-Add Influence to Weapon 
-Add Influence to Armour 
-Add Influence to Jewellery 
-Enchant Body: +1 Maximum Life
-Enchant Body: +1 Maximum Mana
-Enchant Body: +1 Strength
-Enchant Body: +1 Dexterity
-Enchant Body: +1 Intelligence
-Enchant Body: 1% Fire Resistance
-Enchant Body: 1% Cold Resistance
-Enchant Body: 1% Lightning Resistance
-Remove non-Influence add Influence 
-Augment Influence mod
-Remove Influence 
-Randomise values of Influence mods 
-Remove Influence add Influence 
+Remove non-Chaos add Chaos
+Augment Chaos
+Remove Chaos
+Randomise values of Chaos mods
+Remove Chaos add Chaos
+Augment Chaos Lucky
+Sacrifice Div Cards
+Remove non-Critical add Critical
+Augment Critical
+Remove Critical
+Randomise values of Critical mods
+Remove Critical add Critical
+Augment Critical Lucky
+Reforge keep Prefixes Lucky
+Reforge keep Suffixes Lucky
+Reroll All Lucky
+Augment a new modifier Lucky
+Reroll Prefix Lucky
+Reroll Suffix Lucky
+Add Influence to Weapon
+Add Influence to Armour
+Add Influence to Jewellery
+Enchant Body: Maximum Life
+Enchant Body: Maximum Mana
+Enchant Body: Strength
+Enchant Body: Dexterity
+Enchant Body: Intelligence
+Enchant Body: Fire Resistance
+Enchant Body: Cold Resistance
+Enchant Body: Lightning Resistance
+Remove non-Influence add Influence
+Augment Influence
+Remove Influence
+Randomise values of Influence mods
+Remove Influence add Influence
 Reforge with Influence mod more common
-Augment Influence mod Lucky 
+Augment Influence Lucky
