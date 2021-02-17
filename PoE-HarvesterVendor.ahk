@@ -305,7 +305,7 @@ buildGUI() {
     Gui Add, DropDownList, x10 y10 w150 vLeague gLeagueDropdown,
     leagueList() ;populate leagues dropdown and select the last used one
     Gui Add, Button, x165 y9 w80 h23 vAddCrafts gAddcrafts, Add crafts
-		global AddCrafts_TT := %ScanKey%
+		;global AddCrafts_TT := ScanKey
     Gui Add, Button, x250 y9 w80 h23 gClear_all, Clear
 
 	Gui Add, Button, x335 y9 w80 h23 vpostAll gpostAll, Post all
