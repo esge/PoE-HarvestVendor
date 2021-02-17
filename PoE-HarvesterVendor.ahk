@@ -141,11 +141,18 @@ return
 CustomText:
 	guiControlGet, cust,,CustomText, value
 	iniWrite, %cust%, %A_WorkingDir%/settings.ini, other, customText
+	guicontrol,, CustomTextCB, 1
 return
 
 CanStream:
 	guiControlGet, strim,,canStream, value
 	iniWrite, %strim%, %A_WorkingDir%/settings.ini, other, canStream
+return
+
+CustomTextCB:
+	guiControlGet, custCB,,CustomTextCB, value
+	iniWrite, %custCB%, %A_WorkingDir%/settings.ini, other, CustomTextCB
+	
 return
 
 Monitors:
@@ -213,12 +220,20 @@ buildGUI() {
 	Gui font
 
 	;== Bottom stuff ==
-	gui add, Text, x15 y345 w200, Custom text added to message: 
+	;gui add, Text, x15 y345 w150, Custom text added to message: 
+	iniRead tempCustomTextCB, %A_WorkingDir%/settings.ini, other, customTextCB
+	if (tempCustomTextCB == "ERROR") { 
+		tempCustomTextCB := 0 
+	}
+	gui add, checkbox, x0 y345 w175 vCustomTextCB gCustomTextCB +Right, Custom text added to message: 
+		global CustomTextCB_TT := "If you wish to hide Custom text for now"
+	guicontrol,,CustomTextCB, %tempCustomTextCB%
+
 	iniRead tempCustomText, %A_WorkingDir%/settings.ini, other, customText
 	if (tempCustomText == "ERROR") { 
 		tempCustomText := "" 
 	}
-	gui add, Edit, x170 y340 w500 vCustomText gCustomText, %tempCustomText% 
+	gui add, Edit, x180 y340 w500 vCustomText gCustomText, %tempCustomText% 
 		global CustomText_TT := "If you wish to add extra info to your message, will show under the WTS line"
 	
 	
@@ -226,7 +241,7 @@ buildGUI() {
 	if (tempStream == "ERROR") { 
 		tempStream := 0 
 	}	
-	gui add, CheckBox, x680 y345 vcanStream gCanStream, Can Stream
+	gui add, CheckBox, x690 y345 vcanStream gCanStream, Can Stream
 		global canStream_TT := "Adds: Can stream if requested. under the WTS line"
 	guicontrol,,canStream, %tempStream%
 
@@ -934,6 +949,8 @@ createPost(group) {
 	GuiControlGet, tempName,, IGN, value
 	GuiControlGet, tempStream,, canStream, value
 	GuiControlGet, tempCustomText,, CustomText, value
+	GuiControlGet, tempCustomTextCB,, CustomTextCB, value
+	
     outString := ""
 	getMaxLenghts(group)
     
@@ -943,7 +960,7 @@ createPost(group) {
 		} else {
 			outString .= "**__WTS " . tempLeague . "__**`r`n"
 		}
-		if (tempCustomText != "") {
+		if (tempCustomText != "" and tempCustomTextCB == 1) {
 			outString .= "   " . tempCustomText . "`r`n"
 		}
 		if (tempStream == 1 ) {
@@ -1607,6 +1624,7 @@ global Rpost
 global RApost
 global Opost
 global Monitors_v
+global CustomTextCB
 global A_count_1
 global A_count_2
 global A_count_3
