@@ -904,7 +904,7 @@ createPostRow(count,craft,price,group) {
 		else {
 			craft := craft . "][-"
 		}
-		outString .= "``(" . count . "x) [``**``" . craft . "]" . mySpaces . "<``**``" . price . "``**``>```r`n"
+		outString .= "   ``(" . count . "x) [``**``" . craft . "]" . mySpaces . "<``**``" . price . "``**``>```r`n"
 	}
 
 	if (outStyle == 2) { ; message style with colors, in codeblock but text isnt highlighted in discord search
@@ -944,10 +944,10 @@ createPost(group) {
 			outString .= "**__WTS " . tempLeague . "__**`r`n"
 		}
 		if (tempCustomText != "") {
-			outString .= "" . tempCustomText . "`r`n"
+			outString .= "   " . tempCustomText . "`r`n"
 		}
 		if (tempStream == 1 ) {
-			outString .= "*Can stream if requested*`r`n"
+			outString .= "   *Can stream if requested*`r`n"
 		}
 	}
 	if (outStyle == 2) {
