@@ -27,14 +27,16 @@ global rescan
 IniRead, GuiKey, %A_WorkingDir%/settings.ini, Other, GuiKey
 	if (GuiKey == "ERROR" or GuiKey == "") {
 		IniWrite, ^+g, %A_WorkingDir%/settings.ini, Other, GuiKey 	
-		GuiKey := "^+g"	
+		;GuiKey := "^+g"	
+		IniRead, GuiKey, %A_WorkingDir%/settings.ini, Other, GuiKey
 	}
 hotkey, %GuiKey%, OpenGui
 
 IniRead, ScanKey, %A_WorkingDir%/settings.ini, Other, ScanKey
 	if (ScanKey == "ERROR" or ScanKey == "") {
 		IniWrite, ^g, %A_WorkingDir%/settings.ini, Other, ScanKey 	
-		ScanKey == "^g"	
+		IniRead, ScanKey, %A_WorkingDir%/settings.ini, Other, ScanKey
+		;ScanKey == "^g"	
 	}
 hotkey, %ScanKey%, Scan
 
