@@ -956,9 +956,9 @@ createPost(group) {
     
 	if (outStyle == 1) {
 		if (tempName != "") {
-			outString .= "**__WTS " . tempLeague . " - IGN: " . tempName . "__**`r`n" 
+			outString .= "**WTS " . tempLeague . " - IGN: " . tempName . "**`r`n" 
 		} else {
-			outString .= "**__WTS " . tempLeague . "__**`r`n"
+			outString .= "**WTS " . tempLeague . "**`r`n"
 		}
 		if (tempCustomText != "" and tempCustomTextCB == 1) {
 			outString .= "   " . tempCustomText . "`r`n"
