@@ -2,7 +2,7 @@
 #Warn, LocalSameAsGlobal, off
 #SingleInstance Force
 SetWorkingDir %A_ScriptDir% 
-global version := "0.4.4"
+global version := "0.4.5"
 global ACounter := 1
 global RCounter := 1
 global RAcounter := 1
@@ -17,6 +17,14 @@ global AMaxLen := 0
 global RMaxLen := 0
 global RAMaxLen := 0
 global OMaxLen := 0
+global outStyle
+
+IniRead, outStyle, %A_WorkingDir%/settings.ini, Other, outStyle
+	if (outStyle == "ERROR") {
+		IniWrite, 1, %A_WorkingDir%/settings.ini, Other, outStyle 
+		outStyle := 1
+	}
+
 
 if (A_AhkVersion < "1.1.27.00"){
 	MsgBox, Please update your AHK `r`nYour version: %A_AhkVersion%`r`nRequired: 1.1.27.00 or more
@@ -876,7 +884,9 @@ getMaxLenghts(group){
 createPostRow(count,craft,price,group) {
 	mySpaces := " "
 	spacesCount := 0
-		
+	if (price == "") {
+		price := " "
+	}	
 	if (group == "All") {
 		spacesCount := Max(AMaxLen,RMaxLen,RAMaxLen,OMaxLen) - strlen(craft) + 1
 	} 
@@ -887,18 +897,35 @@ createPostRow(count,craft,price,group) {
 	loop, %spacesCount% {
 		mySpaces .= " "
 	}
-		
-	if regexmatch(craft,"(lv\d\d)") > 0 {
-	 	craft := RegExReplace(craft," (lv\d\d)","][$1")
+	if (outStyle == 1) { ; no colors, no codeblock, but highlighted
+		if regexmatch(craft,"(lv\d\d)") > 0 {
+			craft := RegExReplace(craft," (lv\d\d)","``**``][$1")
+		}
+		else {
+			craft := craft . "][-"
+		}
+		outString .= "``(" . count . "x) [``**``" . craft . "]" . mySpaces . "<``**``" . price . "``**``>```r`n"
 	}
-	else {
-		craft := craft . "][-"
+
+	if (outStyle == 2) { ; message style with colors, in codeblock but text isnt highlighted in discord search
+		if regexmatch(craft,"(lv\d\d)") > 0 {
+			craft := RegExReplace(craft," (lv\d\d)","][$1")
+		}
+		else {
+			craft := craft . "][-"
+		}
+		outString .= "  (" . count . "x) [" . craft . "]" . mySpaces . "< " . price . " >`r`n"
 	}
-	outString .= "  (" . count . "x) [" . craft . "]" . mySpaces . "< " . price . " >`r`n"
+
 }
 
 codeblockWrap() {
-	return "``````md`r`n" . outString . "``````"
+	if (outStyle == 1) {
+		return outString
+	}
+	if (outStyle == 2) {
+		return "``````md`r`n" . outString . "``````"
+	}
 }
 
 createPost(group) {
@@ -909,16 +936,32 @@ createPost(group) {
 	GuiControlGet, tempCustomText,, CustomText, value
     outString := ""
 	getMaxLenghts(group)
-	if (tempName != "") {
-    	outString .= "#WTS " . tempLeague . " - IGN: " . tempName . "`r`n" 
-	} else {
-		outString .= "#WTS " . tempLeague . "`r`n"
+    
+	if (outStyle == 1) {
+		if (tempName != "") {
+			outString .= "**__WTS " . tempLeague . " - IGN: " . tempName . "__**`r`n" 
+		} else {
+			outString .= "**__WTS " . tempLeague . "__**`r`n"
+		}
+		if (tempCustomText != "") {
+			outString .= "" . tempCustomText . "`r`n"
+		}
+		if (tempStream == 1 ) {
+			outString .= "*Can stream if requested*`r`n"
+		}
 	}
-	if (tempCustomText != "") {
-		outString .= "  " . tempCustomText . "`r`n"
-	}
-	if (tempStream == 1 ) {
-		outString .= "  Can stream if requested `r`n"
+	if (outStyle == 2) {
+		if (tempName != "") {
+			outString .= "#WTS " . tempLeague . " - IGN: " . tempName . "`r`n" 
+		} else {
+			outString .= "#WTS " . tempLeague . "`r`n"
+		}
+		if (tempCustomText != "") {
+			outString .= "  " . tempCustomText . "`r`n"
+		}
+		if (tempStream == 1 ) {
+			outString .= "  Can stream if requested `r`n"
+		}
 	}
     
 	if (group == "A") {	                 
