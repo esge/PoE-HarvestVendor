@@ -18,12 +18,38 @@ global RMaxLen := 0
 global RAMaxLen := 0
 global OMaxLen := 0
 global outStyle
+global x_start := 0
+global y_start := 0
+global x_end := 0
+global y_end := 0
+global rescan
+
+IniRead, GuiKey, %A_WorkingDir%/settings.ini, Other, GuiKey
+	if (GuiKey == "ERROR" or GuiKey == "") {
+		IniWrite, ^+g, %A_WorkingDir%/settings.ini, Other, GuiKey 	
+		GuiKey := "^+g"	
+	}
+hotkey, %GuiKey%, OpenGui
+
+IniRead, ScanKey, %A_WorkingDir%/settings.ini, Other, ScanKey
+	if (ScanKey == "ERROR" or ScanKey == "") {
+		IniWrite, ^g, %A_WorkingDir%/settings.ini, Other, ScanKey 	
+		ScanKey == "^g"	
+	}
+hotkey, %ScanKey%, Scan
 
 IniRead, outStyle, %A_WorkingDir%/settings.ini, Other, outStyle
 	if (outStyle == "ERROR") {
 		IniWrite, 1, %A_WorkingDir%/settings.ini, Other, outStyle 
 		outStyle := 1
 	}
+
+iniRead tempMon, %A_WorkingDir%/settings.ini, Other, mon
+if (tempMon == "ERROR") { 
+	tempMon := 1 
+	iniWrite, %tempMon%, %A_WorkingDir%/settings.ini, Other, mon
+}
+
 
 
 if (A_AhkVersion < "1.1.27.00"){
@@ -35,7 +61,7 @@ IniRead, firstRun, %A_WorkingDir%/settings.ini, Other, firstRun
 		firstRun := 1
 	}
 if (firstRun == 1) {
-	MsgBox, CTRL + SHIFT + G to open the gui`r`nCTRL + G to go straight into capture`r`n`r`nThis message will not appear again.
+	MsgBox, Default hotkeys are:`r`nCTRL + SHIFT + G to open the gui`r`nCTRL + G to go straight into capture`r`n`r`nThis message will not appear again.
 	IniWrite, 0, %A_WorkingDir%/settings.ini, Other, firstRun 
 }
 iniRead, sc, %A_WorkingDir%/settings.ini, Other, scale
@@ -47,7 +73,18 @@ checkfiles()
 winCheck()
 getLeagues()
 
-^g:: ;ctrl+g launches straight into the capture, opens gui afterwards
+return
+
+OpenGui: ;ctrl+shift+g opens the gui, yo go from there
+	 if (firstGuiOpen == 0) {
+    	buildGUI()
+	 }
+    Gui, HarvestUI:Show, w1225 h370
+	OnMessage(0x200, "WM_MOUSEMOVE")
+	;clearAll()
+Return
+
+Scan: ;ctrl+g launches straight into the capture, opens gui afterwards	
     processCrafts()
     if (firstGuiOpen == 0) {
         buildGUI()
@@ -57,21 +94,17 @@ getLeagues()
     craftSort(outArray)
 return
 
-^+g:: ;ctrl+shift+g opens the gui, yo go from there
-	 if (firstGuiOpen == 0) {
-    	buildGUI()
-	 }
-    Gui, HarvestUI:Show, w1225 h370
-	OnMessage(0x200, "WM_MOUSEMOVE")
-	;clearAll()
-Return
 
 GuiEscape:
     Gui, HarvestUI:Show
 GuiClose:
     ExitApp
 
+
+
+
 Addcrafts:
+	GuiControlGet, rescan, FocusV
     processCrafts()
     CraftSort(outArray)
 return
@@ -171,10 +204,92 @@ help:
 	; This can be an image from a website, or an image from your computer. Just specify the path based off of the current script directory.
 	Edit := WebPic(WB1, "https://github.com/esge/PoE-HarvestVendor/blob/master/examples/example3.png?raw=true", "w436 h425 cFFFFFF")
 	;Gui, Add, Edit, x0 y105 w750 h215 -Wrap +HScroll vEdit TabStop WantReturn t8
-	Gui, Help:Show, w500 h500, Gui Example
+	Gui, Help:Show, w500 h500, Help
 
 	helpClose:
 	Gui, HarvestUI:Default
+return
+
+outStyle:
+	guiControlGet, os,,outStyle, value
+	iniWrite, %os%, %A_WorkingDir%/settings.ini, other, outStyle
+return
+
+settings:
+	gui Settings:new
+	gui, add, Groupbox, x5 y5 w400 h90, Message formatting
+
+		Gui, add, text, x10 y25, Output message style:
+		Gui, add, dropdownList, x120 y20 w30 voutStyle goutStyle, 1|2
+		iniRead, tstyle, %A_WorkingDir%/settings.ini, other, outStyle
+		guicontrol, choose,outStyle, %tstyle%
+		Gui, add, text, x20 y50, 1 - No Colors, No codeblock = Words are highlighted when using discord search
+		Gui, add, text, x20 y70, 2 - Codeblock, Colors = Words aren't highlighetd when using discord search
+
+
+	gui, add, Groupbox, x5 y110 w400 h100, Monitor Settings
+	monitors := getMonCount()
+
+		Gui add, text, x10 y130, Select monitor:
+		Gui add, dropdownList, x85 y125 w30 vMonitors_v gMonitors, %monitors%
+			global Monitors_v_TT := "For when you aren't running PoE on main monitor"
+		guicontrol, choose, Monitors_v, %tempMon%
+
+	gui, add, text, x10 y150, Scale	
+	iniRead, tScale,  %A_WorkingDir%/settings.ini, other, scale
+	gui, add, edit, x85 y150 w30 vScale gScale, %tScale% 
+		Gui, add, text, x20 y175, - use this when you are using other than 100`% scale in windows display settings
+		Gui, add, text, x20 y195, - 100`% = 1, 150`% = 1.5 and so on
+
+	gui, add, groupbox, x5 y215 w400 h75, Hotkeys		
+		Gui, add, text, x10 y235, Open Harvest vendor: 
+		iniRead, GuiKey,  %A_WorkingDir%/settings.ini, other, GuiKey
+		gui,add, hotkey, x120 y230 vGuiKey_v gGuiKey_l, %GuiKey%
+		
+		Gui, add, text, x10 y260, Add crafts: 
+		iniRead, ScanKey,  %A_WorkingDir%/settings.ini, other, ScanKey
+		gui, add, hotkey, x120 y255 vScanKey_v gScanKey_l, %ScanKey%
+
+	gui, add, button, x10 y295 h30 w390 gSettingsOK, Save
+	gui, Settings:Show, w410 h330
+
+		
+return
+SettingsClose:	
+	Gui, Settings:Destroy
+	Gui, HarvestUI:Default	
+return
+
+GuiKey_l:
+
+return
+
+ScanKey_l:
+
+return
+
+SettingsOK:
+	iniRead, GuiKey,  %A_WorkingDir%/settings.ini, other, GuiKey
+	iniRead, ScanKey,  %A_WorkingDir%/settings.ini, other, ScanKey
+
+	hotkey, %GuiKey%, off
+	hotkey, %ScanKey%, off
+
+	guiControlGet, gk,, GuiKey_v, value
+	iniWrite, %gk%, %A_WorkingDir%/settings.ini, other, GuiKey
+	hotkey, %gk%, OpenGui
+
+	guiControlGet, sk,, ScanKey_v, value
+	iniWrite, %sk%, %A_WorkingDir%/settings.ini, other, ScanKey
+	hotkey, %sk%, Scan
+
+	Gui, Settings:Destroy
+	Gui, HarvestUI:Default
+return
+
+Scale:
+	guiControlGet, sc,,Scale, value
+	iniWrite, %sc%, %A_WorkingDir%/settings.ini, other, scale
 return
 
 unlevel(craft){
@@ -188,27 +303,19 @@ buildGUI() {
     Gui Add, DropDownList, x10 y10 w150 vLeague gLeagueDropdown,
     leagueList() ;populate leagues dropdown and select the last used one
     Gui Add, Button, x165 y9 w80 h23 vAddCrafts gAddcrafts, Add crafts
-		global AddCrafts_TT := "CTRL + G"
+		global AddCrafts_TT := %ScanKey%
     Gui Add, Button, x250 y9 w80 h23 gClear_all, Clear
 
 	Gui Add, Button, x335 y9 w80 h23 vpostAll gpostAll, Post all
 		global postAll_TT := "Puts all crafts into a single post regardless of sorting - allowed only for Standard leagues"
 	allowAll() 
     
-	monitors := getMonCount()
+	Gui Add, Button, x420 y9 w80 h23 vSettings gSettings, Settings
+	
+	gui, add, text, x520 y13, Experimental Feature:
+	gui, add, button, x630 y9 vrescanButton gAddcrafts, Add from last area
+		global rescanButton_TT := "Captures again from the last selected area`r`nResets on HarvestVendor restart`r`nDoesn't have hotkey (yet)"
 
-	if (monitors > 1) {
-		;msgbox % "|" . monitors . "|"
-		Gui add, text, x450 y14, Select monitor:
-		Gui add, dropdownList, x522 y10 w30 vMonitors_v gMonitors, %monitors%
-			global Monitors_v_TT := "For when you aren't running PoE on main monitor"
-		iniRead tempMon, %A_WorkingDir%/settings.ini, other, mon
-		if (tempMon == "ERROR") { 
-			tempMon := 1 
-			iniWrite, %tempMon%, %A_WorkingDir%/settings.ini, other, mon
-		}
-		guicontrol, choose, Monitors_v, %tempMon%
-	}
 	if (version != getVersion()) {
 		gui Font, s14
 		gui add, Link, x950 y10 vVersionLink, <a href="https://github.com/esge/PoE-HarvestVendor/tree/master">! New Version Available !</a>
@@ -364,13 +471,16 @@ processCrafts() {
 	
 	outArray := []
     
+	
 	;getSelectionCoords(x_start, x_end, y_start, y_end)
+if ((rescan == "rescanButton" and x_start == 0) or rescan != "rescanButton" ) {
+
 	coordTemp := selectArea("cffc555 t50 ms")
 	x_start := coordTemp[1]
 	y_start := coordTemp[3]
 	x_end := coordTemp[2]
 	y_end := coordTemp[4]
-
+}
 
 	Tooltip, Please Wait
 	command = Capture2Text\Capture2Text.exe -s `"%x_start% %y_start% %x_end% %y_end%`" -o temp.txt -l English --trim-capture 
@@ -782,9 +892,10 @@ processCrafts() {
         ; removes multiple spaces, but all all non chars so it gets rid of stray .,' from OCR, we lose the  dash in non-Tag, but we can lve with that)
         outArray[iFinal] := Trim(RegExReplace(outArray[iFinal] , " +", " ")) 
     }	
-	for s in outArray {
-		str .= outArray[s] . "`r`n"
-	}
+;	for s in outArray {
+;		str .= outArray[s] . "`r`n"
+;	}
+;	Clipboard := str
 }
 
 clearAll() {
@@ -836,12 +947,18 @@ leagueList() {
 		if InStr(tempList,"SSF") = 0 {
         	leagueString .= tempList . "|"
 		}
+		if (InStr(tempList, "Hardcore", true) = 0 and InStr(tempList,"SSF", true) = 0 and InStr(tempList,"Standard", true) = 0 and InStr(tempList,"HC", true) = 0){
+			defaultLeague := templist
+		}
     }
+
+
+
 	iniRead, leagueCheck, %A_WorkingDir%/settings.ini, selectedLeague, s
 	guicontrol,, League, %leagueString%
 	if (leagueCheck == "ERROR") {		
-		guicontrol, choose, League, 1	
-    	iniWrite, Standard Softcore, %A_WorkingDir%/settings.ini, selectedLeague, s	
+		guicontrol, choose, League, %defaultLeague%	
+    	iniWrite, %defaultLeague%, %A_WorkingDir%/settings.ini, selectedLeague, s	
 	} else {
 		guicontrol, choose, League, %leagueCheck%	
 	}
@@ -897,6 +1014,7 @@ getMaxLenghts(group){
 }
 
 createPostRow(count,craft,price,group) {
+	;IniRead, outStyle, %A_WorkingDir%/settings.ini, Other, outStyle
 	mySpaces := " "
 	spacesCount := 0
 	if (price == "") {
@@ -935,6 +1053,7 @@ createPostRow(count,craft,price,group) {
 }
 
 codeblockWrap() {
+	;IniRead, outStyle, %A_WorkingDir%/settings.ini, Other, outStyle
 	if (outStyle == 1) {
 		return outString
 	}
@@ -944,6 +1063,7 @@ codeblockWrap() {
 }
 
 createPost(group) {
+	IniRead, outStyle, %A_WorkingDir%/settings.ini, Other, outStyle
     tempName := ""
 	GuiControlGet, tempLeague,, League, value
 	GuiControlGet, tempName,, IGN, value
@@ -1625,6 +1745,9 @@ global RApost
 global Opost
 global Monitors_v
 global CustomTextCB
+global Settings
+global outStyle
+global rescanButton
 global A_count_1
 global A_count_2
 global A_count_3
