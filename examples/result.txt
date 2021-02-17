@@ -13,9 +13,6 @@ Augment Physical Lucky
 Reforge non-Red into Red
 Reforge non-Blue into Blue
 Reforge non-Green into Green
-Reforge non-Red into Red
-Reforge non-Blue into Blue
-Reforge non-Green into Green
 Reforge into Red and Blue
 Reforge into Red and Green
 Reforge into Blue and Green
