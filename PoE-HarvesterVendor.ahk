@@ -146,7 +146,7 @@ price:
 
 		guiControlGet, craftName,, %g%_craft_%r%, value
 		craftName := unlevel(craftName)
-		iniWrite, %craftPrice%, %A_WorkingDir%/settings.ini, Prices, %craftName%
+		iniWrite, %craftPrice%, %A_WorkingDir%/prices.ini, Prices, %craftName%
 	}
 return
 
@@ -1207,7 +1207,7 @@ insertIntoRow(group, rowCounter, craft) {
     GuiControl,, %group%_count_%rowCounter%, 1
    
 	craft := unlevel(craft)
-	iniRead, tempP, %A_WorkingDir%/settings.ini, Prices, %craft%
+	iniRead, tempP, %A_WorkingDir%/prices.ini, Prices, %craft%
 	
 	if (tempP == "ERROR") {
 		tempP := ""
