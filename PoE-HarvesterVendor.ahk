@@ -1187,7 +1187,7 @@ getLVL(craft) {
 	lvlpos := RegExMatch(craft, "Level \d\d") + 6
 	lv := substr(craft, lvlpos, 2)
 	if RegExMatch(lv, "\d\d") > 0 {			
-		if (lv < 40) { ;ppl wouldn't sell lv 30 crafts, but sometimes OCR mistakes 8 for a 3 this just bumps it up for the 76+ rule
+		if (lv < 37) { ;ppl wouldn't sell lv 30 crafts, but sometimes OCR mistakes 8 for a 3 this just bumps it up for the 76+ rule
 			lv += 50
 		}
 		;if (lv >= 76) {
