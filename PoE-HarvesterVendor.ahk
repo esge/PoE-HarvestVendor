@@ -2,7 +2,7 @@
 #Warn, LocalSameAsGlobal, off
 #SingleInstance Force
 SetWorkingDir %A_ScriptDir% 
-global version := "0.4.7"
+global version := "0.4.8"
 global ACounter := 1
 global RCounter := 1
 global RAcounter := 1
@@ -175,24 +175,24 @@ return
 
 CustomText:
 	guiControlGet, cust,,CustomText, value
-	iniWrite, %cust%, %A_WorkingDir%/settings.ini, other, customText
+	iniWrite, %cust%, %A_WorkingDir%/settings.ini, Other, customText
 	guicontrol,, CustomTextCB, 1
 return
 
 CanStream:
 	guiControlGet, strim,,canStream, value
-	iniWrite, %strim%, %A_WorkingDir%/settings.ini, other, canStream
+	iniWrite, %strim%, %A_WorkingDir%/settings.ini, Other, canStream
 return
 
 CustomTextCB:
 	guiControlGet, custCB,,CustomTextCB, value
-	iniWrite, %custCB%, %A_WorkingDir%/settings.ini, other, CustomTextCB
+	iniWrite, %custCB%, %A_WorkingDir%/settings.ini, Other, CustomTextCB
 	
 return
 
 Monitors:
 	guiControlGet, mon,,Monitors_v, value
-	iniWrite, %mon%, %A_WorkingDir%/settings.ini, other, mon
+	iniWrite, %mon%, %A_WorkingDir%/settings.ini, Other, mon
 return
 
 help:
@@ -214,7 +214,7 @@ return
 
 outStyle:
 	guiControlGet, os,,outStyle, value
-	iniWrite, %os%, %A_WorkingDir%/settings.ini, other, outStyle
+	iniWrite, %os%, %A_WorkingDir%/settings.ini, Other, outStyle
 return
 
 settings:
@@ -223,7 +223,7 @@ settings:
 
 		Gui, add, text, x10 y25, Output message style:
 		Gui, add, dropdownList, x120 y20 w30 voutStyle goutStyle, 1|2
-		iniRead, tstyle, %A_WorkingDir%/settings.ini, other, outStyle
+		iniRead, tstyle, %A_WorkingDir%/settings.ini, Other, outStyle
 		guicontrol, choose,outStyle, %tstyle%
 		Gui, add, text, x20 y50, 1 - No Colors, No codeblock = Words are highlighted when using discord search
 		Gui, add, text, x20 y70, 2 - Codeblock, Colors = Words aren't highlighetd when using discord search
@@ -238,18 +238,18 @@ settings:
 		guicontrol, choose, Monitors_v, %tempMon%
 
 	gui, add, text, x10 y150, Scale	
-	iniRead, tScale,  %A_WorkingDir%/settings.ini, other, scale
+	iniRead, tScale,  %A_WorkingDir%/settings.ini, Other, scale
 	gui, add, edit, x85 y150 w30 vScale gScale, %tScale% 
-		Gui, add, text, x20 y175, - use this when you are using other than 100`% scale in windows display settings
+		Gui, add, text, x20 y175, - use this when you are using Other than 100`% scale in windows display settings
 		Gui, add, text, x20 y195, - 100`% = 1, 150`% = 1.5 and so on
 
 	gui, add, groupbox, x5 y215 w400 h75, Hotkeys		
 		Gui, add, text, x10 y235, Open Harvest vendor: 
-		iniRead, GuiKey,  %A_WorkingDir%/settings.ini, other, GuiKey
+		iniRead, GuiKey,  %A_WorkingDir%/settings.ini, Other, GuiKey
 		gui,add, hotkey, x120 y230 vGuiKey_v gGuiKey_l, %GuiKey%
 		
 		Gui, add, text, x10 y260, Add crafts: 
-		iniRead, ScanKey,  %A_WorkingDir%/settings.ini, other, ScanKey
+		iniRead, ScanKey,  %A_WorkingDir%/settings.ini, Other, ScanKey
 		gui, add, hotkey, x120 y255 vScanKey_v gScanKey_l, %ScanKey%
 
 	gui, add, button, x10 y295 h30 w390 gSettingsOK, Save
@@ -271,19 +271,26 @@ ScanKey_l:
 return
 
 SettingsOK:
-	iniRead, GuiKey,  %A_WorkingDir%/settings.ini, other, GuiKey
-	iniRead, ScanKey,  %A_WorkingDir%/settings.ini, other, ScanKey
-
-	hotkey, %GuiKey%, off
-	hotkey, %ScanKey%, off
+	iniRead, GuiKey,  %A_WorkingDir%/settings.ini, Other, GuiKey
+	iniRead, ScanKey,  %A_WorkingDir%/settings.ini, Other, ScanKey
 
 	guiControlGet, gk,, GuiKey_v, value
-	iniWrite, %gk%, %A_WorkingDir%/settings.ini, other, GuiKey
-	hotkey, %gk%, OpenGui
-
 	guiControlGet, sk,, ScanKey_v, value
-	iniWrite, %sk%, %A_WorkingDir%/settings.ini, other, ScanKey
-	hotkey, %sk%, Scan
+
+	if (GuiKey != gk) {
+		hotkey, %GuiKey%, off
+		iniWrite, %gk%, %A_WorkingDir%/settings.ini, Other, GuiKey
+		hotkey, %gk%, OpenGui
+	} 
+			
+	if (ScanKey != sk){
+		hotkey, %ScanKey%, off
+		iniWrite, %sk%, %A_WorkingDir%/settings.ini, Other, ScanKey
+		hotkey, %sk%, Scan
+	} 
+
+	hotkey, %gk%, on
+	hotkey, %sk%, on
 
 	Gui, Settings:Destroy
 	Gui, HarvestUI:Default
@@ -291,7 +298,7 @@ return
 
 Scale:
 	guiControlGet, sc,,Scale, value
-	iniWrite, %sc%, %A_WorkingDir%/settings.ini, other, scale
+	iniWrite, %sc%, %A_WorkingDir%/settings.ini, Other, scale
 return
 
 unlevel(craft){
@@ -330,7 +337,7 @@ buildGUI() {
 
 	;== Bottom stuff ==
 	;gui add, Text, x15 y345 w150, Custom text added to message: 
-	iniRead tempCustomTextCB, %A_WorkingDir%/settings.ini, other, customTextCB
+	iniRead tempCustomTextCB, %A_WorkingDir%/settings.ini, Other, customTextCB
 	if (tempCustomTextCB == "ERROR") { 
 		tempCustomTextCB := 0 
 	}
@@ -338,7 +345,7 @@ buildGUI() {
 		global CustomTextCB_TT := "If you wish to hide Custom text for now"
 	guicontrol,,CustomTextCB, %tempCustomTextCB%
 
-	iniRead tempCustomText, %A_WorkingDir%/settings.ini, other, customText
+	iniRead tempCustomText, %A_WorkingDir%/settings.ini, Other, customText
 	if (tempCustomText == "ERROR") { 
 		tempCustomText := "" 
 	}
@@ -346,7 +353,7 @@ buildGUI() {
 		global CustomText_TT := "If you wish to add extra info to your message, will show under the WTS line"
 	
 	
-	iniRead tempStream, %A_WorkingDir%/settings.ini, other, canStream
+	iniRead tempStream, %A_WorkingDir%/settings.ini, Other, canStream
 	if (tempStream == "ERROR") { 
 		tempStream := 0 
 	}	
@@ -477,12 +484,14 @@ processCrafts() {
 	;getSelectionCoords(x_start, x_end, y_start, y_end)
 if ((rescan == "rescanButton" and x_start == 0) or rescan != "rescanButton" ) {
 
-	coordTemp := selectArea("cffc555 t50 ms")
+	coordTemp := SelectArea("cffc555 t50 ms")
 	x_start := coordTemp[1]
 	y_start := coordTemp[3]
 	x_end := coordTemp[2]
 	y_end := coordTemp[4]
 }
+	WinActivate, Path of Exile
+	sleep, 500
 
 	Tooltip, Please Wait
 	command = Capture2Text\Capture2Text.exe -s `"%x_start% %y_start% %x_end% %y_end%`" -o temp.txt -l English --trim-capture 
@@ -490,6 +499,7 @@ if ((rescan == "rescanButton" and x_start == 0) or rescan != "rescanButton" ) {
     
     sleep, 1000 ;sleep cos if i show the Gui too quick the capture will grab screenshot of gui   	
     Gui, HarvestUI:Show
+	WinActivate, ahk_exe AutoHotkey.exe
 	Tooltip
 	if !FileExist("temp.txt") {
 		MsgBox, - We were unable to create temp.txt to store text recognition results.`r`n- The tool most likely doesnt have permission to write where it is.`r`n- Moving it into a location that isnt write protected, or running as admin will fix this.
@@ -1387,7 +1397,7 @@ Options: (White space separated)
 - m CoordMode. Default: s. s = Screen, r = Relative
 */
 ;full screen overlay
-iniRead tempMon, %A_WorkingDir%/settings.ini, other, mon
+iniRead tempMon, %A_WorkingDir%/settings.ini, Other, mon
 iniRead, scale, %A_WorkingDir%/settings.ini, Other, scale
 ;scale := 1
 cover := monitorInfo(tempMon)
@@ -1443,9 +1453,9 @@ coverW := cover[4] / scale
 	{
 		MouseGetPos, MXend, MYend
 		If ( MX > MXend )
-			temp := MX, MX := MXend, MXend := temp * 1.5
+			temp := MX, MX := MXend, MXend := temp ;* scale
 		If ( MY > MYend )
-			temp := MY, MY := MYend, MYend := temp * 1.5
+			temp := MY, MY := MYend, MYend := temp ;* scale
 		Return [MX,MXend,MY,MYend]
 	}
 	else ; Relative
