@@ -1180,12 +1180,12 @@ getLVL(craft) {
 		if (lv < 40) { ;ppl wouldn't sell lv 30 crafts, but sometimes OCR mistakes 8 for a 3 this just bumps it up for the 76+ rule
 			lv += 50
 		}
-		if (lv >= 76) {
-			return "76+"
-		} 
-		else {
+		;if (lv >= 76) {
+		;	return "76+"
+		;} 
+		;else {
 			return lv
-		}
+		;}
 	} 
 	else {
 		return "00"
