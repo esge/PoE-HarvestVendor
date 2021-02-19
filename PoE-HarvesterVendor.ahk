@@ -1078,7 +1078,10 @@ createPostRow(count,craft,price,group) {
 		mySpaces .= " "
 	}
 
-	craftLvl := RegExReplace(craft,"[^(\d\d)]","") ; this should result in a 2 digit number by deleting everything thas not a 2 digit number	
+	;craftLvl := RegExReplace(craft,"[^(\d\d)]","") ; this should result in a 2 digit number by deleting everything thas not a 2 digit number	
+													; this failed for 1 craft: Six link (6-link) lv83
+	craftlvl := SubStr(craft, regexmatch(craft,"lv(\d\d)")+2,2) ;find lvl get the 2 chars there
+	
 	craftNoLvl := RegExReplace(craft," lv(\d\d)","") ; this should result in the craft without lvl\d\d
 
 	if (outStyle == 1) { ; no colors, no codeblock, but highlighted
