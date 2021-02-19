@@ -1027,7 +1027,7 @@ getMaxLenghts(group){
 
 createPostRow(count,craft,price,group) {
 	;IniRead, outStyle, %A_WorkingDir%/settings.ini, Other, outStyle
-	mySpaces := " "
+	mySpaces := ""
 	spacesCount := 0
 	if (price == "") {
 		price := " "
@@ -1038,29 +1038,32 @@ createPostRow(count,craft,price,group) {
 	else {
 		spacesCount := %group%MaxLen - StrLen(craft) + 1
 	}
-
 	loop, %spacesCount% {
 		mySpaces .= " "
 	}
+
+	craftLvl := RegExReplace(craft,"[^(\d\d)]","") ; this should result in a 2 digit number by deleting everything thas not a 2 digit number	
+	craftNoLvl := RegExReplace(craft," lv(\d\d)","") ; this should result in the craft without lvl\d\d
+
 	if (outStyle == 1) { ; no colors, no codeblock, but highlighted
-		if regexmatch(craft,"(lv\d\d)") > 0 {
-			craft := RegExReplace(craft," lv(\d\d)","``**``][$1")
+		outString .= "   ``" . count . "x ``**``" . craftNoLvl . "``**``" . mySpaces . "[" . craftLvl . "]" 
+		if (price == " ") {
+			outString .= "```r`n"
+		} else {
+			outString .= " <``**``" . price . "``**``>```r`n"
 		}
-		else {
-			craft := craft . "][-"
-		}
-		outString .= "   ``(" . count . "x) [``**``" . craft . "]" . mySpaces . "<``**``" . price . "``**``>```r`n"
 	}
 
 	if (outStyle == 2) { ; message style with colors, in codeblock but text isnt highlighted in discord search
-		if regexmatch(craft,"(lv\d\d)") > 0 {
-			craft := RegExReplace(craft," lv(\d\d)","][$1")
+		outString .= "  " . count . "x [" . craftNoLvl . mySpaces . "]" . "[" . craftLvl . "]" 
+		if (price == " ") {
+			outString .= "`r`n"
+		} else {
+			outString .= " < " . price . " >`r`n"
 		}
-		else {
-			craft := craft . "][-"
-		}
-		outString .= "  (" . count . "x) [" . craft . "]" . mySpaces . "< " . price . " >`r`n"
 	}
+
+
 
 }
 
