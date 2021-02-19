@@ -66,14 +66,7 @@ if (A_AhkVersion < "1.1.27.00"){
 	MsgBox, Please update your AHK `r`nYour version: %A_AhkVersion%`r`nRequired: 1.1.27.00 or more
 }
 ; Message about hotkeys on first run
-IniRead, firstRun, %A_WorkingDir%/settings.ini, Other, firstRun
-	if (firstRun == "ERROR") {
-		firstRun := 1
-	}
-if (firstRun == 1) {
-	MsgBox, Default hotkeys are:`r`nCTRL + SHIFT + G to open the gui`r`nCTRL + G to go straight into capture`r`n`r`nThis message will not appear again.
-	IniWrite, 0, %A_WorkingDir%/settings.ini, Other, firstRun 
-}
+
 iniRead, sc, %A_WorkingDir%/settings.ini, Other, scale
 if (sc == "ERROR") {
 	iniWrite, 1, %A_WorkingDir%/settings.ini, Other, scale
