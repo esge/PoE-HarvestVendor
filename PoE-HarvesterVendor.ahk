@@ -1044,7 +1044,7 @@ createPostRow(count,craft,price,group) {
 	}
 	if (outStyle == 1) { ; no colors, no codeblock, but highlighted
 		if regexmatch(craft,"(lv\d\d)") > 0 {
-			craft := RegExReplace(craft," (lv\d\d)","``**``][$1")
+			craft := RegExReplace(craft," lv(\d\d)","``**``][$1")
 		}
 		else {
 			craft := craft . "][-"
@@ -1054,7 +1054,7 @@ createPostRow(count,craft,price,group) {
 
 	if (outStyle == 2) { ; message style with colors, in codeblock but text isnt highlighted in discord search
 		if regexmatch(craft,"(lv\d\d)") > 0 {
-			craft := RegExReplace(craft," (lv\d\d)","][$1")
+			craft := RegExReplace(craft," lv(\d\d)","][$1")
 		}
 		else {
 			craft := craft . "][-"
