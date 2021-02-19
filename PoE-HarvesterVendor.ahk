@@ -2,7 +2,7 @@
 #Warn, LocalSameAsGlobal, off
 #SingleInstance Force
 SetWorkingDir %A_ScriptDir% 
-global version := "0.4.8"
+global version := "0.5"
 global ACounter := 1
 global RCounter := 1
 global RAcounter := 1
@@ -23,6 +23,14 @@ global y_start := 0
 global x_end := 0
 global y_end := 0
 global rescan
+global seenInstructions
+
+iniRead, seenInstructions,  %A_WorkingDir%/settings.ini, Other, seenInstructions
+if (seenInstructions == "ERROR" or seenInstructions == "") {
+		IniWrite, 0, %A_WorkingDir%/settings.ini, Other, seenInstructions 	
+		;GuiKey := "^+g"	
+		IniRead, seenInstructions, %A_WorkingDir%/settings.ini, Other, seenInstructions
+	}
 
 IniRead, GuiKey, %A_WorkingDir%/settings.ini, Other, GuiKey
 	if (GuiKey == "ERROR" or GuiKey == "") {
@@ -75,13 +83,17 @@ checkfiles()
 winCheck()
 getLeagues()
 
+if (seenInstructions == 0) {
+	goto help
+}
+
 return
 
 OpenGui: ;ctrl+shift+g opens the gui, yo go from there
 	 if (firstGuiOpen == 0) {
     	buildGUI()
 	 }
-    Gui, HarvestUI:Show, w1225 h370
+    Gui, HarvestUI:Show, w1225 h380
 	OnMessage(0x200, "WM_MOUSEMOVE")
 	;clearAll()
 Return
@@ -91,7 +103,7 @@ Scan: ;ctrl+g launches straight into the capture, opens gui afterwards
     if (firstGuiOpen == 0) {
         buildGUI()
     } 
-    Gui, HarvestUI:Show, w1225 h370
+    Gui, HarvestUI:Show, w1225 h380
 	OnMessage(0x200, "WM_MOUSEMOVE") ;activates tooltip function
     craftSort(outArray)
 return
@@ -177,6 +189,12 @@ CustomText:
 	guiControlGet, cust,,CustomText, value
 	iniWrite, %cust%, %A_WorkingDir%/settings.ini, Other, customText
 	guicontrol,, CustomTextCB, 1
+			
+	if (RegExMatch(cust, "not|remove|aug|add") > 0) {
+		guiControl, show, CustomTextWarning
+	} else {
+		guicontrol, hide, CustomTextWarning
+	}
 return
 
 CanStream:
@@ -196,19 +214,40 @@ Monitors:
 return
 
 help:
+	IniWrite, 1, %A_WorkingDir%/settings.ini, Other, seenInstructions 
 	gui Help:new
 
-	gui font, s16
-	Gui, add, text,, This is the area you want to select
+gui, font, s14
+	Gui, add, text, x5 y5, Step 1
+	gui, add, text, x5 y80, Step 2
+	gui, add, text, x5 y380, Step 3
+	Gui, add, text, x5 y540, Step 4
+gui, font
+
+gui, font, s10
+;step 1
+	gui, add, text, x15 y30, Default Hotkey to open the UI = Ctrl + Shift + G`r`nDefault Hotkey to start capture = Ctrl + G`r`nHotkeys can be changed in settings
+
+;step 2	
+	gui, add, text, x15 y110, Start the capture by either clicking Add Crafts button, `r`nor pressing the Capture hotkey.`r`nSelect the area with crafts:
+	Gui, Add, ActiveX, x5 y120 w290 h240 vArea, Shell2.Explorer
+	Area.document.body.style.overflow := "hidden"
+	Edit := WebPic(Area, "https://github.com/esge/PoE-HarvestVendor/blob/master/examples/snapshotArea_s.png?raw=true", "w250 h233 cFFFFFF")
+	gui, add, text, x15 y365, this can be done repeatedly to add crafts to the list
+;step 3	
+	gui, add, text, x15 y410, Fill in the prices (they will be remembered)`r`nand other info like: Can stream, IGN and so on if you wish to
+	Gui, Add, ActiveX, x5 y430 w350 h100 vPricepic, Shell2.Explorer
+	Pricepic.document.body.style.overflow := "hidden"
+	Edit := WebPic(Pricepic, "https://github.com/esge/PoE-HarvestVendor/blob/master/examples/price.png?raw=true", "w298 h94 cFFFFFF")
+	
+;step 4
+	gui, add, text, x15 y570, click: Create Posting for the section you wish`r`nNow your message is in clipboard
+	
 	gui, font
-	Gui, Add, ActiveX, x0 y30 w500 h500 vWB1, Shell.Explorer
-
-	; This can be an image from a website, or an image from your computer. Just specify the path based off of the current script directory.
-	Edit := WebPic(WB1, "https://github.com/esge/PoE-HarvestVendor/blob/master/examples/example3.png?raw=true", "w436 h425 cFFFFFF")
-	;Gui, Add, Edit, x0 y105 w750 h215 -Wrap +HScroll vEdit TabStop WantReturn t8
-	Gui, Help:Show, w500 h500, Help
-
-	helpClose:
+	Gui, Help:Show, w400 h610, Help
+return
+	HelpExit:
+	HelpClose:	
 	Gui, HarvestUI:Default
 return
 
@@ -312,7 +351,7 @@ buildGUI() {
     Gui Add, DropDownList, x10 y10 w150 vLeague gLeagueDropdown,
     leagueList() ;populate leagues dropdown and select the last used one
     Gui Add, Button, x165 y9 w80 h23 vAddCrafts gAddcrafts, Add crafts
-		;global AddCrafts_TT := ScanKey
+	
     Gui Add, Button, x250 y9 w80 h23 gClear_all, Clear
 
 	Gui Add, Button, x335 y9 w80 h23 vpostAll gpostAll, Post all
@@ -352,7 +391,11 @@ buildGUI() {
 	gui add, Edit, x180 y340 w500 vCustomText gCustomText, %tempCustomText% 
 		global CustomText_TT := "If you wish to add extra info to your message, will show under the WTS line"
 	
-	
+	gui, font, ccda4f49
+	gui add, Text, x180 y365 vCustomTextWarning ,Words 'not, remove, aug, add' might get your message removed based on the channel you are posting to. Please consult the Pins in respective channels.
+	gui, font
+	;
+	guicontrol, hide, CustomTextWarning
 	iniRead tempStream, %A_WorkingDir%/settings.ini, Other, canStream
 	if (tempStream == "ERROR") { 
 		tempStream := 0 
@@ -1085,6 +1128,7 @@ createPost(group) {
 	GuiControlGet, tempStream,, canStream, value
 	GuiControlGet, tempCustomText,, CustomText, value
 	GuiControlGet, tempCustomTextCB,, CustomTextCB, value
+
 	
     outString := ""
 	getMaxLenghts(group)
@@ -1763,6 +1807,7 @@ global CustomTextCB
 global Settings
 global outStyle
 global rescanButton
+global CustomTextWarning
 global A_count_1
 global A_count_2
 global A_count_3
