@@ -62,8 +62,6 @@ if (tempMon == "ERROR") {
 	iniWrite, %tempMon%, %A_WorkingDir%/settings.ini, Other, mon
 }
 
-
-
 if (A_AhkVersion < "1.1.27.00"){
 	MsgBox, Please update your AHK `r`nYour version: %A_AhkVersion%`r`nRequired: 1.1.27.00 or more
 }
@@ -103,14 +101,10 @@ Scan: ;ctrl+g launches straight into the capture, opens gui afterwards
     craftSort(outArray)
 return
 
-
 GuiEscape:
     Gui, HarvestUI:Show
 GuiClose:
     ExitApp
-
-
-
 
 Addcrafts:
 	GuiControlGet, rescan, FocusV
@@ -229,6 +223,7 @@ gui, font, s10
 	Area.document.body.style.overflow := "hidden"
 	Edit := WebPic(Area, "https://github.com/esge/PoE-HarvestVendor/blob/master/examples/snapshotArea_s.png?raw=true", "w250 h233 cFFFFFF")
 	gui, add, text, x15 y365, this can be done repeatedly to add crafts to the list
+
 ;step 3	
 	gui, add, text, x15 y410, Fill in the prices (they will be remembered)`r`nand other info like: Can stream, IGN and so on if you wish to
 	Gui, Add, ActiveX, x5 y430 w350 h100 vPricepic, Shell2.Explorer
@@ -256,26 +251,23 @@ settings:
 	hotkey, %ScanKey%, off
 	gui Settings:new
 	gui, add, Groupbox, x5 y5 w400 h90, Message formatting
-
 		Gui, add, text, x10 y25, Output message style:
 		Gui, add, dropdownList, x120 y20 w30 voutStyle goutStyle, 1|2
 		iniRead, tstyle, %A_WorkingDir%/settings.ini, Other, outStyle
-		guicontrol, choose,outStyle, %tstyle%
+		guicontrol, choose, outStyle, %tstyle%
 		Gui, add, text, x20 y50, 1 - No Colors, No codeblock = Words are highlighted when using discord search
 		Gui, add, text, x20 y70, 2 - Codeblock, Colors = Words aren't highlighetd when using discord search
 
-
 	gui, add, Groupbox, x5 y110 w400 h100, Monitor Settings
-	monitors := getMonCount()
-
+		monitors := getMonCount()
 		Gui add, text, x10 y130, Select monitor:
 		Gui add, dropdownList, x85 y125 w30 vMonitors_v gMonitors, %monitors%
 			global Monitors_v_TT := "For when you aren't running PoE on main monitor"
 		guicontrol, choose, Monitors_v, %tempMon%
 
-	gui, add, text, x10 y150, Scale	
-	iniRead, tScale,  %A_WorkingDir%/settings.ini, Other, scale
-	gui, add, edit, x85 y150 w30 vScale gScale, %tScale% 
+		gui, add, text, x10 y150, Scale	
+		iniRead, tScale,  %A_WorkingDir%/settings.ini, Other, scale
+		gui, add, edit, x85 y150 w30 vScale gScale, %tScale% 
 		Gui, add, text, x20 y175, - use this when you are using Other than 100`% scale in windows display settings
 		Gui, add, text, x20 y195, - 100`% = 1, 150`% = 1.5 and so on
 
@@ -290,7 +282,6 @@ settings:
 
 	gui, add, button, x10 y295 h30 w390 gSettingsOK, Save
 	gui, Settings:Show, w410 h330
-
 	
 return
 SettingsExit:
@@ -302,11 +293,9 @@ SettingsClose:
 return
 
 GuiKey_l:
-
 return
 
 ScanKey_l:
-
 return
 
 SettingsOK:
@@ -333,6 +322,7 @@ SettingsOK:
 	} else {
 		hotkey, %GuiKey%, on
 	}
+
 	if (sk != "ERROR" and sk != "") {
 		hotkey, %sk%, on
 	} else {
@@ -526,6 +516,7 @@ buildGUI() {
     }    
 }
 
+; this is the part that goes through the scan and detects crafts and outputs the shortened names and levels
 processCrafts() {
 	Gui, HarvestUI:Hide    
 	outArray := []	
@@ -980,6 +971,7 @@ clearAll() {
 	arr := []
 }
 
+;enables Post All button if a Standard league is selected
 allowAll() {
 	IniRead selLeague, %A_WorkingDir%/settings.ini, selectedLeague, s
 	if (selLeague == "ERROR"){
@@ -992,6 +984,7 @@ allowAll() {
 	}
 }
 
+;creates the string of leagues for League dropdown, also sets default league to Temporary SC league if there isn't one selected yet
 leagueList() {
     leagueString := ""
     loop, 8 {
@@ -1011,8 +1004,6 @@ leagueList() {
 		}
     }
 
-
-
 	iniRead, leagueCheck, %A_WorkingDir%/settings.ini, selectedLeague, s
 	guicontrol,, League, %leagueString%
 	if (leagueCheck == "ERROR") {		
@@ -1023,6 +1014,7 @@ leagueList() {
 	}
 }
 
+; just reads whats in the row and section in the gui
 getRowData(group, row) {
 	GuiControlGet, tempCount,, %group%_count_%row%, value
 	GuiControlGet, tempCraft,, %group%_craft_%row%, value
@@ -1035,12 +1027,12 @@ getRowData(group, row) {
 
 readyTT() {
 	ClipWait
-
     ToolTip, Paste Ready,,,1
 	sleep, 2000
 	Tooltip,,,,1
 }
 
+;returns max lenght of string in selected group, this is for aligning in output message
 getMaxLenghts(group){
 	if (group == "All") {
 		loop, 10 {
@@ -1071,7 +1063,7 @@ getMaxLenghts(group){
 		}
 	}
 }
-
+; assembles the row with craft count, name, lvl, price
 createPostRow(count,craft,price,group) {
 	;IniRead, outStyle, %A_WorkingDir%/settings.ini, Other, outStyle
 	mySpaces := ""
@@ -1079,12 +1071,14 @@ createPostRow(count,craft,price,group) {
 	if (price == "") {
 		price := " "
 	}	
+
 	if (group == "All") {
 		spacesCount := Max(AMaxLen,RMaxLen,RAMaxLen,OMaxLen) - strlen(craft) + 1
 	} 
 	else {
 		spacesCount := %group%MaxLen - StrLen(craft) + 1
 	}
+
 	loop, %spacesCount% {
 		mySpaces .= " "
 	}
@@ -1112,9 +1106,6 @@ createPostRow(count,craft,price,group) {
 			outString .= " < " . price . " >`r`n"
 		}
 	}
-
-
-
 }
 
 codeblockWrap() {
@@ -1127,6 +1118,7 @@ codeblockWrap() {
 	}
 }
 
+;puts together the whole message that ends up in clipboard
 createPost(group) {
 	IniRead, outStyle, %A_WorkingDir%/settings.ini, Other, outStyle
     tempName := ""
@@ -1135,7 +1127,6 @@ createPost(group) {
 	GuiControlGet, tempStream,, canStream, value
 	GuiControlGet, tempCustomText,, CustomText, value
 	GuiControlGet, tempCustomTextCB,, CustomTextCB, value
-
 	
     outString := ""
 	getMaxLenghts(group)
@@ -1237,6 +1228,7 @@ createPost(group) {
     }    
 }
 
+;finds out the level form raw row
 getLVL(craft) {
 	lvlpos := RegExMatch(craft, "Level \d\d") + 6
 	lv := substr(craft, lvlpos, 2)
@@ -1256,6 +1248,7 @@ getLVL(craft) {
 	}
 }
 
+;inputs stuff into the UI
 insertIntoRow(group, rowCounter, craft) {
     GuiControl,, %group%_craft_%rowCounter%, %craft%
     GuiControl,, %group%_count_%rowCounter%, 1
@@ -1269,6 +1262,7 @@ insertIntoRow(group, rowCounter, craft) {
 	GuiControl,, %group%_price_%rowCounter%, %tempP%
 }
 
+;sorts crafts into correct groups
 CraftSort(ar) {
     tempC := ""
     for k in ar {   
@@ -1349,6 +1343,7 @@ winCheck(){
 	}
 }
 
+;get list of active leagues from ggg
 getLeagues() {
 	leagueAPIurl := "http://api.pathofexile.com/leagues?type=main&compact=1" 
 	if FileExist("curl.exe") {
@@ -1387,6 +1382,7 @@ getLeagues() {
 	}
 }
 
+;check harvestVendor version against github
 getVersion() {
 	versionUrl :=  "https://raw.githubusercontent.com/esge/PoE-HarvestVendor/master/version.txt"
     if FileExist("curl.exe") {
@@ -1403,7 +1399,7 @@ getVersion() {
     }
     return StrReplace(StrReplace(response,"`r"),"`n")
 }
-
+; checks if capture2text exists and is in the right palce
 checkFiles() {
 	if !FileExist("Capture2Text") {
 		if FileExist("Capture2Text.exe")	{
@@ -1415,6 +1411,7 @@ checkFiles() {
 		}
 	}
 }
+;find out monitor #
 getMonCount(){
    monOut :=""
    sysGet, monCount, MonitorCount
@@ -1424,6 +1421,7 @@ getMonCount(){
    return monOut
 }
 
+; find out resolution of specified monitor
 monitorInfo(num){
    SysGet, Mon2, monitor, %num%
   
@@ -1433,7 +1431,6 @@ monitorInfo(num){
    width := abs(Mon2Left-Mon2Right)
 
    return [x,y,height,width]
-
 }
 
 
