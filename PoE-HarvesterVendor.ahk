@@ -2,7 +2,7 @@
 #Warn, LocalSameAsGlobal, off
 #SingleInstance Force
 SetWorkingDir %A_ScriptDir% 
-global version := "0.5"
+global version := "0.5.1"
 global ACounter := 1
 global RCounter := 1
 global RAcounter := 1
@@ -36,6 +36,7 @@ IniRead, GuiKey, %A_WorkingDir%/settings.ini, Other, GuiKey
 	if (GuiKey == "ERROR" or GuiKey == "") {
 		IniWrite, ^+g, %A_WorkingDir%/settings.ini, Other, GuiKey 	
 		;GuiKey := "^+g"	
+		sleep, 250
 		IniRead, GuiKey, %A_WorkingDir%/settings.ini, Other, GuiKey
 	}
 hotkey, %GuiKey%, OpenGui
@@ -43,6 +44,7 @@ hotkey, %GuiKey%, OpenGui
 IniRead, ScanKey, %A_WorkingDir%/settings.ini, Other, ScanKey
 	if (ScanKey == "ERROR" or ScanKey == "") {
 		IniWrite, ^g, %A_WorkingDir%/settings.ini, Other, ScanKey 	
+		sleep, 250
 		IniRead, ScanKey, %A_WorkingDir%/settings.ini, Other, ScanKey
 		;ScanKey == "^g"	
 	}
@@ -250,6 +252,8 @@ outStyle:
 return
 
 settings:
+	hotkey, %GuiKey%, off
+	hotkey, %ScanKey%, off
 	gui Settings:new
 	gui, add, Groupbox, x5 y5 w400 h90, Message formatting
 
@@ -287,9 +291,12 @@ settings:
 	gui, add, button, x10 y295 h30 w390 gSettingsOK, Save
 	gui, Settings:Show, w410 h330
 
-		
+	
 return
-SettingsClose:	
+SettingsExit:
+SettingsClose:		
+	hotkey, %GuiKey%, on
+	hotkey, %ScanKey%, on
 	Gui, Settings:Destroy
 	Gui, HarvestUI:Default	
 return
@@ -309,20 +316,28 @@ SettingsOK:
 	guiControlGet, gk,, GuiKey_v, value
 	guiControlGet, sk,, ScanKey_v, value
 
-	if (GuiKey != gk) {
+	if (GuiKey != gk and gk != "ERROR" and gk != "") {
 		hotkey, %GuiKey%, off
 		iniWrite, %gk%, %A_WorkingDir%/settings.ini, Other, GuiKey
 		hotkey, %gk%, OpenGui
 	} 
 			
-	if (ScanKey != sk){
+	if (ScanKey != sk and sk != "ERROR" and sk != ""){
 		hotkey, %ScanKey%, off
 		iniWrite, %sk%, %A_WorkingDir%/settings.ini, Other, ScanKey
 		hotkey, %sk%, Scan
 	} 
 
-	hotkey, %gk%, on
-	hotkey, %sk%, on
+	if (gk != "ERROR" and gk != "") {
+		hotkey, %gk%, on
+	} else {
+		hotkey, %GuiKey%, on
+	}
+	if (sk != "ERROR" and sk != "") {
+		hotkey, %sk%, on
+	} else {
+		hotkey, %ScanKey%, on
+	}	
 
 	Gui, Settings:Destroy
 	Gui, HarvestUI:Default
@@ -513,19 +528,15 @@ buildGUI() {
 
 processCrafts() {
 	Gui, HarvestUI:Hide    
-	
-	outArray := []
-    
-	
-	;getSelectionCoords(x_start, x_end, y_start, y_end)
-if ((rescan == "rescanButton" and x_start == 0) or rescan != "rescanButton" ) {
+	outArray := []	
 
-	coordTemp := SelectArea("cffc555 t50 ms")
-	x_start := coordTemp[1]
-	y_start := coordTemp[3]
-	x_end := coordTemp[2]
-	y_end := coordTemp[4]
-}
+    if ((rescan == "rescanButton" and x_start == 0) or rescan != "rescanButton" ) {
+		coordTemp := SelectArea("cffc555 t50 ms")
+		x_start := coordTemp[1]
+		y_start := coordTemp[3]
+		x_end := coordTemp[2]
+		y_end := coordTemp[4]
+    }
 	WinActivate, Path of Exile
 	sleep, 500
 
@@ -542,7 +553,7 @@ if ((rescan == "rescanButton" and x_start == 0) or rescan != "rescanButton" ) {
 	}
 
 	FileRead, temp, temp.txt
-	;FileRead, temp, test.txt
+	;FileRead, temp, test2.txt
 
 	NewLined := RegExReplace(temp, "(Reforge |Randomise |Remove |Augment |Improves |Upgrades |Upgrade |Set |Change |Exchange |Sacrifice a|Sacrifice up|Attempt |Enchant |Reroll |Fracture |Add a random |Synthesise |Split |Corrupt )" , "`r`n$1")
 	Arrayed := StrSplit(NewLined, "`r`n")
