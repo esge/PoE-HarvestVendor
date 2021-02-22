@@ -86,6 +86,7 @@ return
 OpenGui: ;ctrl+shift+g opens the gui, yo go from there
 	 if (firstGuiOpen == 0) {
     	buildGUI()
+		loadLastSession()
 	 }
     Gui, HarvestUI:Show, w1225 h380
 	OnMessage(0x200, "WM_MOUSEMOVE")
@@ -96,25 +97,30 @@ Scan: ;ctrl+g launches straight into the capture, opens gui afterwards
     processCrafts("temp.txt")
     if (firstGuiOpen == 0) {
         buildGUI()
+		loadLastSession()
     } 
     Gui, HarvestUI:Show, w1225 h380
 	OnMessage(0x200, "WM_MOUSEMOVE") ;activates tooltip function
     craftSort(outArray)
+	rememberSession()
+	
 return
 
 GuiEscape:
     Gui, HarvestUI:Show
-GuiClose:
+GuiClose:	
     ExitApp
 
 Addcrafts:
 	GuiControlGet, rescan, FocusV
     processCrafts("temp.txt")
-    CraftSort(outArray)
+    CraftSort(outArray)	
+	rememberSession()
 return
 
 Clear_all:
 	clearAll()    
+	rememberSession()
 return
 
 Aug_Post:
@@ -142,7 +148,7 @@ price:
 	guiControlGet, craftPrice,, %priceField%, value
 	priceFieldArray := strsplit(priceField,"_")
 	
-	if (priceFieldArray[2] == "price") {	
+	if (priceFieldArray[2] == "price") {	;i'm not quite sure why i did this if, but not gonna fiddle with it for now
 		g := priceFieldArray[1] ;group
 		r := priceFieldArray[3] ;row	
 		
@@ -165,6 +171,7 @@ clearRow:
 	GuiControl,, %g%_count_%r%, 0
 	GuiControl,, %g%_price_%r%
 	%g%Counter -= 1
+	rememberSession()
 return
 
 LeagueDropdown:
@@ -463,7 +470,7 @@ buildGUI() {
         yrow1_cbOffset := yrow1 + 1
         Gui Add, Edit, x%Rx_count% y%yrow1% w35 vR_count_%A_Index%
         Gui Add, UpDown, Range0-20, 0
-        Gui Add, Edit, x%Rx_craft% y%yrow1% w%Rwidth% vR_craft_%A_Index%
+        Gui Add, Edit, x%Rx_craft% y%yrow1% w%Rwidth% vR_craft_%A_Index% 
         Gui Add, Edit, x%Rx_price% y%yrow1% w35 vR_price_%A_Index% gprice
      
 	    gui add, Button, x%Rx_checkbox% y%yrow1_cbOffset% w19 h19 vR_del_%A_Index% gClearRow, X 
@@ -489,7 +496,7 @@ buildGUI() {
         yrow1_cbOffset := yrow1 + 1
         Gui Add, Edit, x%RAx_count% y%yrow1% w35 vRA_count_%A_Index%
         Gui Add, UpDown, Range0-20, 0
-        Gui Add, Edit, x%RAx_craft% y%yrow1% w%RAwidth% vRA_craft_%A_Index%
+        Gui Add, Edit, x%RAx_craft% y%yrow1% w%RAwidth% vRA_craft_%A_Index% 
         Gui Add, Edit, x%RAx_price% y%yrow1% w35 vRA_price_%A_Index% gprice
         
 		gui add, Button, x%RAx_checkbox% y%yrow1_cbOffset% w19 h19 vRA_del_%A_Index% gClearRow, X 
@@ -515,7 +522,7 @@ buildGUI() {
         yrow1_cbOffset := yrow1 + 1
         Gui Add, Edit, x%Ox_count% y%yrow1% w35 vO_count_%A_Index%
         Gui Add, UpDown, Range0-20, 0
-        Gui Add, Edit, x%Ox_craft% y%yrow1% w%Owidth% vO_craft_%A_Index%
+        Gui Add, Edit, x%Ox_craft% y%yrow1% w%Owidth% vO_craft_%A_Index% 
         Gui Add, Edit, x%Ox_price% y%yrow1% w35 vO_price_%A_Index% gprice
         
 		gui add, Button, x%Ox_checkbox% y%yrow1_cbOffset% w19 h19 vO_del_%A_Index% gClearRow, X 
@@ -955,6 +962,41 @@ processCrafts(file) {
 ;	Clipboard := str
 }
 
+rememberCraft(g,r){
+	guiControlGet, craftName,, %g%_craft_%r%, value
+	blank := ""
+	if (craftName != "") {
+		IniWrite, %craftName%, %A_WorkingDir%/settings.ini, LastSession, %g%_craft_%r%
+	} else {
+		IniWrite, %blank%, %A_WorkingDir%/settings.ini, LastSession, %g%_craft_%r%
+	}
+}
+
+rememberSession() {
+	loop, 10 {
+		rememberCraft("A",A_Index)
+		rememberCraft("R",A_Index)
+		rememberCraft("RA",A_Index)
+		rememberCraft("O",A_Index)
+	}
+}
+
+loadLastSessionCraft(g,r) {
+	IniRead, lastCraft, %A_WorkingDir%/settings.ini, LastSession, %g%_craft_%r%
+	if (lastCraft != "") {
+		GuiControl, , %g%_craft_%r% , %lastCraft%
+	} 
+}
+
+loadLastSession(){
+	loop,10{
+		loadLastSessionCraft("A",A_Index)
+		loadLastSessionCraft("R",A_Index)
+		loadLastSessionCraft("RA",A_Index)
+		loadLastSessionCraft("O",A_Index)
+	}
+}
+
 clearAll() {
     loop, 10 {
         GuiControl,, A_craft_%A_Index%
@@ -1341,9 +1383,8 @@ CraftSort(ar) {
 				}
 			}             
         }
-    }
+    }	
 }
-
 
 sumPrices(){
 	tempSumChaos := 0
@@ -1482,6 +1523,8 @@ monitorInfo(num){
 
    return [x,y,height,width]
 }
+
+
 
 
 ; ========================================================================
