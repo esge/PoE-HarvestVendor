@@ -2,7 +2,7 @@
 #Warn, LocalSameAsGlobal, off
 #SingleInstance Force
 SetWorkingDir %A_ScriptDir% 
-global version := "0.5.1"
+global version := "0.5.2"
 global ACounter := 1
 global RCounter := 1
 global RAcounter := 1
@@ -24,6 +24,7 @@ global x_end := 0
 global y_end := 0
 global rescan
 global seenInstructions
+
 
 iniRead, seenInstructions,  %A_WorkingDir%/settings.ini, Other, seenInstructions
 if (seenInstructions == "ERROR" or seenInstructions == "") {
@@ -143,12 +144,15 @@ price:
 	
 	if (priceFieldArray[2] == "price") {	
 		g := priceFieldArray[1] ;group
-		r := priceFieldArray[3] ;row
-
+		r := priceFieldArray[3] ;row	
+		
 		guiControlGet, craftName,, %g%_craft_%r%, value
-		craftName := unlevel(craftName)
-		iniWrite, %craftPrice%, %A_WorkingDir%/prices.ini, Prices, %craftName%
+		if (craftName != "") {
+			craftName := unlevel(craftName)
+			iniWrite, %craftPrice%, %A_WorkingDir%/prices.ini, Prices, %craftName%
+		}
 	}
+	sumPrices()
 return
 
 clearRow:
@@ -361,7 +365,9 @@ buildGUI() {
     
 	Gui Add, Button, x520 y9 w80 h23 vSettings gSettings, Settings
 	
-	;gui, add, text, x520 y13, Experimental Feature:
+	Gui, add, text, x605 y13, You have:        ex        c in station
+	gui, add, text, x655 y13 w20 vsumEx BackgroundTrans Right, 0
+	gui, add, text, x690 y13 w20 vsumChaos BackgroundTrans Right, 0
 	
 	if (version != getVersion()) {
 		gui Font, s14
@@ -1338,6 +1344,49 @@ CraftSort(ar) {
     }
 }
 
+
+sumPrices(){
+	tempSumChaos := 0
+	tempSumEx := 0
+	loop, 10 {
+		guiControlGet, TempA,, A_price_%A_Index%, value
+		guiControlGet, TempR,, R_price_%A_Index%, value
+		guiControlGet, TempRA,, RA_price_%A_Index%, value
+		guiControlGet, TempO,, O_price_%A_Index%, value
+		
+		if (InStr(TempA, "c") > 0) {				
+			tempSumChaos += strReplace(Trim(StrReplace(TempA, "c")),",",".")				
+		}
+		if (InStr(TempR, "c") > 0) {			
+			tempSumChaos += strReplace(trim(StrReplace(TempR, "c")),",",".")			
+		}
+		if (InStr(TempRA, "c") > 0) {				
+			tempSumChaos += strReplace(trim(StrReplace(TempRA, "c")),",",".")			
+		}
+		if (InStr(TempO, "c") > 0) {				
+			tempSumChaos += strReplace(trim(StrReplace(TempO, "c")),",",".")			
+		}
+		if (InStr(TempA, "ex") > 0) {				
+			tempSumEx += strReplace(Trim(StrReplace(TempA, "ex")),",",".")				
+		}
+		if (InStr(TempR, "ex") > 0) {			
+			tempSumEx += strReplace(trim(StrReplace(TempR, "ex")),",",".")			
+		}
+		if (InStr(TempRA, "ex") > 0) {				
+			tempSumEx += strReplace(trim(StrReplace(TempRA, "ex")),",",".")			
+		}
+		if (InStr(TempO, "ex") > 0) {				
+			tempSumEx += strReplace(trim(StrReplace(TempO, "ex")),",",".")			
+		}
+
+	}
+	tempSumChaos := tempSumChaos
+	tempSumEx := round(tempSumEx,1)
+	GuiControl,,sumChaos, %tempSumChaos%
+	GuiControl,,sumEx, %tempSumEx%
+}
+
+
 winCheck(){
 	if (SubStr(A_OSVersion,1,2) != "10" and !FileExist("curl.exe")) {
  		 msgbox, Looks like you aren't running win10. There might be a problem with WinHttpRequest(outdated Certificates).`r`nYou need to download curl, and place the curl.exe (just this 1 file) into the same directory as Harvest Vendor.`r`nLink in the FAQ section in readme on github
@@ -1813,6 +1862,8 @@ global Settings
 global outStyle
 global rescanButton
 global CustomTextWarning
+global sumChaos
+global sumEx
 global A_count_1
 global A_count_2
 global A_count_3
