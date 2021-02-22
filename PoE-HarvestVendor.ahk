@@ -1,5 +1,5 @@
 #NoEnv
-#Warn, LocalSameAsGlobal, off
+
 #SingleInstance Force
 SetWorkingDir %A_ScriptDir% 
 global version := "0.5.2"
@@ -984,7 +984,7 @@ rememberSession() {
 
 loadLastSessionCraft(g,r) {
 	IniRead, lastCraft, %A_WorkingDir%/settings.ini, LastSession, %g%_craft_%r%
-	if (lastCraft != "") {
+	if (lastCraft != "" and lastCraft != "ERROR") {
 		split := StrSplit(lastCraft, "|")
 		craft := split[1]
 		ccount := split[2]
