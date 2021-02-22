@@ -990,6 +990,9 @@ loadLastSessionCraft(g,r) {
 		ccount := split[2]
 		GuiControl, , %g%_craft_%r% , %craft%
 		GuiControl, , %g%_count_%r% , %ccount%
+
+		tempP := updatePriceInUI(craft)
+		GuiControl, , %g%_price_%r% , %tempP%
 	} 
 }
 
@@ -1000,6 +1003,8 @@ loadLastSession(){
 		loadLastSessionCraft("RA",A_Index)
 		loadLastSessionCraft("O",A_Index)
 	}
+
+	
 }
 
 clearAll() {
@@ -1302,17 +1307,27 @@ getLVL(craft) {
 	}
 }
 
+updatePriceInUI(craft){
+	craft := unlevel(craft)
+	iniRead, tempP, %A_WorkingDir%/prices.ini, Prices, %craft%
+	if (tempP == "ERROR") {
+		tempP := ""
+	}
+	return TempP
+}
+
 ;inputs stuff into the UI
 insertIntoRow(group, rowCounter, craft) {
     GuiControl,, %group%_craft_%rowCounter%, %craft%
     GuiControl,, %group%_count_%rowCounter%, 1
    
-	craft := unlevel(craft)
-	iniRead, tempP, %A_WorkingDir%/prices.ini, Prices, %craft%
+	;craft := unlevel(craft)
+	;iniRead, tempP, %A_WorkingDir%/prices.ini, Prices, %craft%
 	
-	if (tempP == "ERROR") {
-		tempP := ""
-	}
+	;if (tempP == "ERROR") {
+	;;	tempP := ""
+	;}
+	temP := updatePriceInUI(craft)
 	GuiControl,, %group%_price_%rowCounter%, %tempP%
 }
 
