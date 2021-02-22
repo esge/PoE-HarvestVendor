@@ -92,7 +92,7 @@ OpenGui: ;ctrl+shift+g opens the gui, yo go from there
 Return
 
 Scan: ;ctrl+g launches straight into the capture, opens gui afterwards	
-    processCrafts()
+    processCrafts("temp.txt")
     if (firstGuiOpen == 0) {
         buildGUI()
     } 
@@ -108,7 +108,7 @@ GuiClose:
 
 Addcrafts:
 	GuiControlGet, rescan, FocusV
-    processCrafts()
+    processCrafts("temp.txt")
     CraftSort(outArray)
 return
 
@@ -350,18 +350,19 @@ buildGUI() {
     leagueList() ;populate leagues dropdown and select the last used one
     Gui Add, Button, x165 y9 w80 h23 vAddCrafts gAddcrafts, Add crafts
 	
-    Gui Add, Button, x250 y9 w80 h23 gClear_all, Clear
+	gui, add, button, x250 y9 h23 vrescanButton gAddcrafts, Add from last area
+		global rescanButton_TT := "Captures again from the last selected area`r`nResets on HarvestVendor restart`r`nDoesn't have hotkey (yet)"
 
-	Gui Add, Button, x335 y9 w80 h23 vpostAll gpostAll, Post all
+    Gui Add, Button, x350 y9 w80 h23 gClear_all, Clear
+
+	Gui Add, Button, x435 y9 w80 h23 vpostAll gpostAll, Post all
 		global postAll_TT := "Puts all crafts into a single post regardless of sorting - allowed only for Standard leagues"
 	allowAll() 
     
-	Gui Add, Button, x420 y9 w80 h23 vSettings gSettings, Settings
+	Gui Add, Button, x520 y9 w80 h23 vSettings gSettings, Settings
 	
-	gui, add, text, x520 y13, Experimental Feature:
-	gui, add, button, x630 y9 vrescanButton gAddcrafts, Add from last area
-		global rescanButton_TT := "Captures again from the last selected area`r`nResets on HarvestVendor restart`r`nDoesn't have hotkey (yet)"
-
+	;gui, add, text, x520 y13, Experimental Feature:
+	
 	if (version != getVersion()) {
 		gui Font, s14
 		gui add, Link, x950 y10 vVersionLink, <a href="https://github.com/esge/PoE-HarvestVendor/tree/master">! New Version Available !</a>
@@ -517,7 +518,7 @@ buildGUI() {
 }
 
 ; this is the part that goes through the scan and detects crafts and outputs the shortened names and levels
-processCrafts() {
+processCrafts(file) {
 	Gui, HarvestUI:Hide    
 	outArray := []	
 
@@ -543,7 +544,7 @@ processCrafts() {
 		MsgBox, - We were unable to create temp.txt to store text recognition results.`r`n- The tool most likely doesnt have permission to write where it is.`r`n- Moving it into a location that isnt write protected, or running as admin will fix this.
 	}
 
-	FileRead, temp, temp.txt
+	FileRead, temp, %file%
 	;FileRead, temp, test2.txt
 
 	NewLined := RegExReplace(temp, "(Reforge |Randomise |Remove |Augment |Improves |Upgrades |Upgrade |Set |Change |Exchange |Sacrifice a|Sacrifice up|Attempt |Enchant |Reroll |Fracture |Add a random |Synthesise |Split |Corrupt )" , "`r`n$1")
