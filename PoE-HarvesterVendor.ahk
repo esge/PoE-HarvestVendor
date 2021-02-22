@@ -964,9 +964,10 @@ processCrafts(file) {
 
 rememberCraft(g,r){
 	guiControlGet, craftName,, %g%_craft_%r%, value
+	guiControlGet, crafCount,, %g%_count_%r%, value
 	blank := ""
 	if (craftName != "") {
-		IniWrite, %craftName%, %A_WorkingDir%/settings.ini, LastSession, %g%_craft_%r%
+		IniWrite, %craftName%|%crafCount%, %A_WorkingDir%/settings.ini, LastSession, %g%_craft_%r%
 	} else {
 		IniWrite, %blank%, %A_WorkingDir%/settings.ini, LastSession, %g%_craft_%r%
 	}
@@ -984,7 +985,11 @@ rememberSession() {
 loadLastSessionCraft(g,r) {
 	IniRead, lastCraft, %A_WorkingDir%/settings.ini, LastSession, %g%_craft_%r%
 	if (lastCraft != "") {
-		GuiControl, , %g%_craft_%r% , %lastCraft%
+		split := StrSplit(lastCraft, "|")
+		craft := split[1]
+		ccount := split[2]
+		GuiControl, , %g%_craft_%r% , %craft%
+		GuiControl, , %g%_count_%r% , %ccount%
 	} 
 }
 
