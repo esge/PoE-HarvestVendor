@@ -167,10 +167,34 @@ clearRow:
 	g := buttonSplit[1]
 	r := buttonSplit[3]
 
-	GuiControl,, %g%_craft_%r%
-	GuiControl,, %g%_count_%r%, 0
-	GuiControl,, %g%_price_%r%
-	%g%Counter -= 1
+	IniRead selLeague, %A_WorkingDir%/settings.ini, selectedLeague, s
+
+	if GetKeyState("Shift") {
+		guiControlGet, c,, %g%_craft_%r%, value
+		guiControlGet, p,, %g%_price_%r%, value
+		IniRead, l, %A_WorkingDir%/settings.ini, selectedLeague, s
+		guiControlGet, cnt,, %g%_count_%r%, value
+		
+		fileLine := A_YYYY . "-" . A_MM . "-" . A_DD . ";" . A_Hour . ":" . A_Min . ";" . l . ";" . unlevel(c) . ";" . p . "`r`n"
+
+		FileAppend, %fileLine%, log.csv
+
+		if (cnt > 1) {
+			cnt -= 1			
+			Guicontrol,, %g%_count_%r%, %cnt%
+		} else {
+			GuiControl,, %g%_craft_%r%
+			GuiControl,, %g%_count_%r%, 0
+			GuiControl,, %g%_price_%r%
+			%g%Counter -= 1
+		}
+
+	} else {
+		GuiControl,, %g%_craft_%r%
+		GuiControl,, %g%_count_%r%, 0
+		GuiControl,, %g%_price_%r%
+		%g%Counter -= 1
+	}
 	rememberSession()
 return
 
