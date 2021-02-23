@@ -1,4 +1,4 @@
-# PoE-HarvestVendor
+#PoE-HarvestVendor
 
 ```diff
 - Only works if PoE is in WINDOWED / WINDOWED BORDERLESS mode, doesnt work in Fullscreen
@@ -12,73 +12,71 @@
 - Then parsing the text
 - It works as long as OCR doesn't do stupid stuff
 
-## Known quirks
- - Text recognition sometimes confuses 8, 3 and 6 
-    - you'll have to adjust manually if this happens
+## FIRST TIME INSTALL
+1. Download 4.6.2 release of Capture2Text: https://sourceforge.net/projects/capture2text/files/Capture2Text/
+2. Download last release of HarvestVendor: https://github.com/esge/PoE-HarvestVendor/releases/latest
+3. Create a new folder and put HarvestVendor (ahk or exe) and extracted Cature2text folder into it
+    ![](examples/folder.png)
 
- - drag area and darkening overlay are off:
-    - this is due to Display scaling in windows being other than 1
-    - go to Settings and change Scale accordingly to your monitor. 1.25 for 125%, 1.5 for 150% and so on. and restart harvest vendor  
+4. Run HarvestVendor `.ahk`/`.exe` 🎉
 
-## Getting started
-
- - If you download the `.ahk` file:
+- If you download the `.ahk` file:
     - Requires AHK 1.1.27+
     - link to current [AHK 1.1.33](https://www.autohotkey.com/download/ahk-install.exe)
-<!-- Commenting this becuase this might be fixed with the change from switch case to IFs
- Requires [AHK 1.1.33.02](https://www.autohotkey.com/download/ahk-install.exe)
-   - not that it wont work on older, but there was a bug where it would say that a piece  of code is unreachable in a switch/case and you will get a warning popup everytime you launch it
-    - the error message it shows on older versions is:
 
-```
-Warning: This line will never execute, due to Return precceding it
-```
-or
-```
-Line Text: switch group {
-Error: This line does not contain a recognized action
-```
--->
-- Download last release of Capture2Text: https://sourceforge.net/projects/capture2text/files/Capture2Text/
-- Download last release: https://github.com/esge/PoE-HarvestVendor/releases/latest
-- Create a new folder with the `.ahk` script or the `.exe` file (depending on what you donwloaded)
-- Extract the Capture2Text archive in that same folder  
-    ![](examples/folder.png)  
-- Run `.ahk`/`.exe` script 🎉
+## UPDATING
+- just get the new HarvestVendor file from the DONWLOAD HERE link, replace the existing and reload
 
-## Usage
+## HOW TO USE
+- Default Hotkeys:
+    - CTRL + SHIFT + G - opens GUI
+    - CTRL + G - starts scan
 
-- To start extracting your Horticrafts you have to press: **CTRL + SHIFT + G**
-
-  (You can also start capture directly without using window by using: **CTRL + G**)
-- The tool window will appear, you have to select your league, add your IGN(optional), then start the scanning
-  
-![Tool window](examples/Description.png)
-- After clicking on "Add crafts", you have to drag from the top left corner of your craft to the bottom right. Here is
-  the recommended area to select:
-  
+- When you start scan, Drag select area with the craft text
 ![Recommended area](examples/snapshotArea.png)
-- You now have to set all prices for your crafts
-- Then you can click on "Create Posting" buttons to copy your selling message, here is an example:
+
+- wait a moment and crafts will be loaded into the UI
+- set prices if you wish
+- select your league and so on
+- click Create Posting for the section you wish to
+- now you have a Discord formatted message in clipboard
 ![](examples/exampleMessage.png)
 
-# FAQ
-**Q. A craft i have in horticrafting station is not showing up in the result**  
-A. There are 2 possible reasons:
-  1. text recognition was too messed up and i couldn't recognize the craft  
-    - Solution: Run the scan again and select only that one craft
-  2. I arbitrarily decided its not worth to list that one, if you want it listed, contact me or open an issue. [List of ignored crafts](https://github.com/esge/PoE-HarvestVendor/wiki/Crafts-that-are-being-ignored)
+## Settings
+- if you game on monitor thats not primary in windows you can change it in settings
+- if you use display scaling in wodnwos, you need to change it in settings
+- if you don't like the default keys, surprise, you can change them in settings
 
-**Q. Why does it show lvl0?**
-A. If its unable to read the level it says 0. Go ahead and fix it manualy.
+## List of features
+- Uses OCR to identify crafts from Horticrafting station
+- Option to rescan last scanned area
+- Counts crafts if there are multiple of the same
+- Sorts them into groups based on TFT Discord rules
+- Allows to set prices for crafts
+- Line of custom text (be careful to not write anything that triggers the discord bot)
+- Checkbox "Can Stream"
+- box for IGN if you want to add that to the post
+- Generates formatted discord post
+- Remembers prices
+- Remembers loaded crafts
+- Outputs Log.csv of sold crafts (entry triggered by Shift+click on the rows delete button)
+
+## FAQ
+**Q. Why does it show lv00?**  
+A. If its unable to read the level it says lv00. You can try delete the craft and rescan it. Or fix the level manualy.
 
 **Q. I'm getting error about "WinInet-something"**  
 A. This one?  
 ![](examples/https-error.png)  
 Get curl binary from [here](https://curl.se/windows/), extract curl.exe from archive and put in into directory with ahk script. Script now will use this tool for version checking.
 
-## Used libraries
+**Q. A craft i have in horticrafting station is not showing up in the result**  
+A. There are 2 possible reasons:
+  1. text recognition was too messed up and i couldn't recognize the craft  
+    - Solution: Run the scan again and select only that one craft
+  2. I arbitrarily decided its not worth to list that one, if you want it listed, contact me or open an issue. [List of ignored crafts](https://github.com/esge/PoE-HarvestVendor/wiki/Crafts-that-are-being-ignored)
 
+## Used libraries
 - http://capture2text.sourceforge.net/ for OCR
 - https://github.com/cocobelgica/AutoHotkey-JSON jxon function embeded in the main file
 
