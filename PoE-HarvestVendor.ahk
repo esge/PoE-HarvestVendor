@@ -2,7 +2,7 @@
 
 #SingleInstance Force
 SetWorkingDir %A_ScriptDir% 
-global version := "0.6.1"
+global version := "0.6.2"
 global outArrayCount := 0
 global outArray := []	  
 global arr := []
