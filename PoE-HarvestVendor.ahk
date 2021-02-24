@@ -141,11 +141,11 @@ postAll:
 return
 
 price:
-	GuiControlGet, priceField, FocusV
+	GuiControlGet, priceField, FocusV	
 	guiControlGet, craftPrice,, %priceField%, value
 	priceFieldArray := strsplit(priceField,"_")
 	
-	if (priceFieldArray[2] == "price") {	;i'm not quite sure why i did this if, but not gonna fiddle with it for now
+	if (priceFieldArray[2] == "price") {	
 		g := priceFieldArray[1] ;group
 		r := priceFieldArray[3] ;row	
 		
@@ -155,7 +155,9 @@ price:
 			iniWrite, %craftPrice%, %A_WorkingDir%/prices.ini, Prices, %craftName%
 		}
 	}
-	sumPrices()
+	if (craftPrice != "") {
+		sumPrices()
+	}
 return
 
 clearRow:
@@ -463,7 +465,7 @@ buildGUI() {
     yrow1 := 80
     loop, 10 {
         yrow1_cbOffset := yrow1 + 1
-        Gui Add, Edit, x%Ax_count% y%yrow1% w35 vA_count_%A_Index% 
+        Gui Add, Edit, x%Ax_count% y%yrow1% w35 vA_count_%A_Index% gPrice
         Gui Add, UpDown, Range0-20, 0
         Gui Add, Edit, x%Ax_craft% y%yrow1% w%Awidth% vA_craft_%A_Index% 
         Gui Add, Edit, x%Ax_price% y%yrow1% w35 vA_price_%A_Index% gprice
@@ -489,7 +491,7 @@ buildGUI() {
     yrow1 := 80
     loop, 10 {
         yrow1_cbOffset := yrow1 + 1
-        Gui Add, Edit, x%Rx_count% y%yrow1% w35 vR_count_%A_Index%
+        Gui Add, Edit, x%Rx_count% y%yrow1% w35 vR_count_%A_Index% gPrice
         Gui Add, UpDown, Range0-20, 0
         Gui Add, Edit, x%Rx_craft% y%yrow1% w%Rwidth% vR_craft_%A_Index% 
         Gui Add, Edit, x%Rx_price% y%yrow1% w35 vR_price_%A_Index% gprice
@@ -515,10 +517,10 @@ buildGUI() {
     yrow1 := 80
     loop, 10 {
         yrow1_cbOffset := yrow1 + 1
-        Gui Add, Edit, x%RAx_count% y%yrow1% w35 vRA_count_%A_Index%
+        Gui Add, Edit, x%RAx_count% y%yrow1% w35 vRA_count_%A_Index% gPrice
         Gui Add, UpDown, Range0-20, 0
         Gui Add, Edit, x%RAx_craft% y%yrow1% w%RAwidth% vRA_craft_%A_Index% 
-        Gui Add, Edit, x%RAx_price% y%yrow1% w35 vRA_price_%A_Index% gprice
+        Gui Add, Edit, x%RAx_price% y%yrow1% w35 vRA_price_%A_Index% gPrice
         
 		gui add, Button, x%RAx_checkbox% y%yrow1_cbOffset% w19 h19 vRA_del_%A_Index% gClearRow, X 
         yrow1 += 25
@@ -541,10 +543,10 @@ buildGUI() {
     yrow1 := 80
     loop, 10 {
         yrow1_cbOffset := yrow1 + 1
-        Gui Add, Edit, x%Ox_count% y%yrow1% w35 vO_count_%A_Index%
+        Gui Add, Edit, x%Ox_count% y%yrow1% w35 vO_count_%A_Index% gPrice
         Gui Add, UpDown, Range0-20, 0
         Gui Add, Edit, x%Ox_craft% y%yrow1% w%Owidth% vO_craft_%A_Index% 
-        Gui Add, Edit, x%Ox_price% y%yrow1% w35 vO_price_%A_Index% gprice
+        Gui Add, Edit, x%Ox_price% y%yrow1% w35 vO_price_%A_Index% gPrice
         
 		gui add, Button, x%Ox_checkbox% y%yrow1_cbOffset% w19 h19 vO_del_%A_Index% gClearRow, X 
         yrow1 += 25
@@ -1431,34 +1433,38 @@ sumPrices(){
 		guiControlGet, TempR,, R_price_%A_Index%, value
 		guiControlGet, TempRA,, RA_price_%A_Index%, value
 		guiControlGet, TempO,, O_price_%A_Index%, value
+
+		guiControlGet, countA,, A_count_%A_Index%, value
+		guiControlGet, countR,, R_count_%A_Index%, value
+		guiControlGet, countRA,, RA_count_%A_Index%, value
+		guiControlGet, countO,, O_count_%A_Index%, value
 		
 		if (InStr(TempA, "c") > 0) {				
-			tempSumChaos += strReplace(Trim(StrReplace(TempA, "c")),",",".")				
+			tempSumChaos += strReplace(Trim(StrReplace(TempA, "c")),",",".") * countA				
 		}
 		if (InStr(TempR, "c") > 0) {			
-			tempSumChaos += strReplace(trim(StrReplace(TempR, "c")),",",".")			
+			tempSumChaos += strReplace(trim(StrReplace(TempR, "c")),",",".") * countR			
 		}
 		if (InStr(TempRA, "c") > 0) {				
-			tempSumChaos += strReplace(trim(StrReplace(TempRA, "c")),",",".")			
+			tempSumChaos += strReplace(trim(StrReplace(TempRA, "c")),",",".") * countRA			
 		}
 		if (InStr(TempO, "c") > 0) {				
-			tempSumChaos += strReplace(trim(StrReplace(TempO, "c")),",",".")			
+			tempSumChaos += strReplace(trim(StrReplace(TempO, "c")),",",".") * countO			
 		}
 		if (InStr(TempA, "ex") > 0) {				
-			tempSumEx += strReplace(Trim(StrReplace(TempA, "ex")),",",".")				
+			tempSumEx += strReplace(Trim(StrReplace(TempA, "ex")),",",".") * countA			
 		}
 		if (InStr(TempR, "ex") > 0) {			
-			tempSumEx += strReplace(trim(StrReplace(TempR, "ex")),",",".")			
+			tempSumEx += strReplace(trim(StrReplace(TempR, "ex")),",",".") * countR			
 		}
 		if (InStr(TempRA, "ex") > 0) {				
-			tempSumEx += strReplace(trim(StrReplace(TempRA, "ex")),",",".")			
+			tempSumEx += strReplace(trim(StrReplace(TempRA, "ex")),",",".")	* countRA		
 		}
 		if (InStr(TempO, "ex") > 0) {				
-			tempSumEx += strReplace(trim(StrReplace(TempO, "ex")),",",".")			
+			tempSumEx += strReplace(trim(StrReplace(TempO, "ex")),",",".") * countO			
 		}
-
 	}
-	tempSumChaos := tempSumChaos
+	;tempSumChaos := tempSumChaos
 	tempSumEx := round(tempSumEx,1)
 	GuiControl,,sumChaos, %tempSumChaos%
 	GuiControl,,sumEx, %tempSumEx%
