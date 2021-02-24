@@ -2,7 +2,7 @@
 
 #SingleInstance Force
 SetWorkingDir %A_ScriptDir% 
-global version := "0.6.1"
+global version := "0.6"
 global outArrayCount := 0
 global outArray := []	  
 global arr := []
@@ -1334,7 +1334,7 @@ updatePriceInUI(craft){
 }
 
 ;inputs stuff into the UI
-insertIntoRow(group, rowCounter, craft) { 
+insertIntoRow(group, rowCounter, craft) {
     GuiControl,, %group%_craft_%rowCounter%, %craft%
     GuiControl,, %group%_count_%rowCounter%, 1
    
@@ -1344,7 +1344,7 @@ insertIntoRow(group, rowCounter, craft) {
 	;if (tempP == "ERROR") {
 	;;	tempP := ""
 	;}
-	tempP := updatePriceInUI(craft)
+	temP := updatePriceInUI(craft)
 	GuiControl,, %group%_price_%rowCounter%, %tempP%
 }
 
