@@ -15,7 +15,7 @@
 ## FIRST TIME INSTALL
 1. Download 4.6.2 release of Capture2Text: https://sourceforge.net/projects/capture2text/files/Capture2Text/
 2. Download last release of HarvestVendor: https://github.com/esge/PoE-HarvestVendor/releases/latest
-3. Create a new folder and put HarvestVendor (ahk or exe) and extracted Cature2text folder into it
+3. Create a new folder and put HarvestVendor (ahk or exe) and extracted Cature2text folder into it  
     ![](examples/folder.png)
 
 4. Run HarvestVendor `.ahk`/`.exe` 🎉
@@ -39,7 +39,7 @@
 - set prices if you wish
 - select your league and so on
 - click Create Posting for the section you wish to
-- now you have a Discord formatted message in clipboard
+- now you have a Discord formatted message in clipboard  
 ![](examples/exampleMessage.png)
 
 ## Settings
