@@ -32,7 +32,7 @@
     - CTRL + SHIFT + G - opens GUI
     - CTRL + G - starts scan
 
-- When you start scan, Drag select area with the craft text
+- When you start scan, Drag select area with the craft text  
 ![Recommended area](examples/snapshotArea.png)
 
 - wait a moment and crafts will be loaded into the UI
