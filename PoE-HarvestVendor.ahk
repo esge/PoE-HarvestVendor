@@ -268,8 +268,8 @@ gui, font, s10
 	gui, font
 	Gui, Help:Show, w400 h610, Help
 return
-	HelpExit:
-	HelpClose:	
+HelpGuiClose:
+	Gui, Help:Destroy
 	Gui, HarvestUI:Default
 return
 
@@ -316,8 +316,7 @@ settings:
 	gui, Settings:Show, w410 h330
 	
 return
-SettingsExit:
-SettingsClose:		
+SettingsGuiClose:
 	hotkey, %GuiKey%, on
 	hotkey, %ScanKey%, on
 	Gui, Settings:Destroy
