@@ -583,7 +583,7 @@ processCrafts(file) {
 	sleep, 500
 
 	Tooltip, Please Wait
-	command = Capture2Text\Capture2Text.exe -s `"%x_start% %y_start% %x_end% %y_end%`" -o %file% -l English --trim-capture 
+	command = Capture2Text\Capture2Text.exe -s `"%x_start% %y_start% %x_end% %y_end%`" -o temp.txt -l English --trim-capture 
 	RunWait, %command%
     
     sleep, 1000 ;sleep cos if i show the Gui too quick the capture will grab screenshot of gui   	
