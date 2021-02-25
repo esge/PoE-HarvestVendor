@@ -590,7 +590,7 @@ processCrafts(file) {
 	WinActivate, ahk_pid %PID%
 	Tooltip
 
-	if !FileExist(file) {
+	if !FileExist("temp.txt") {
 		MsgBox, - We were unable to create %file% to store text recognition results.`r`n- The tool most likely doesnt have permission to write where it is.`r`n- Moving it into a location that isnt write protected, or running as admin will fix this.
         return false
 	}
