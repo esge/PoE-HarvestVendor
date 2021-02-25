@@ -21,6 +21,8 @@ global y_end := 0
 global rescan
 global seenInstructions
 
+global PID := DllCall("Kernel32\GetCurrentProcessId")
+
 ; == init settings ==
 
 iniRead, seenInstructions,  %A_WorkingDir%/settings.ini, Other, seenInstructions
@@ -583,7 +585,7 @@ processCrafts(file) {
 	RunWait, %command%
     
     sleep, 1000 ;sleep cos if i show the Gui too quick the capture will grab screenshot of gui   	
-	WinActivate, ahk_exe AutoHotkey.exe
+	WinActivate, ahk_pid %PID%
 	Tooltip
 
 	if !FileExist(file) {
