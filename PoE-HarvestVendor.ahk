@@ -566,6 +566,7 @@ buildGUI() {
 
 ; this is the part that goes through the scan and detects crafts and outputs the shortened names and levels
 processCrafts(file) {
+	; the file parameter is just for the purpose of running a test script with different input files of crafts instead of doing scans
 	Gui, HarvestUI:Hide    
 	outArray := []	
 
@@ -591,7 +592,7 @@ processCrafts(file) {
 	Tooltip
 
 	if !FileExist("temp.txt") {
-		MsgBox, - We were unable to create %file% to store text recognition results.`r`n- The tool most likely doesnt have permission to write where it is.`r`n- Moving it into a location that isnt write protected, or running as admin will fix this.
+		MsgBox, - We were unable to create temp.txt to store text recognition results.`r`n- The tool most likely doesnt have permission to write where it is.`r`n- Moving it into a location that isnt write protected, or running as admin will fix this.
         return false
 	}
 
@@ -994,10 +995,14 @@ processCrafts(file) {
         ; removes multiple spaces, but all all non chars so it gets rid of stray .,' from OCR, we lose the  dash in non-Tag, but we can lve with that)
         outArray[iFinal] := Trim(RegExReplace(outArray[iFinal] , " +", " ")) 
     }	
-;	for s in outArray {
-;		str .= outArray[s] . "`r`n"
-;	}
-;	Clipboard := str
+	;this bit is for testing purposes, it should never trigger for normal user cos processCrafts is always run with temp.txt 
+	if (file != "temp.txt") {
+		for s in outArray {
+			str .= outArray[s] . "`r`n"
+		}
+		path := "results\out-" . file
+		FileAppend, %str%, %path%
+	}
     return true
 }
 
