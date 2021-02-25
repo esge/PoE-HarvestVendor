@@ -81,26 +81,32 @@ if (seenInstructions == 0) {
 return
 
 OpenGui: ;ctrl+shift+g opens the gui, yo go from there
-	 if (firstGuiOpen == 0) {
-    	buildGUI()
+	if (firstGuiOpen == 0) {
+        buildGUI()
 		loadLastSession()
-	 }
+	}
     Gui, HarvestUI:Show, w1225 h380
 	OnMessage(0x200, "WM_MOUSEMOVE")
 	;clearAll()
 Return
 
-Scan: ;ctrl+g launches straight into the capture, opens gui afterwards	
-    processCrafts("temp.txt")
-    if (firstGuiOpen == 0) {
-        buildGUI()
-		loadLastSession()
-    } 
-    Gui, HarvestUI:Show, w1225 h380
-	OnMessage(0x200, "WM_MOUSEMOVE") ;activates tooltip function
-    craftSort(outArray)
-	rememberSession()
-	
+Scan: ;ctrl+g launches straight into the capture, opens gui afterwards
+    _wasVisible := IsGuiVisible("HarvestUI")
+    if (processCrafts("temp.txt")) {
+        if (firstGuiOpen == 0) {
+            buildGUI()
+            loadLastSession()
+        } 
+        Gui, HarvestUI:Show, w1225 h380
+        OnMessage(0x200, "WM_MOUSEMOVE") ;activates tooltip function
+        craftSort(outArray)
+        rememberSession()
+    } else {
+        ; If processCrafts failed (e.g. the user pressed Escape), we should show the
+        ; HarvestUI only if it was visible to the user before they pressed Ctrl+G
+        if (_wasVisible)
+            Gui, HarvestUI:Show, w1225 h380
+    }
 return
 
 GuiEscape:
@@ -110,9 +116,13 @@ GuiClose:
 
 Addcrafts:
 	GuiControlGet, rescan, FocusV
-    processCrafts("temp.txt")
-    CraftSort(outArray)	
-	rememberSession()
+    if (processCrafts("temp.txt")) {
+        Gui, HarvestUI:Show, w1225 h380
+        CraftSort(outArray)	
+        rememberSession()
+    } else {
+        Gui, HarvestUI:Show, w1225 h380
+    }
 return
 
 Clear_all:
@@ -557,24 +567,28 @@ processCrafts(file) {
 
     if ((rescan == "rescanButton" and x_start == 0) or rescan != "rescanButton" ) {
 		coordTemp := SelectArea("cffc555 t50 ms")
-		x_start := coordTemp[1]
-		y_start := coordTemp[3]
-		x_end := coordTemp[2]
-		y_end := coordTemp[4]
+        if (!coordTemp OR coordTemp.Length() == 0)
+            return false
+
+        x_start := coordTemp[1]
+        y_start := coordTemp[3]
+        x_end := coordTemp[2]
+        y_end := coordTemp[4]
     }
 	WinActivate, Path of Exile
 	sleep, 500
 
 	Tooltip, Please Wait
-	command = Capture2Text\Capture2Text.exe -s `"%x_start% %y_start% %x_end% %y_end%`" -o temp.txt -l English --trim-capture 
+	command = Capture2Text\Capture2Text.exe -s `"%x_start% %y_start% %x_end% %y_end%`" -o %file% -l English --trim-capture 
 	RunWait, %command%
     
     sleep, 1000 ;sleep cos if i show the Gui too quick the capture will grab screenshot of gui   	
-    Gui, HarvestUI:Show
 	WinActivate, ahk_exe AutoHotkey.exe
 	Tooltip
-	if !FileExist("temp.txt") {
-		MsgBox, - We were unable to create temp.txt to store text recognition results.`r`n- The tool most likely doesnt have permission to write where it is.`r`n- Moving it into a location that isnt write protected, or running as admin will fix this.
+
+	if !FileExist(file) {
+		MsgBox, - We were unable to create %file% to store text recognition results.`r`n- The tool most likely doesnt have permission to write where it is.`r`n- Moving it into a location that isnt write protected, or running as admin will fix this.
+        return false
 	}
 
 	FileRead, temp, %file%
@@ -980,6 +994,7 @@ processCrafts(file) {
 ;		str .= outArray[s] . "`r`n"
 ;	}
 ;	Clipboard := str
+    return true
 }
 
 rememberCraft(g,r){
@@ -1570,11 +1585,21 @@ monitorInfo(num){
 }
 
 
+IsGuiVisible(guiName) {
+    Gui, %guiName%: +HwndguiHwnd
+    return DllCall("User32\IsWindowVisible", "Ptr", guiHwnd)
+}
+
 
 
 ; ========================================================================
 ; ======================== stuff i copied from internet ==================
 ; ========================================================================
+
+global SelectAreaEscapePressed := false
+SelectAreaEscape:
+    SelectAreaEscapePressed := true
+return
 
 SelectArea(Options="") { ; by Learning one
 /*
@@ -1586,77 +1611,102 @@ Options: (White space separated)
 - m CoordMode. Default: s. s = Screen, r = Relative
 */
 ;full screen overlay
-iniRead tempMon, %A_WorkingDir%/settings.ini, Other, mon
-iniRead, scale, %A_WorkingDir%/settings.ini, Other, scale
-;scale := 1
-cover := monitorInfo(tempMon)
-coverX := cover[1]
-coverY := cover[2]
-coverH := cover[3] / scale
-coverW := cover[4] / scale
-	Gui, Select:New
-	Gui, Color, 141414
-	Gui +LastFound
-	gui +ToolWindow
-	WinSet, Transparent, 120
-	Gui, -Caption 
-	Gui, +AlwaysOnTop
-	Gui, Select:Show, x%coverX% y%coverY% h%coverH% w%coverW%,"AutoHotkeySnapshotApp"     
-	
-	KeyWait, LButton, D 
-	CoordMode, Mouse, Screen
-	MouseGetPos, MX, MY
-	CoordMode, Mouse, Relative
-	MouseGetPos, rMX, rMY
-	CoordMode, Mouse, Screen
+;press Escape to cancel
 
-	loop, parse, Options, %A_Space%	
-	{
-		Field := A_LoopField
-		FirstChar := SubStr(Field,1,1)
-		if FirstChar contains c,t,g,m
-		{
-			StringTrimLeft, Field, Field, 1
-			%FirstChar% := Field
-		}
-	}
-	c := (c = "") ? "Blue" : c, t := (t = "") ? "50" : t, g := (g = "") ? "99" : g , m := (m = "") ? "s" : m
-	Gui %g%: Destroy
-	Gui %g%: +AlwaysOnTop -caption +Border +ToolWindow +LastFound
-	WinSet, Transparent, %t%
-	Gui %g%: Color, %c%
-	;Hotkey := RegExReplace(A_ThisHotkey,"^(\w* & |\W*)")
-	While, (GetKeyState("LButton"))
-	{
-		Sleep, 10
-		MouseGetPos, MXend, MYend		
-		w := abs((MX / scale) - (MXend / scale)), h := abs((MY / scale) - (MYend / scale))
-		X := (MX < MXend) ? MX : MXend
-		Y := (MY < MYend) ? MY : MYend
-		Gui %g%: Show, x%X% y%Y% w%w% h%h% NA
-	}
-	Gui %g%: Destroy
-	Gui Select:Destroy
-	Gui, HarvestUI:Default
-	if m = s ; Screen
-	{
-		MouseGetPos, MXend, MYend
-		If ( MX > MXend )
-			temp := MX, MX := MXend, MXend := temp ;* scale
-		If ( MY > MYend )
-			temp := MY, MY := MYend, MYend := temp ;* scale
-		Return [MX,MXend,MY,MYend]
-	}
-	else ; Relative
-	{
-		CoordMode, Mouse, Relative
-		MouseGetPos, rMXend, rMYend
-		If ( rMX > rMXend )
-			temp := rMX, rMX := rMXend, rMXend := temp
-		If ( rMY > rMYend )
-			temp := rMY, rMY := rMYend, rMYend := temp
-		Return [rMX,rMXend,rMY,rMYend]
-	}
+    iniRead tempMon, %A_WorkingDir%/settings.ini, Other, mon
+    iniRead, scale, %A_WorkingDir%/settings.ini, Other, scale
+    ;scale := 1
+    cover := monitorInfo(tempMon)
+    coverX := cover[1]
+    coverY := cover[2]
+    coverH := cover[3] / scale
+    coverW := cover[4] / scale
+    Gui, Select:New
+    Gui, Color, 141414
+    Gui, +LastFound +ToolWindow -Caption +AlwaysOnTop
+    WinSet, Transparent, 120
+    Gui, Select:Show, x%coverX% y%coverY% h%coverH% w%coverW%,"AutoHotkeySnapshotApp"
+    
+    isLButtonDown := false
+    SelectAreaEscapePressed := false
+    Hotkey, Escape, SelectAreaEscape, On
+    while (!isLButtonDown AND !SelectAreaEscapePressed)
+    {
+        ; Per documentation new hotkey threads can be launched while KeyWait-ing, so SelectAreaEscapePressed
+        ; will eventually be set in the SelectAreaEscape hotkey thread above when the user presses ESC.
+
+        KeyWait, LButton, D T0.1  ; 100ms timeout
+        isLButtonDown := (ErrorLevel == 0)
+    }
+    Hotkey, Escape, SelectAreaEscape, Off
+
+    if (!SelectAreaEscapePressed)
+    {
+        CoordMode, Mouse, Screen
+        MouseGetPos, MX, MY
+        CoordMode, Mouse, Relative
+        MouseGetPos, rMX, rMY
+        CoordMode, Mouse, Screen
+
+        loop, parse, Options, %A_Space%    
+        {
+            Field := A_LoopField
+            FirstChar := SubStr(Field,1,1)
+            if FirstChar contains c,t,g,m
+            {
+                StringTrimLeft, Field, Field, 1
+                %FirstChar% := Field
+            }
+        }
+        c := (c = "") ? "Blue" : c
+        t := (t = "") ? "50" : t
+        g := (g = "") ? "99" : g
+        m := (m = "") ? "s" : m
+
+        Gui %g%: Destroy
+        Gui %g%: +AlwaysOnTop -Caption +Border +ToolWindow +LastFound
+        WinSet, Transparent, %t%
+        Gui %g%: Color, %c%
+        ;Hotkey := RegExReplace(A_ThisHotkey,"^(\w* & |\W*)")
+        While, (GetKeyState("LButton"))
+        {
+            Sleep, 10
+            MouseGetPos, MXend, MYend        
+            w := abs((MX / scale) - (MXend / scale)), h := abs((MY / scale) - (MYend / scale))
+            X := (MX < MXend) ? MX : MXend
+            Y := (MY < MYend) ? MY : MYend
+            Gui %g%: Show, x%X% y%Y% w%w% h%h% NA
+        }
+        Gui %g%: Destroy
+        Gui, Select:Destroy
+        Gui, HarvestUI:Default
+
+        if m = s ; Screen
+        {
+            MouseGetPos, MXend, MYend
+            If ( MX > MXend )
+                temp := MX, MX := MXend, MXend := temp ;* scale
+            If ( MY > MYend )
+                temp := MY, MY := MYend, MYend := temp ;* scale
+            Return [MX,MXend,MY,MYend]
+        }
+        else ; Relative
+        {
+            CoordMode, Mouse, Relative
+            MouseGetPos, rMXend, rMYend
+            If ( rMX > rMXend )
+                temp := rMX, rMX := rMXend, rMXend := temp
+            If ( rMY > rMYend )
+                temp := rMY, rMY := rMYend, rMYend := temp
+            Return [rMX,rMXend,rMY,rMYend]
+        }
+    }
+    else
+    {
+        Gui, Select:Destroy
+        Gui, HarvestUI:Default
+        Return []
+    }
 }
 
 ;this is for tooltips to work, got it from examples from an AHK webinar
