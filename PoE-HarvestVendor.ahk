@@ -1640,8 +1640,8 @@ Options: (White space separated)
         KeyWait, LButton, D T0.1  ; 100ms timeout
         isLButtonDown := (ErrorLevel == 0)
     }
-    Hotkey, Escape, SelectAreaEscape, Off
 
+    areaRect := []
     if (!SelectAreaEscapePressed)
     {
         CoordMode, Mouse, Screen
@@ -1670,7 +1670,8 @@ Options: (White space separated)
         WinSet, Transparent, %t%
         Gui %g%: Color, %c%
         ;Hotkey := RegExReplace(A_ThisHotkey,"^(\w* & |\W*)")
-        While, (GetKeyState("LButton"))
+
+        While (GetKeyState("LButton") AND !SelectAreaEscapePressed)
         {
             Sleep, 10
             MouseGetPos, MXend, MYend        
@@ -1679,36 +1680,38 @@ Options: (White space separated)
             Y := (MY < MYend) ? MY : MYend
             Gui %g%: Show, x%X% y%Y% w%w% h%h% NA
         }
-        Gui %g%: Destroy
-        Gui, Select:Destroy
-        Gui, HarvestUI:Default
 
-        if m = s ; Screen
+        Gui %g%: Destroy
+
+        if (!SelectAreaEscapePressed)
         {
-            MouseGetPos, MXend, MYend
-            If ( MX > MXend )
-                temp := MX, MX := MXend, MXend := temp ;* scale
-            If ( MY > MYend )
-                temp := MY, MY := MYend, MYend := temp ;* scale
-            Return [MX,MXend,MY,MYend]
-        }
-        else ; Relative
-        {
-            CoordMode, Mouse, Relative
-            MouseGetPos, rMXend, rMYend
-            If ( rMX > rMXend )
-                temp := rMX, rMX := rMXend, rMXend := temp
-            If ( rMY > rMYend )
-                temp := rMY, rMY := rMYend, rMYend := temp
-            Return [rMX,rMXend,rMY,rMYend]
+            if m = s ; Screen
+            {
+                MouseGetPos, MXend, MYend
+                If ( MX > MXend )
+                    temp := MX, MX := MXend, MXend := temp ;* scale
+                If ( MY > MYend )
+                    temp := MY, MY := MYend, MYend := temp ;* scale
+                areaRect := [MX,MXend,MY,MYend]
+            }
+            else ; Relative
+            {
+                CoordMode, Mouse, Relative
+                MouseGetPos, rMXend, rMYend
+                If ( rMX > rMXend )
+                    temp := rMX, rMX := rMXend, rMXend := temp
+                If ( rMY > rMYend )
+                    temp := rMY, rMY := rMYend, rMYend := temp
+                areaRect := [rMX,rMXend,rMY,rMYend]
+            }
         }
     }
-    else
-    {
-        Gui, Select:Destroy
-        Gui, HarvestUI:Default
-        Return []
-    }
+
+    Hotkey, Escape, SelectAreaEscape, Off
+
+    Gui, Select:Destroy
+    Gui, HarvestUI:Default
+    return areaRect
 }
 
 ;this is for tooltips to work, got it from examples from an AHK webinar
