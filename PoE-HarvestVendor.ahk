@@ -23,48 +23,58 @@ global seenInstructions
 
 global PID := DllCall("Kernel32\GetCurrentProcessId")
 
-; == init settings ==
+EnvGet, dir, USERPROFILE
+global RoamingDir := dir . "\AppData\Roaming\PoE-HarvestVendor"
+if !FileExist(RoamingDir){
+    FileCreateDir, %RoamingDir%
+}
 
-iniRead, seenInstructions,  %A_WorkingDir%/settings.ini, Other, seenInstructions
+global SettingsPath := RoamingDir . "\settings.ini"
+global PricesPath := RoamingDir . "\prices.ini"
+global LogPath := RoamingDir . "\log.csv"
+global TempPath := RoamingDir . "\temp.txt"
+
+; == init settings ==
+iniRead, seenInstructions,  %SettingsPath%, Other, seenInstructions
 if (seenInstructions == "ERROR" or seenInstructions == "") {
-		IniWrite, 0, %A_WorkingDir%/settings.ini, Other, seenInstructions 	
+		IniWrite, 0, %SettingsPath%, Other, seenInstructions 	
 		;GuiKey := "^+g"	
-		IniRead, seenInstructions, %A_WorkingDir%/settings.ini, Other, seenInstructions
+		IniRead, seenInstructions, %SettingsPath%, Other, seenInstructions
 	}
 
-IniRead, GuiKey, %A_WorkingDir%/settings.ini, Other, GuiKey
+IniRead, GuiKey, %SettingsPath%, Other, GuiKey
 	if (GuiKey == "ERROR" or GuiKey == "") {
-		IniWrite, ^+g, %A_WorkingDir%/settings.ini, Other, GuiKey 	
+		IniWrite, ^+g, %SettingsPath%, Other, GuiKey 	
 		;GuiKey := "^+g"	
 		sleep, 250
-		IniRead, GuiKey, %A_WorkingDir%/settings.ini, Other, GuiKey
+		IniRead, GuiKey, %SettingsPath%, Other, GuiKey
 	}
 hotkey, %GuiKey%, OpenGui
 
-IniRead, ScanKey, %A_WorkingDir%/settings.ini, Other, ScanKey
+IniRead, ScanKey, %SettingsPath%, Other, ScanKey
 	if (ScanKey == "ERROR" or ScanKey == "") {
-		IniWrite, ^g, %A_WorkingDir%/settings.ini, Other, ScanKey 	
+		IniWrite, ^g, %SettingsPath%, Other, ScanKey 	
 		sleep, 250
-		IniRead, ScanKey, %A_WorkingDir%/settings.ini, Other, ScanKey
+		IniRead, ScanKey, %SettingsPath%, Other, ScanKey
 		;ScanKey == "^g"	
 	}
 hotkey, %ScanKey%, Scan
 
-IniRead, outStyle, %A_WorkingDir%/settings.ini, Other, outStyle
+IniRead, outStyle, %SettingsPath%, Other, outStyle
 	if (outStyle == "ERROR") {
-		IniWrite, 1, %A_WorkingDir%/settings.ini, Other, outStyle 
+		IniWrite, 1, %SettingsPath%, Other, outStyle 
 		outStyle := 1
 	}
 
-iniRead tempMon, %A_WorkingDir%/settings.ini, Other, mon
+iniRead tempMon, %SettingsPath%, Other, mon
 if (tempMon == "ERROR") { 
 	tempMon := 1 
-	iniWrite, %tempMon%, %A_WorkingDir%/settings.ini, Other, mon
+	iniWrite, %tempMon%, %SettingsPath%, Other, mon
 }
 
-iniRead, sc, %A_WorkingDir%/settings.ini, Other, scale
+iniRead, sc, %SettingsPath%, Other, scale
 if (sc == "ERROR") {
-	iniWrite, 1, %A_WorkingDir%/settings.ini, Other, scale
+	iniWrite, 1, %SettingsPath%, Other, scale
 }
 
 ; == check for ahk version ==
@@ -94,7 +104,7 @@ Return
 
 Scan: ;ctrl+g launches straight into the capture, opens gui afterwards
     _wasVisible := IsGuiVisible("HarvestUI")
-    if (processCrafts("temp.txt")) {
+    if (processCrafts(TempPath)) {
         if (firstGuiOpen == 0) {
             buildGUI()
             loadLastSession()
@@ -118,7 +128,7 @@ GuiClose:
 
 Addcrafts:
 	GuiControlGet, rescan, FocusV
-    if (processCrafts("temp.txt")) {
+    if (processCrafts(TempPath)) {
         Gui, HarvestUI:Show, w1225 h380
         CraftSort(outArray)	
         rememberSession()
@@ -164,7 +174,7 @@ price:
 		guiControlGet, craftName,, %g%_craft_%r%, value
 		if (craftName != "") {
 			craftName := unlevel(craftName)
-			iniWrite, %craftPrice%, %A_WorkingDir%/prices.ini, Prices, %craftName%
+			iniWrite, %craftPrice%, %PricesPath%, Prices, %craftName%
 		}
 	}
 	if (craftPrice != "") {
@@ -178,17 +188,17 @@ clearRow:
 	g := buttonSplit[1]
 	r := buttonSplit[3]
 
-	IniRead selLeague, %A_WorkingDir%/settings.ini, selectedLeague, s
+	IniRead selLeague, %SettingsPath%, selectedLeague, s
 
 	if GetKeyState("Shift") {
 		guiControlGet, c,, %g%_craft_%r%, value
 		guiControlGet, p,, %g%_price_%r%, value
-		IniRead, l, %A_WorkingDir%/settings.ini, selectedLeague, s
+		IniRead, l, %SettingsPath%, selectedLeague, s
 		guiControlGet, cnt,, %g%_count_%r%, value
 		
 		fileLine := A_YYYY . "-" . A_MM . "-" . A_DD . ";" . A_Hour . ":" . A_Min . ";" . l . ";" . unlevel(c) . ";" . p . "`r`n"
 
-		FileAppend, %fileLine%, log.csv
+		FileAppend, %fileLine%, %LogPath%
 
 		if (cnt > 1) {
 			cnt -= 1			
@@ -211,18 +221,18 @@ return
 
 LeagueDropdown:
     guiControlGet, selectedLeague,,League, value
-    iniWrite, %selectedLeague%, %A_WorkingDir%/settings.ini, selectedLeague, s
+    iniWrite, %selectedLeague%, %SettingsPath%, selectedLeague, s
 	allowAll()
 return
 
 IGN:
 	guiControlGet, lastIGN,,IGN, value
-    iniWrite, %lastIGN%, %A_WorkingDir%/settings.ini, IGN, n
+    iniWrite, %lastIGN%, %SettingsPath%, IGN, n
 return
 
 CustomText:
 	guiControlGet, cust,,CustomText, value
-	iniWrite, %cust%, %A_WorkingDir%/settings.ini, Other, customText
+	iniWrite, %cust%, %SettingsPath%, Other, customText
 	guicontrol,, CustomTextCB, 1
 			
 	if (RegExMatch(cust, "not|remove|aug|add") > 0) {
@@ -234,22 +244,22 @@ return
 
 CanStream:
 	guiControlGet, strim,,canStream, value
-	iniWrite, %strim%, %A_WorkingDir%/settings.ini, Other, canStream
+	iniWrite, %strim%, %SettingsPath%, Other, canStream
 return
 
 CustomTextCB:
 	guiControlGet, custCB,,CustomTextCB, value
-	iniWrite, %custCB%, %A_WorkingDir%/settings.ini, Other, CustomTextCB
+	iniWrite, %custCB%, %SettingsPath%, Other, CustomTextCB
 	
 return
 
 Monitors:
 	guiControlGet, mon,,Monitors_v, value
-	iniWrite, %mon%, %A_WorkingDir%/settings.ini, Other, mon
+	iniWrite, %mon%, %SettingsPath%, Other, mon
 return
 
 help:
-	IniWrite, 1, %A_WorkingDir%/settings.ini, Other, seenInstructions 
+	IniWrite, 1, %SettingsPath%, Other, seenInstructions 
 	gui Help:new
 
 gui, font, s14
@@ -289,7 +299,7 @@ return
 
 outStyle:
 	guiControlGet, os,,outStyle, value
-	iniWrite, %os%, %A_WorkingDir%/settings.ini, Other, outStyle
+	iniWrite, %os%, %SettingsPath%, Other, outStyle
 return
 
 settings:
@@ -299,7 +309,7 @@ settings:
 	gui, add, Groupbox, x5 y5 w400 h90, Message formatting
 		Gui, add, text, x10 y25, Output message style:
 		Gui, add, dropdownList, x120 y20 w30 voutStyle goutStyle, 1|2
-		iniRead, tstyle, %A_WorkingDir%/settings.ini, Other, outStyle
+		iniRead, tstyle, %SettingsPath%, Other, outStyle
 		guicontrol, choose, outStyle, %tstyle%
 		Gui, add, text, x20 y50, 1 - No Colors, No codeblock = Words are highlighted when using discord search
 		Gui, add, text, x20 y70, 2 - Codeblock, Colors = Words aren't highlighetd when using discord search
@@ -312,22 +322,23 @@ settings:
 		guicontrol, choose, Monitors_v, %tempMon%
 
 		gui, add, text, x10 y150, Scale	
-		iniRead, tScale,  %A_WorkingDir%/settings.ini, Other, scale
+		iniRead, tScale,  %SettingsPath%, Other, scale
 		gui, add, edit, x85 y150 w30 vScale gScale, %tScale% 
 		Gui, add, text, x20 y175, - use this when you are using Other than 100`% scale in windows display settings
 		Gui, add, text, x20 y195, - 100`% = 1, 150`% = 1.5 and so on
 
 	gui, add, groupbox, x5 y215 w400 h75, Hotkeys		
 		Gui, add, text, x10 y235, Open Harvest vendor: 
-		iniRead, GuiKey,  %A_WorkingDir%/settings.ini, Other, GuiKey
+		iniRead, GuiKey,  %SettingsPath%, Other, GuiKey
 		gui,add, hotkey, x120 y230 vGuiKey_v gGuiKey_l, %GuiKey%
 		
 		Gui, add, text, x10 y260, Add crafts: 
-		iniRead, ScanKey,  %A_WorkingDir%/settings.ini, Other, ScanKey
+		iniRead, ScanKey,  %SettingsPath%, Other, ScanKey
 		gui, add, hotkey, x120 y255 vScanKey_v gScanKey_l, %ScanKey%
 
-	gui, add, button, x10 y295 h30 w390 gSettingsOK, Save
-	gui, Settings:Show, w410 h330
+	gui, add, button, x10 y295 h30 w390 gOpenRoaming vSettingsFolder, Open Settings Folder
+	gui, add, button, x10 y335 h30 w390 gSettingsOK, Save
+	gui, Settings:Show, w410 h370
 	
 return
 SettingsGuiClose:
@@ -343,22 +354,28 @@ return
 ScanKey_l:
 return
 
+OpenRoaming:
+	explorerpath := "explorer " RoamingDir
+	Run, %explorerpath%
+return
+
+
 SettingsOK:
-	iniRead, GuiKey,  %A_WorkingDir%/settings.ini, Other, GuiKey
-	iniRead, ScanKey,  %A_WorkingDir%/settings.ini, Other, ScanKey
+	iniRead, GuiKey,  %SettingsPath%, Other, GuiKey
+	iniRead, ScanKey,  %SettingsPath%, Other, ScanKey
 
 	guiControlGet, gk,, GuiKey_v, value
 	guiControlGet, sk,, ScanKey_v, value
 
 	if (GuiKey != gk and gk != "ERROR" and gk != "") {
 		hotkey, %GuiKey%, off
-		iniWrite, %gk%, %A_WorkingDir%/settings.ini, Other, GuiKey
+		iniWrite, %gk%, %SettingsPath%, Other, GuiKey
 		hotkey, %gk%, OpenGui
 	} 
 			
 	if (ScanKey != sk and sk != "ERROR" and sk != ""){
 		hotkey, %ScanKey%, off
-		iniWrite, %sk%, %A_WorkingDir%/settings.ini, Other, ScanKey
+		iniWrite, %sk%, %SettingsPath%, Other, ScanKey
 		hotkey, %sk%, Scan
 	} 
 
@@ -380,7 +397,7 @@ return
 
 Scale:
 	guiControlGet, sc,,Scale, value
-	iniWrite, %sc%, %A_WorkingDir%/settings.ini, Other, scale
+	iniWrite, %sc%, %SettingsPath%, Other, scale
 return
 
 unlevel(craft){
@@ -422,7 +439,7 @@ buildGUI() {
 
 	;== Bottom stuff ==
 	;gui add, Text, x15 y345 w150, Custom text added to message: 
-	iniRead tempCustomTextCB, %A_WorkingDir%/settings.ini, Other, customTextCB
+	iniRead tempCustomTextCB, %SettingsPath%, Other, customTextCB
 	if (tempCustomTextCB == "ERROR") { 
 		tempCustomTextCB := 0 
 	}
@@ -430,7 +447,7 @@ buildGUI() {
 		global CustomTextCB_TT := "If you wish to hide Custom text for now"
 	guicontrol,,CustomTextCB, %tempCustomTextCB%
 
-	iniRead tempCustomText, %A_WorkingDir%/settings.ini, Other, customText
+	iniRead tempCustomText, %SettingsPath%, Other, customText
 	if (tempCustomText == "ERROR") { 
 		tempCustomText := "" 
 	}
@@ -442,7 +459,7 @@ buildGUI() {
 	gui, font
 	;
 	guicontrol, hide, CustomTextWarning
-	iniRead tempStream, %A_WorkingDir%/settings.ini, Other, canStream
+	iniRead tempStream, %SettingsPath%, Other, canStream
 	if (tempStream == "ERROR") { 
 		tempStream := 0 
 	}	
@@ -452,7 +469,7 @@ buildGUI() {
 
 	Gui Add, Text, x1040 y345 w25 h23, IGN:
 	
-	IniRead, name, %A_WorkingDir%/settings.ini, IGN, n
+	IniRead, name, %SettingsPath%, IGN, n
 	if (name == "ERROR") {
 		name:=""
 	}
@@ -584,14 +601,14 @@ processCrafts(file) {
 	sleep, 500
 
 	Tooltip, Please Wait
-	command = Capture2Text\Capture2Text.exe -s `"%x_start% %y_start% %x_end% %y_end%`" -o temp.txt -l English --trim-capture 
+	command = Capture2Text\Capture2Text.exe -s `"%x_start% %y_start% %x_end% %y_end%`" -o %TempPath% -l English --trim-capture 
 	RunWait, %command%
     
     sleep, 1000 ;sleep cos if i show the Gui too quick the capture will grab screenshot of gui   	
 	WinActivate, ahk_pid %PID%
 	Tooltip
 
-	if !FileExist("temp.txt") {
+	if !FileExist(TempPath) {
 		MsgBox, - We were unable to create temp.txt to store text recognition results.`r`n- The tool most likely doesnt have permission to write where it is.`r`n- Moving it into a location that isnt write protected, or running as admin will fix this.
         return false
 	}
@@ -996,7 +1013,7 @@ processCrafts(file) {
         outArray[iFinal] := Trim(RegExReplace(outArray[iFinal] , " +", " ")) 
     }	
 	;this bit is for testing purposes, it should never trigger for normal user cos processCrafts is always run with temp.txt 
-	if (file != "temp.txt") {
+	if (file != TempPath) {
 		for s in outArray {
 			str .= outArray[s] . "`r`n"
 		}
@@ -1011,9 +1028,9 @@ rememberCraft(g,r){
 	guiControlGet, crafCount,, %g%_count_%r%, value
 	blank := ""
 	if (craftName != "") {
-		IniWrite, %craftName%|%crafCount%, %A_WorkingDir%/settings.ini, LastSession, %g%_craft_%r%
+		IniWrite, %craftName%|%crafCount%, %SettingsPath%, LastSession, %g%_craft_%r%
 	} else {
-		IniWrite, %blank%, %A_WorkingDir%/settings.ini, LastSession, %g%_craft_%r%
+		IniWrite, %blank%, %SettingsPath%, LastSession, %g%_craft_%r%
 	}
 }
 
@@ -1027,7 +1044,7 @@ rememberSession() {
 }
 
 loadLastSessionCraft(g,r) {
-	IniRead, lastCraft, %A_WorkingDir%/settings.ini, LastSession, %g%_craft_%r%
+	IniRead, lastCraft, %SettingsPath%, LastSession, %g%_craft_%r%
 	if (lastCraft != "" and lastCraft != "ERROR") {
 		split := StrSplit(lastCraft, "|")
 		craft := split[1]
@@ -1072,7 +1089,7 @@ clearAll() {
 
 ;enables Post All button if a Standard league is selected
 allowAll() {
-	IniRead selLeague, %A_WorkingDir%/settings.ini, selectedLeague, s
+	IniRead selLeague, %SettingsPath%, selectedLeague, s
 	if (selLeague == "ERROR"){
 		GuiControlGet, selLeague,, LeagueDropdown, value
 	}
@@ -1087,7 +1104,7 @@ allowAll() {
 leagueList() {
     leagueString := ""
     loop, 8 {
-        IniRead, tempList, %A_WorkingDir%/settings.ini, Leagues, %A_Index%     
+        IniRead, tempList, %SettingsPath%, Leagues, %A_Index%     
 	   
         if InStr(tempList, "Hardcore") = 0 and InStr(tempList, "HC") = 0 {
             tempList .= " Softcore"
@@ -1103,11 +1120,11 @@ leagueList() {
 		}
     }
 
-	iniRead, leagueCheck, %A_WorkingDir%/settings.ini, selectedLeague, s
+	iniRead, leagueCheck, %SettingsPath%, selectedLeague, s
 	guicontrol,, League, %leagueString%
 	if (leagueCheck == "ERROR") {		
 		guicontrol, choose, League, %defaultLeague%	
-    	iniWrite, %defaultLeague%, %A_WorkingDir%/settings.ini, selectedLeague, s	
+    	iniWrite, %defaultLeague%, %SettingsPath%, selectedLeague, s	
 	} else {
 		guicontrol, choose, League, %leagueCheck%	
 	}
@@ -1164,7 +1181,7 @@ getMaxLenghts(group){
 }
 ; assembles the row with craft count, name, lvl, price
 createPostRow(count,craft,price,group) {
-	;IniRead, outStyle, %A_WorkingDir%/settings.ini, Other, outStyle
+	;IniRead, outStyle, %SettingsPath%, Other, outStyle
 	mySpaces := ""
 	spacesCount := 0
 	if (price == "") {
@@ -1208,7 +1225,7 @@ createPostRow(count,craft,price,group) {
 }
 
 codeblockWrap() {
-	;IniRead, outStyle, %A_WorkingDir%/settings.ini, Other, outStyle
+	;IniRead, outStyle, %SettingsPath%, Other, outStyle
 	if (outStyle == 1) {
 		return outString
 	}
@@ -1219,7 +1236,7 @@ codeblockWrap() {
 
 ;puts together the whole message that ends up in clipboard
 createPost(group) {
-	IniRead, outStyle, %A_WorkingDir%/settings.ini, Other, outStyle
+	IniRead, outStyle, %SettingsPath%, Other, outStyle
     tempName := ""
 	GuiControlGet, tempLeague,, League, value
 	GuiControlGet, tempName,, IGN, value
@@ -1349,7 +1366,7 @@ getLVL(craft) {
 
 updatePriceInUI(craft){
 	craft := unlevel(craft)
-	iniRead, tempP, %A_WorkingDir%/prices.ini, Prices, %craft%
+	iniRead, tempP, %PricesPath%, Prices, %craft%
 	if (tempP == "ERROR") {
 		tempP := ""
 	}
@@ -1362,7 +1379,7 @@ insertIntoRow(group, rowCounter, craft) {
     GuiControl,, %group%_count_%rowCounter%, 1
    
 	;craft := unlevel(craft)
-	;iniRead, tempP, %A_WorkingDir%/prices.ini, Prices, %craft%
+	;iniRead, tempP, %PricesPath%, Prices, %craft%
 	
 	;if (tempP == "ERROR") {
 	;;	tempP := ""
@@ -1519,23 +1536,23 @@ getLeagues() {
 		parsed := Jxon_load(response) 
 	;couldnt figure out how to make the number in parsed.1.id work as paramter, it doesnt like %% in there between the dots
 		tempParse := parsed.1.id          
-		iniWrite, %tempParse%, %A_WorkingDir%/settings.ini, Leagues, 1
+		iniWrite, %tempParse%, %SettingsPath%, Leagues, 1
 		tempParse := parsed.2.id          
-		iniWrite, %tempParse%, %A_WorkingDir%/settings.ini, Leagues, 2
+		iniWrite, %tempParse%, %SettingsPath%, Leagues, 2
 		tempParse := parsed.3.id          
-		iniWrite, %tempParse%, %A_WorkingDir%/settings.ini, Leagues, 3
+		iniWrite, %tempParse%, %SettingsPath%, Leagues, 3
 		tempParse := parsed.4.id          
-		iniWrite, %tempParse%, %A_WorkingDir%/settings.ini, Leagues, 4
+		iniWrite, %tempParse%, %SettingsPath%, Leagues, 4
 		tempParse := parsed.5.id          
-		iniWrite, %tempParse%, %A_WorkingDir%/settings.ini, Leagues, 5
+		iniWrite, %tempParse%, %SettingsPath%, Leagues, 5
 		tempParse := parsed.6.id          
-		iniWrite, %tempParse%, %A_WorkingDir%/settings.ini, Leagues, 6
+		iniWrite, %tempParse%, %SettingsPath%, Leagues, 6
 		tempParse := parsed.7.id          
-		iniWrite, %tempParse%, %A_WorkingDir%/settings.ini, Leagues, 7
+		iniWrite, %tempParse%, %SettingsPath%, Leagues, 7
 		tempParse := parsed.8.id          
-		iniWrite, %tempParse%, %A_WorkingDir%/settings.ini, Leagues, 8
+		iniWrite, %tempParse%, %SettingsPath%, Leagues, 8
 	} else {
-		IniRead, lc, %A_WorkingDir%/settings.ini, Leagues, 1
+		IniRead, lc, %SettingsPath%, Leagues, 1
 		if (lc == "ERROR" or lc == "") {
 			msgbox, Unable to get list of leagues from GGG API`r`nYou will need to copy [Leagues] and [selectedLeague] sections from the example settings.ini on github
 		}
@@ -1630,8 +1647,8 @@ Options: (White space separated)
 ;full screen overlay
 ;press Escape to cancel
 
-    iniRead tempMon, %A_WorkingDir%/settings.ini, Other, mon
-    iniRead, scale, %A_WorkingDir%/settings.ini, Other, scale
+    iniRead tempMon, %SettingsPath%, Other, mon
+    iniRead, scale, %SettingsPath%, Other, scale
     ;scale := 1
     cover := monitorInfo(tempMon)
     coverX := cover[1]
@@ -2022,6 +2039,7 @@ global rescanButton
 global CustomTextWarning
 global sumChaos
 global sumEx
+global OpenRoaming
 global A_count_1
 global A_count_2
 global A_count_3
