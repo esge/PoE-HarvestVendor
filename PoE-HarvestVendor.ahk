@@ -1574,6 +1574,10 @@ checkFiles() {
 			ExitApp
 		}
 	}
+	if !FileExist("settings.ini") {
+		msgbox, Looks like you put PoE-HarvestVendor in a write protected place on your PC.`r`nIt needs to be able to create and write into a few text files in its directory.
+		ExitApp
+	}
 }
 ;find out monitor #
 getMonCount(){
