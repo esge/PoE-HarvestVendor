@@ -359,7 +359,6 @@ OpenRoaming:
 	Run, %explorerpath%
 return
 
-
 SettingsOK:
 	iniRead, GuiKey,  %SettingsPath%, Other, GuiKey
 	iniRead, ScanKey,  %SettingsPath%, Other, ScanKey
