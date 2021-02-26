@@ -82,7 +82,6 @@ if (A_AhkVersion < "1.1.27.00"){
 	MsgBox, Please update your AHK `r`nYour version: %A_AhkVersion%`r`nRequired: 1.1.27.00 or more
 }
 
-
 checkfiles()
 winCheck()
 getLeagues()
@@ -1092,7 +1091,7 @@ allowAll() {
 	if (selLeague == "ERROR"){
 		GuiControlGet, selLeague,, LeagueDropdown, value
 	}
-	if InStr(selLeague, "Standard") = 0 {
+	if (InStr(selLeague, "Standard") = 0 and InStr(selLeague, "Hardcore") = 0 ){
 		guicontrol, Disable, postAll		
 	} else {
 		guicontrol, Enable, postAll
@@ -1557,7 +1556,7 @@ getLeagues() {
 		}
 	}
 
-	if !FileExist("settings.ini"){
+	if !FileExist(SettingsPath){
 		MsgBox, Looks like AHK was unable to create settings.ini`r`nThis might be because the place you have the script is write protected by Windows`r`nYou will need to place this somewhere else
 	}
 }
@@ -1589,15 +1588,16 @@ checkFiles() {
 			msgbox, I don't see the Capture2Text folder, did you download the tool ? `r`nLink is in the GitHub readme under Getting started section
 			ExitApp
 		}
-	}
-	if !FileExist("settings.ini") {
+	}	
+	
+	if !FileExist(SettingsPath) {
 		msgbox, Looks like you put PoE-HarvestVendor in a write protected place on your PC.`r`nIt needs to be able to create and write into a few text files in its directory.
 		ExitApp
 	}
 }
 ;find out monitor #
 getMonCount(){
-   monOut :=""
+   monOut := ""
    sysGet, monCount, MonitorCount
    loop, %monCount% {
       monOut .= A_Index . "|"
