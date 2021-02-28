@@ -911,8 +911,12 @@ processCrafts(file) {
 			for a in fracture {
 				if InStr(Arrayed[index], fracture[a]) > 0 {
 					outArrayCount += 1
-					outArray[outArrayCount] := "Fracture " . fracture[a] . " lv" . getLVL(Arrayed[index])
-					continue
+					if (fracture[a] == "modifier") {
+						outArray[outArrayCount] := "Fracture 1/5 " . fracture[a] . " lv" . getLVL(Arrayed[index])		
+					} else {
+						outArray[outArrayCount] := "Fracture " . fracture[a] . " lv" . getLVL(Arrayed[index])
+						continue
+					}
 				}
 			}
 		} 		
