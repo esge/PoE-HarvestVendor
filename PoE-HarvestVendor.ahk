@@ -1519,6 +1519,7 @@ winCheck(){
 }
 
 ;get list of active leagues from ggg
+
 getLeagues() {
 	leagueAPIurl := "http://api.pathofexile.com/leagues?type=main&compact=1" 
 	
@@ -1534,37 +1535,45 @@ getLeagues() {
     	oWhr.Send()
 		response := oWhr.ResponseText
 	}
-	
-	if InStr(response, "Standard") > 0 {
-		parsed := Jxon_load(response) 
-	;couldnt figure out how to make the number in parsed.1.id work as paramter, it doesnt like %% in there between the dots
-		tempParse := parsed.1.id          
-		iniWrite, %tempParse%, %SettingsPath%, Leagues, 1
-		tempParse := parsed.2.id          
-		iniWrite, %tempParse%, %SettingsPath%, Leagues, 2
-		tempParse := parsed.3.id          
-		iniWrite, %tempParse%, %SettingsPath%, Leagues, 3
-		tempParse := parsed.4.id          
-		iniWrite, %tempParse%, %SettingsPath%, Leagues, 4
-		tempParse := parsed.5.id          
-		iniWrite, %tempParse%, %SettingsPath%, Leagues, 5
-		tempParse := parsed.6.id          
-		iniWrite, %tempParse%, %SettingsPath%, Leagues, 6
-		tempParse := parsed.7.id          
-		iniWrite, %tempParse%, %SettingsPath%, Leagues, 7
-		tempParse := parsed.8.id          
-		iniWrite, %tempParse%, %SettingsPath%, Leagues, 8
-	} else {
-		IniRead, lc, %SettingsPath%, Leagues, 1
-		if (lc == "ERROR" or lc == "") {
-			msgbox, Unable to get list of leagues from GGG API`r`nYou will need to copy [Leagues] and [selectedLeague] sections from the example settings.ini on github
-		}
-	}
+    if oWhr.Status == "200" {
+        if InStr(response, "Standard") > 0 {
+            parsed := Jxon_load(response) 
+        ;couldnt figure out how to make the number in parsed.1.id work as paramter, it doesnt like %% in there between the dots
+            tempParse := parsed.1.id          
+            iniWrite, %tempParse%, %SettingsPath%, Leagues, 1
+            tempParse := parsed.2.id          
+            iniWrite, %tempParse%, %SettingsPath%, Leagues, 2
+            tempParse := parsed.3.id          
+            iniWrite, %tempParse%, %SettingsPath%, Leagues, 3
+            tempParse := parsed.4.id          
+            iniWrite, %tempParse%, %SettingsPath%, Leagues, 4
+            tempParse := parsed.5.id          
+            iniWrite, %tempParse%, %SettingsPath%, Leagues, 5
+            tempParse := parsed.6.id          
+            iniWrite, %tempParse%, %SettingsPath%, Leagues, 6
+            tempParse := parsed.7.id          
+            iniWrite, %tempParse%, %SettingsPath%, Leagues, 7
+            tempParse := parsed.8.id          
+            iniWrite, %tempParse%, %SettingsPath%, Leagues, 8
+        } else {
+            IniRead, lc, %SettingsPath%, Leagues, 1
+            if (lc == "ERROR" or lc == "") {
+                msgbox, Unable to get list of leagues from GGG API`r`nYou will need to copy [Leagues] and [selectedLeague] sections from the example settings.ini on github
+            }
+        }
 
-	if !FileExist(SettingsPath){
-		MsgBox, Looks like AHK was unable to create settings.ini`r`nThis might be because the place you have the script is write protected by Windows`r`nYou will need to place this somewhere else
-	}
+        if !FileExist(SettingsPath){
+            MsgBox, Looks like AHK was unable to create settings.ini`r`nThis might be because the place you have the script is write protected by Windows`r`nYou will need to place this somewhere else
+        }
+    } else  {
+        Msgbox, Unable to get active leagues from GGG API, using placeholder names
+        iniWrite, Temp, %SettingsPath%, Leagues, 1
+        iniWrite, Hardcore Temp, %SettingsPath%, Leagues, 2
+        iniWrite, Standard, %SettingsPath%, Leagues, 3
+        iniWrite, Hardcore, %SettingsPath%, Leagues, 4
+    }
 }
+
 
 ;check harvestVendor version against github
 getVersion() {
