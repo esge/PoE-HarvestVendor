@@ -79,7 +79,7 @@ if (sc == "ERROR") {
 }
 
 ; == check for ahk version ==
-if (A_AhkVersion < "1.1.27.00"){
+if (A_AhkVersion < 1.1.27.00){
 	MsgBox, Please update your AHK `r`nYour version: %A_AhkVersion%`r`nRequired: 1.1.27.00 or more
 }
 
