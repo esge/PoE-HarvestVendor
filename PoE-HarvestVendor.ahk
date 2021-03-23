@@ -1,24 +1,21 @@
-#NoEnv
-
+﻿#NoEnv
 #SingleInstance Force
+SetBatchLines -1
 SetWorkingDir %A_ScriptDir% 
-global version := "0.6.4"
+global version := "0.7"
+
+; === some global variables ===
+global outArray := {}
 global outArrayCount := 0
-global outArray := []	  
-global arr := []
-global outstring := ""
-global firstGuiOpen := 0
-global str := ""
-global AMaxLen := 0
-global RMaxLen := 0
-global RAMaxLen := 0
-global OMaxLen := 0
-global outStyle
+global rescan
 global x_start := 0
 global y_start := 0
 global x_end := 0
 global y_end := 0
-global rescan
+global firstGuiOpen := 1
+global outString
+global outStyle
+global MaxLen
 global seenInstructions
 
 global PID := DllCall("Kernel32\GetCurrentProcessId")
@@ -35,6 +32,8 @@ global PricesPath := RoamingDir . "\prices.ini"
 global LogPath := RoamingDir . "\log.csv"
 global TempPath := RoamingDir . "\temp.txt"
 
+tooltip, loading... Initializing Settings
+sleep, 250
 ; == init settings ==
 iniRead, seenInstructions,  %SettingsPath%, Other, seenInstructions
 if (seenInstructions == "ERROR" or seenInstructions == "") {
@@ -78,151 +77,325 @@ if (sc == "ERROR") {
 	iniWrite, 1, %SettingsPath%, Other, scale
 }
 
+checkfiles()
+winCheck()
+
+tooltip, loading... Checking AHK version
+sleep, 250
 ; == check for ahk version ==
 if (A_AhkVersion < 1.1.27.00){
 	MsgBox, Please update your AHK `r`nYour version: %A_AhkVersion%`r`nRequired: 1.1.27.00 or more
 }
 
-checkfiles()
-winCheck()
+tooltip, loading... Grabbing active leagues
 getLeagues()
+
+menu, Tray, Icon, resources\Vivid_Scalefruit_inventory_icon.png
+;Menu, MySubmenu, Add, testLabel
+;Menu, Tray, Add, Harvest Vendor, OpenGui
+Menu, Tray, NoStandard
+Menu, Tray, Add, Harvest Vendor, OpenGui
+Menu, Tray, Default, Harvest Vendor
+Menu, Tray, Standard
+
+; == preload pictures that are used more than once, for performance
+    count_pic := LoadPicture("resources\count.png")
+    up_pic := LoadPicture("resources\up.png")
+    dn_pic := LoadPicture("resources\dn.png")
+    craft_pic := LoadPicture("resources\craft.png")
+    lvl_pic := LoadPicture("resources\lvl.png")
+    price_pic := LoadPicture("resources\price.png")
+    del_pic := LoadPicture("resources\del.png")
+; =================================================================
+
+tooltip, loading... building GUI
+sleep, 250
+newGUI()
+tooltip, ready
+sleep, 500
+Tooltip
 
 if (seenInstructions == 0) {
 	goto help
 }
 return
 
+return
+
 OpenGui: ;ctrl+shift+g opens the gui, yo go from there
-	if (firstGuiOpen == 0) {
-        buildGUI()
-		loadLastSession()
+	loadLastSession()
+	if (version < getVersion()) {
+		guicontrol, HarvestUI:Show, versionText
+		guicontrol, HarvestUI:Show, versionLink
 	}
-    Gui, HarvestUI:Show, w1225 h380
+    Gui, HarvestUI:Show, w650 h585
 	OnMessage(0x200, "WM_MOUSEMOVE")
-	;clearAll()
+	
 Return
 
 Scan: ;ctrl+g launches straight into the capture, opens gui afterwards
     _wasVisible := IsGuiVisible("HarvestUI")
     if (processCrafts(TempPath)) {
-        if (firstGuiOpen == 0) {
-            buildGUI()
-            loadLastSession()
-        } 
-        Gui, HarvestUI:Show, w1225 h380
-        OnMessage(0x200, "WM_MOUSEMOVE") ;activates tooltip function
+ 
+        Gui, HarvestUI:Show, w650 h585
+        OnMessage(0x200, "WM_MOUSEMOVE") ;activates tooltip function		
         craftSort(outArray)
-        rememberSession()
+		if (firstGuiOpen == 1) {
+			rememberSession()
+			firstGuiOpen := 0
+		}
+        
     } else {
         ; If processCrafts failed (e.g. the user pressed Escape), we should show the
         ; HarvestUI only if it was visible to the user before they pressed Ctrl+G
         if (_wasVisible)
-            Gui, HarvestUI:Show, w1225 h380
+            Gui, HarvestUI:Show, w650 h585
     }
 return
 
-GuiEscape:
-    Gui, HarvestUI:Show
-GuiClose:	
-    ExitApp
+HarvestUIGuiEscape:
+HarvestUIGuiClose:
+	rememberSession()	
+    Gui, HarvestUI:Hide
+return
 
-Addcrafts:
-	GuiControlGet, rescan, FocusV
+newGUI() {
+    Global
+    Gui, HarvestUI:New,, PoE-HarvestVendor v%version% 
+    Gui, Color, 0x0d0d0d, 0x1A1B1B
+    gui, Font, s11 cFFC555
+
+    xColumn1 := 10
+    xColumn2 := xColumn1 + 65
+    xColumn3 := xColumn2 + 33 + 5
+    xColumn4 := xColumn3 + 300 + 5
+    xColumn5 := xColumn4 + 25 + 5
+    xColumn6 := xColumn5 + 50 + 5
+    xColumn7 := xColumn6 + 15 + 5
+    xcolumn8 := xColumn7 + 111 + 5
+
+    xColumnUpDn := xColumn2 + 23
+
+    xEditOffset2 := xColumn2+1
+    xEditOffset3 := xColumn3+3
+    xEditOffset4 := xColumn4+1
+    xEditOffset5 := xColumn5+1
+    xEditOffset6 := xColumn6+1
+    xEditOffset7 := xColumn7+1
+    row := 90
+
+; === Title and icon ===
+    gui add, picture, x10 y10, resources\Vivid_Scalefruit_inventory_icon.png
+    gui add, picture, x%xColumn3% y10, resources\title.png
+    gui add, text, x380 y15, v%version%
+; ======================
+; === Text stuff ===
+    gui, Font, s11 cA38D6D
+        gui add, text, x%xColumn3% y40 vValue, You have:          ex            c in station   
+        gui add, text, x%xColumn3% y63 vStored, Augs:  `t`tRems:   `tRem/Adds:  `t`tOther: 
+    gui, Font, s11 cFFC555
+        gui add, text, x170 y40 w30 right vsumEx, 0
+        gui add, text, x220 y40 w30 right vsumChaos, 0
+		gui add, text, x150 y64 w20 vAcount,0
+		gui add, text, x250 y64 w20 vRcount,0
+		gui add, text, x375 y64 w20 vRAcount,0
+		gui add, text, x485 y64 w20 vOcount,0
+; ==================
+    gui Font, s12
+		gui add, text, x460 y10 cGreen vversionText, ! New Version Available !
+	;gui, Font, s11 cFFC555
+		gui add, Link, x550 y30 vversionLink c0x0d0d0d, <a href="github.com/esge/PoE-HarvestVendor/releases/latest">Github Link</a>
+		
+	GuiControl, Hide, versionText
+	GuiControl, Hide, versionLink
+	 gui Font, s11
+; === Right side ===
+   ;y math: row + (23*rowNum)
+
+    gui add, picture, x%xColumn7% y114 gAdd_crafts vaddCrafts, resources\addCrafts.png
+    gui add, picture, x%xColumn7% y136 gLast_Area vrescanButton, resources\lastArea.png
+    gui add, picture, x%xColumn7% y159 gClear_All vclearAll, resources\clear.png
+    gui add, picture, x%xColumn7% y182 gSettings vsettings, resources\settings.png
+    gui add, picture, x%xColumn7% y205 gHelp vhelp, resources\help.png
+
+	; === Post buttons ===
+    gui add, picture, x%xColumn7% y251 gAug_post vaugPost, resources\postA.png
+    gui add, picture, x%xColumn7% y274 gRem_post vremPost, resources\postR.png
+    gui add, picture, x%xColumn7% y297 gRemAdd_post vremAddPost, resources\postRA.png
+    gui add, picture, x%xColumn7% y320 gOther_post votherPost, resources\postO.png
+    gui add, picture, x%xColumn7% y343 vpostAll gPost_all, resources\postAll.png
+		postAll_TT := "WARNING: Don't use this for Temporary SC league on TFT Discord"
+
+	; === League dropdown ===
+    gui add, text, x%xColumn7% y370, League:
+    gui add, dropdownList, x%xColumn7% y389 w115 -E0x200 +BackgroundTrans vleague gLeague_dropdown
+		leagueList()
+
+	; === can stream ===
+	iniRead tempStream, %SettingsPath%, Other, canStream
+	if (tempStream == "ERROR") { 
+		tempStream := 0 
+	}	
+    gui add, checkbox, x%xColumn7% y419 vcanStream gCan_stream, Can stream
+	guicontrol,,canStream, %tempStream%
+
+	; === IGN ===
+	IniRead, name, %SettingsPath%, IGN, n
+	if (name == "ERROR") {
+		name:=""
+	}
+    gui add, text, x%xColumn7% y440, IGN: 
+        gui add, picture, x%xColumn7% y458, resources\ign.png
+        gui, Font, s11 cA38D6D
+            Gui Add, Edit, x%xEditOffset7% y459 w113 h18 -E0x200 +BackgroundTrans vign gIGN, %name%
+        gui, Font, s11 cFFC555
+
+	; === custom text checkbox ===
+	iniRead tempCustomTextCB, %SettingsPath%, Other, customTextCB
+	if (tempCustomTextCB == "ERROR") { 
+		tempCustomTextCB := 0 
+	}
+    gui add, checkbox, x%xColumn7% y485 vcustomText_cb gCustom_text_cb, Custom Text: 
+		guicontrol,,customText_cb, %tempCustomTextCB%
+	; ============================
+	; === custom text input ===
+        gui add, picture,  x%xColumn7% y504, resources\text.png
+		iniRead tempCustomText, %SettingsPath%, Other, customText
+		if (tempCustomText == "ERROR") { 
+			tempCustomText := "" 
+		}
+        gui, Font, s11 cA38D6D
+            Gui Add, Edit, x%xEditOffset7% y505 w113 h65 -E0x200 +BackgroundTrans vcustomText gCustom_text -VScroll -WantReturn, %tempCustomText%
+        gui, Font, s11 cFFC555
+            custom_TT := "This will be a single line in the message"
+	; ============================
+    ;gui add, picture, x%xColumn7% y366, resources\leagueHeader.png
+; ===============================================================================
+    
+; === table headers ===
+    gui add, text, x%xColumn1% y%row% w60 +Right, Type
+    count_beautyOffset := xColumn2 + 5
+    gui add, text, x%count_beautyOffset% y%row%, #
+    gui add, text, x%xColumn3% y%row%, Crafts
+    gui add, text, x%xColumn4% y%row%, LvL
+    gui add, text, x%xColumn5% y%row%, Price
+
+; === table ===
+    loop, 20 {
+        row2 := row + 23 * A_Index
+        row2p := row2+1
+        row2dn := row2+10
+        row2del := row2+5
+        ;gui add, picture, x%xColumn1% y%row2%, resources\type.png
+        gui, Font, s11 cA38D6D
+            gui add, text, x%xColumn1% y%row2% vtype_%A_Index% gType w60 Right,
+        gui, Font, s11 cFFC555
+        
+        gui add, picture, x%xColumn2% y%row2% AltSubmit , % "HBITMAP:*" count_pic ;resources\count.png
+            Gui Add, Edit, x%xEditOffset2% y%row2p% w35 h18 vcount_%A_Index% gPrice -E0x200 +BackgroundTrans Center
+                Gui Add, UpDown, Range0-20 vupDown_%A_Index%, 0
+                guicontrol, hide, upDown_%A_Index%
+            gui add, picture, x%xColumnUpDn% y%row2p% gUp vUp_%A_Index%, % "HBITMAP:*" up_pic
+            gui add, picture, x%xColumnUpDn% y%row2dn% gDn vDn_%A_Index%, % "HBITMAP:*" dn_pic
+
+        gui add, picture, x%xColumn3% y%row2% AltSubmit , % "HBITMAP:*" craft_pic ;resources\craft.png
+            gui add, edit, x%xEditOffset3% y%row2p% w295 h18 -E0x200 +BackgroundTrans vcraft_%A_Index% gcraft
+
+        gui add, picture, x%xColumn4% y%row2% AltSubmit , % "HBITMAP:*" lvl_pic ;resources\lvl.png
+            gui add, edit, x%xEditOffset4% y%row2p% w23 h18 -E0x200 +BackgroundTrans Center vlvl_%A_Index% glvl
+
+        gui add, picture, x%xColumn5% y%row2% AltSubmit , % "HBITMAP:*" price_pic ; resources\price.png
+            gui add, edit, x%xEditOffset5% y%row2p% w44 h18 -E0x200 +BackgroundTrans Center vprice_%A_Index% gPrice
+
+        gui add, picture, x%xColumn6% y%row2del% vdel_%A_Index% gclearRow AltSubmit , % "HBITMAP:*" del_pic ;resources\del.png 
+            
+    }
+    gui, font    
+    gui temp:hide
+}
+
+; === Button actions ===
+Up:
+    GuiControlGet, cntrl, name, %A_GuiControl%
+    tempRow := getRow(cntrl)
+    GuiControlget, tempCount,, count_%tempRow%
+    tempCount += 1
+    GuiControl,, count_%tempRow%, %tempCount%
+return
+Dn:
+    GuiControlGet, cntrl, name, %A_GuiControl%
+    tempRow := getRow(cntrl)
+    GuiControlget, tempCount,, count_%tempRow%
+    if (tempCount > 0) {
+        tempCount -= 1
+        GuiControl,, count_%tempRow%, %tempCount%
+    }
+return
+
+Add_crafts:
+	buttonHold("addCrafts", "resources\addCrafts")
+	GuiControlGet, rescan, name, %A_GuiControl%	
     if (processCrafts(TempPath)) {
-        Gui, HarvestUI:Show, w1225 h380
+        Gui, HarvestUI:Show, w650 h585
         CraftSort(outArray)	
         rememberSession()
     } else {
-        Gui, HarvestUI:Show, w1225 h380
+        Gui, HarvestUI:Show, w650 h585
     }
 return
 
+Last_area:
+	buttonHold("rescanButton", "resources\lastArea")
+	goto Add_crafts
+return
+
 Clear_all:
+	buttonHold("clearAll", "resources\clear")
 	clearAll()    
 	rememberSession()
 return
 
-Aug_Post:
-    createPost("A")
+count:
+
 return
 
-Rem_Post:
-    createPost("R")
+craft:
+sumTypes()
 return
 
-RA_Post:
-    createPost("RA")
+lvl:
+
 return
 
-O_Post:
-    createPost("O")
+type:
+sumTypes()
 return
 
-postAll:
-	createPost("All")
-return
-
-price:
-	GuiControlGet, priceField, FocusV	
+Price:
+	GuiControlGet, priceField, name, %A_GuiControl%
 	guiControlGet, craftPrice,, %priceField%, value
 	priceFieldArray := strsplit(priceField,"_")
 	
-	if (priceFieldArray[2] == "price") {	
-		g := priceFieldArray[1] ;group
-		r := priceFieldArray[3] ;row	
+	if (priceFieldArray[1] == "price") {	
 		
-		guiControlGet, craftName,, %g%_craft_%r%, value
+		r := priceFieldArray[2] ;row	
+		
+		guiControlGet, craftName,, craft_%r%, value
 		if (craftName != "") {
-			craftName := unlevel(craftName)
+			
 			iniWrite, %craftPrice%, %PricesPath%, Prices, %craftName%
 		}
 	}
 	if (craftPrice != "") {
 		sumPrices()
-	}
-return
-
-clearRow:
-	guiControlGet, clearButton, FocusV
-	buttonSplit := StrSplit(clearButton,"_")
-	g := buttonSplit[1]
-	r := buttonSplit[3]
-
-	IniRead selLeague, %SettingsPath%, selectedLeague, s
-
-	if GetKeyState("Shift") {
-		guiControlGet, c,, %g%_craft_%r%, value
-		guiControlGet, p,, %g%_price_%r%, value
-		IniRead, l, %SettingsPath%, selectedLeague, s
-		guiControlGet, cnt,, %g%_count_%r%, value
 		
-		fileLine := A_YYYY . "-" . A_MM . "-" . A_DD . ";" . A_Hour . ":" . A_Min . ";" . l . ";" . unlevel(c) . ";" . p . "`r`n"
-
-		FileAppend, %fileLine%, %LogPath%
-
-		if (cnt > 1) {
-			cnt -= 1			
-			Guicontrol,, %g%_count_%r%, %cnt%
-		} else {
-			GuiControl,, %g%_craft_%r%
-			GuiControl,, %g%_count_%r%, 0
-			GuiControl,, %g%_price_%r%
-			%g%Counter -= 1
-		}
-
-	} else {
-		GuiControl,, %g%_craft_%r%
-		GuiControl,, %g%_count_%r%, 0
-		GuiControl,, %g%_price_%r%
-		%g%Counter -= 1
 	}
-	rememberSession()
+	;rememberSession()
 return
 
-LeagueDropdown:
-    guiControlGet, selectedLeague,,League, value
-    iniWrite, %selectedLeague%, %SettingsPath%, selectedLeague, s
-	allowAll()
+Can_stream:
+	guiControlGet, strim,,canStream, value
+	iniWrite, %strim%, %SettingsPath%, Other, canStream
 return
 
 IGN:
@@ -230,82 +403,107 @@ IGN:
     iniWrite, %lastIGN%, %SettingsPath%, IGN, n
 return
 
-CustomText:
-	guiControlGet, cust,,CustomText, value
+Custom_text:
+	guiControlGet, cust,,customText, value
 	iniWrite, %cust%, %SettingsPath%, Other, customText
-	guicontrol,, CustomTextCB, 1
+	guicontrol,, customText_cb, 1
 			
 	if (RegExMatch(cust, "not|remove|aug|add") > 0) {
-		guiControl, show, CustomTextWarning
+		gui, Font, cRed Bold
+		guiControl, font, customText
+		tooltip, This message might get blocked by the discord bot because it containts not|remove|aug|add
 	} else {
-		guicontrol, hide, CustomTextWarning
+		gui, Font, s11 cA38D6D norm	
+		guicontrol, font, customText
+		tooltip
 	}
 return
 
-CanStream:
-	guiControlGet, strim,,canStream, value
-	iniWrite, %strim%, %SettingsPath%, Other, canStream
+Custom_text_cb:
+	guiControlGet, custCB,,customText_cb, value
+	iniWrite, %custCB%, %SettingsPath%, Other, CustomTextCB	
 return
 
-CustomTextCB:
-	guiControlGet, custCB,,CustomTextCB, value
-	iniWrite, %custCB%, %SettingsPath%, Other, CustomTextCB
+ClearRow:
+    GuiControlGet, cntrl, name, %A_GuiControl%
+    tempRow := getRow(cntrl)
+
+    IniRead selLeague, %SettingsPath%, selectedLeague, s
+
+	if GetKeyState("Shift") {
+		guiControlGet, craft,, craft_%tempRow%, value
+		guiControlGet, price,, price_%tempRow%, value
+		IniRead, league, %SettingsPath%, selectedLeague, s
+		guiControlGet, cnt,, count_%tempRow%, value
+		
+		fileLine := A_YYYY . "-" . A_MM . "-" . A_DD . ";" . A_Hour . ":" . A_Min . ";" . league . ";" . craft . ";" . price . "`r`n"
+
+		FileAppend, %fileLine%, %LogPath%
+
+		if (cnt > 1) {
+			cnt -= 1			
+			Guicontrol,, count_%tempRow%, %cnt%
+		} else {
+			GuiControl,, craft_%tempRow%
+			GuiControl,, count_%tempRow%, 0
+			GuiControl,, price_%tempRow%	
+			GuiControl,, type_%tempRow%	
+			guiControl,, lvl_%tempRow%	
+		}
+	} else {
+		GuiControl,, craft_%tempRow%
+		GuiControl,, count_%tempRow%, 0
+		GuiControl,, price_%tempRow%	
+		GuiControl,, type_%tempRow%	
+		guiControl,, lvl_%tempRow%
+	}
+	rememberSession()
 	
 return
 
-Monitors:
-	guiControlGet, mon,,Monitors_v, value
-	iniWrite, %mon%, %SettingsPath%, Other, mon
+Aug_Post:
+	buttonHold("augPost", "resources\postA")
+	createPost("Aug")
+return
+Rem_post:
+	buttonHold("remPost", "resources\postR")
+	createPost("Rem")
 return
 
-help:
-	IniWrite, 1, %SettingsPath%, Other, seenInstructions 
-	gui Help:new
-
-gui, font, s14
-	Gui, add, text, x5 y5, Step 1
-	gui, add, text, x5 y80, Step 2
-	gui, add, text, x5 y380, Step 3
-	Gui, add, text, x5 y540, Step 4
-gui, font
-
-gui, font, s10
-;step 1
-	gui, add, text, x15 y30, Default Hotkey to open the UI = Ctrl + Shift + G`r`nDefault Hotkey to start capture = Ctrl + G`r`nHotkeys can be changed in settings
-
-;step 2	
-	gui, add, text, x15 y110, Start the capture by either clicking Add Crafts button, `r`nor pressing the Capture hotkey.`r`nSelect the area with crafts:
-	Gui, Add, ActiveX, x5 y120 w290 h240 vArea, Shell2.Explorer
-	Area.document.body.style.overflow := "hidden"
-	Edit := WebPic(Area, "https://github.com/esge/PoE-HarvestVendor/blob/master/examples/snapshotArea_s.png?raw=true", "w250 h233 cFFFFFF")
-	gui, add, text, x15 y365, this can be done repeatedly to add crafts to the list
-
-;step 3	
-	gui, add, text, x15 y410, Fill in the prices (they will be remembered)`r`nand other info like: Can stream, IGN and so on if you wish to
-	Gui, Add, ActiveX, x5 y430 w350 h100 vPricepic, Shell2.Explorer
-	Pricepic.document.body.style.overflow := "hidden"
-	Edit := WebPic(Pricepic, "https://github.com/esge/PoE-HarvestVendor/blob/master/examples/price.png?raw=true", "w298 h94 cFFFFFF")
-	
-;step 4
-	gui, add, text, x15 y570, click: Create Posting for the section you wish`r`nNow your message is in clipboard
-	
-	gui, font
-	Gui, Help:Show, w400 h610, Help
-return
-HelpGuiClose:
-	Gui, Help:Destroy
-	Gui, HarvestUI:Default
+RemAdd_post:
+	buttonHold("remAddPost", "resources\postRA")
+	createPost("Rem/Add")
 return
 
-outStyle:
-	guiControlGet, os,,outStyle, value
-	iniWrite, %os%, %SettingsPath%, Other, outStyle
+Other_post:
+	buttonHold("otherPost", "resources\postO")
+	createPost("Other")
 return
 
+Post_all:
+	buttonHold("postAll", "resources\postAll")
+
+	guiControlGet, selectedLeague,, League, value
+	if !(InStr(selectedLeague, "HC") > 0 or InStr(selectedLeague, "Hardcore") > 0 or InStr(selectedLeague, "Standard") > 0){
+		msgbox, You are posting All for Temporary SC league `r`nTFT has split channels based on craft types`r`nThis message will get you timed out
+	}
+
+	createPost("All")
+return
+
+League_dropdown:
+    guiControlGet, selectedLeague,,League, value
+    iniWrite, %selectedLeague%, %SettingsPath%, selectedLeague, s
+	;allowAll()
+return
+
+;====================================================
+; === Settings UI ===================================
 settings:
+	buttonHold("settings", "resources\settings")
 	hotkey, %GuiKey%, off
 	hotkey, %ScanKey%, off
-	gui Settings:new
+	gui Settings:new,, PoE-HarvestVendor - Settings
 	gui, add, Groupbox, x5 y5 w400 h90, Message formatting
 		Gui, add, text, x10 y25, Output message style:
 		Gui, add, dropdownList, x120 y20 w30 voutStyle goutStyle, 1|2
@@ -359,6 +557,21 @@ OpenRoaming:
 	Run, %explorerpath%
 return
 
+outStyle:
+	guiControlGet, os,,outStyle, value
+	iniWrite, %os%, %SettingsPath%, Other, outStyle
+return
+
+Monitors:
+	guiControlGet, mon,,Monitors_v, value
+	iniWrite, %mon%, %SettingsPath%, Other, mon
+return
+
+Scale:
+	guiControlGet, sc,,Scale, value
+	iniWrite, %sc%, %SettingsPath%, Other, scale
+return
+
 SettingsOK:
 	iniRead, GuiKey,  %SettingsPath%, Other, GuiKey
 	iniRead, ScanKey,  %SettingsPath%, Other, ScanKey
@@ -393,198 +606,66 @@ SettingsOK:
 	Gui, Settings:Destroy
 	Gui, HarvestUI:Default
 return
+;====================================================
+; === Help UI =======================================
+help:
+	buttonHold("help", "resources\help")
+	IniWrite, 1, %SettingsPath%, Other, seenInstructions 
+	gui Help:new,, PoE-HarvestVendor Help
 
-Scale:
-	guiControlGet, sc,,Scale, value
-	iniWrite, %sc%, %SettingsPath%, Other, scale
+gui, font, s14
+	Gui, add, text, x5 y5, Step 1
+	gui, add, text, x5 y80, Step 2
+	gui, add, text, x5 y380, Step 3
+	Gui, add, text, x5 y450, Step 4
+gui, font
+
+gui, font, s10
+;step 1
+	gui, add, text, x15 y30, Default Hotkey to open the UI = Ctrl + Shift + G`r`nDefault Hotkey to start capture = Ctrl + G`r`nHotkeys can be changed in settings
+
+;step 2	
+	gui, add, text, x15 y110, Start the capture by either clicking Add Crafts button, `r`nor pressing the Capture hotkey.`r`nSelect the area with crafts:
+	Gui, Add, ActiveX, x5 y120 w290 h240 vArea, Shell2.Explorer
+	Area.document.body.style.overflow := "hidden"
+	Edit := WebPic(Area, "https://github.com/esge/PoE-HarvestVendor/blob/master/examples/snapshotArea_s.png?raw=true", "w250 h233 cFFFFFF")
+	gui, add, text, x15 y365, this can be done repeatedly to add crafts to the list
+
+;step 3	
+	gui, add, text, x15 y410, Fill in the prices (they will be remembered)`r`nand other info like: Can stream, IGN and so on if you wish to
+	;Gui, Add, ActiveX, x5 y430 w350 h100 vPricepic, Shell2.Explorer
+	;Pricepic.document.body.style.overflow := "hidden"
+	;Edit := WebPic(Pricepic, "https://github.com/esge/PoE-HarvestVendor/blob/master/examples/price.png?raw=true", "w298 h94 cFFFFFF")
+	
+;step 4
+	gui, add, text, x15 y480 w390, click: Post Augments/Removes... for the set you want to post`r`nNow your message is in clipboard`r`nCareful about Post All on TFT discord, it has separate channels for different craft types.
+	
+
+	gui, add, text, x400 y10 h590 0x11  ;Vertical Line > Etched Gray
+
+	gui, font, s14 cRed
+	Gui, Add, text, x410 y10 w380, Important:
+	
+	gui, font, s10
+	gui, add, text, x420 y30 w370, If you are using Big resolution (more than 1080p) and have scaling for display set in windwos to more than 100`% (in Display settings)`r`nYou need to go into Settings in HarvestVendor and set Scale to match whats set in windows
+	gui, font, s14 cBlack
+
+	gui, add, text, x410 y110 w380, Hidden features
+	gui, font, s10
+	gui, add, text, x420 y130 w370, - Hodling shift while clicking the X in a row will reduce the count by 1 and also write the craft and price into log.csv (you can find it through the Settings folder button in Settings)
+	gui, font
+	Gui, Help:Show, w800 h610
+return
+HelpGuiClose:
+	Gui, Help:Destroy
+	Gui, HarvestUI:Default
 return
 
-unlevel(craft){
-	return regexreplace(craft,"( lv\d{1,2}\+?)")
-}
-
-buildGUI() {    
-    firstGuiOpen := 1
-    Gui HarvestUI:New,, PoE-HarvestVendor v%version%	
-    ;== top stuff ==
-    Gui Add, DropDownList, x10 y10 w150 vLeague gLeagueDropdown,
-    leagueList() ;populate leagues dropdown and select the last used one
-    Gui Add, Button, x165 y9 w80 h23 vAddCrafts gAddcrafts, Add crafts
-	
-	gui, add, button, x250 y9 h23 vrescanButton gAddcrafts, Add from last area
-		global rescanButton_TT := "Captures again from the last selected area`r`nResets on HarvestVendor restart`r`nDoesn't have hotkey (yet)"
-
-    Gui Add, Button, x350 y9 w80 h23 gClear_all, Clear
-
-	Gui Add, Button, x435 y9 w80 h23 vpostAll gpostAll, Post all
-		global postAll_TT := "Puts all crafts into a single post regardless of sorting - allowed only for Standard leagues"
-	allowAll() 
-    
-	Gui Add, Button, x520 y9 w80 h23 vSettings gSettings, Settings
-	
-	Gui, add, text, x605 y13, You have:        ex        c in station
-	gui, add, text, x655 y13 w20 vsumEx BackgroundTrans Right, 0
-	gui, add, text, x690 y13 w20 vsumChaos BackgroundTrans Right, 0
-	
-	if (version != getVersion()) {
-		gui Font, s14
-		gui add, Link, x950 y10 vVersionLink, <a href="https://github.com/esge/PoE-HarvestVendor/tree/master">! New Version Available !</a>
-		gui font
-	}
-
-	Gui font, s26
-	Gui Add, Button, x1175 y2 w40 h40 vHelp gHelp, ?
-	Gui font
-
-	;== Bottom stuff ==
-	;gui add, Text, x15 y345 w150, Custom text added to message: 
-	iniRead tempCustomTextCB, %SettingsPath%, Other, customTextCB
-	if (tempCustomTextCB == "ERROR") { 
-		tempCustomTextCB := 0 
-	}
-	gui add, checkbox, x0 y345 w175 vCustomTextCB gCustomTextCB +Right, Custom text added to message: 
-		global CustomTextCB_TT := "If you wish to hide Custom text for now"
-	guicontrol,,CustomTextCB, %tempCustomTextCB%
-
-	iniRead tempCustomText, %SettingsPath%, Other, customText
-	if (tempCustomText == "ERROR") { 
-		tempCustomText := "" 
-	}
-	gui add, Edit, x180 y340 w500 vCustomText gCustomText, %tempCustomText% 
-		global CustomText_TT := "If you wish to add extra info to your message, will show under the WTS line"
-	
-	gui, font, ccda4f49
-	gui add, Text, x180 y365 vCustomTextWarning ,Words 'not, remove, aug, add' might get your message removed based on the channel you are posting to. Please consult the Pins in respective channels.
-	gui, font
-	;
-	guicontrol, hide, CustomTextWarning
-	iniRead tempStream, %SettingsPath%, Other, canStream
-	if (tempStream == "ERROR") { 
-		tempStream := 0 
-	}	
-	gui add, CheckBox, x690 y345 vcanStream gCanStream, Can Stream
-		global canStream_TT := "Adds: Can stream if requested. under the WTS line"
-	guicontrol,,canStream, %tempStream%
-
-	Gui Add, Text, x1040 y345 w25 h23, IGN:
-	
-	IniRead, name, %SettingsPath%, IGN, n
-	if (name == "ERROR") {
-		name:=""
-	}
-	Gui Add, Edit, x1065 y340 w150 h23 vIGN gIGN, %name%		
-		global IGN_TT := "Optional, wont show anything if left empty"
-
-    ;== Section Augment ==
-    Awidth := 175
-    Ax_groupbox := 10
-    Ax_count := Ax_groupbox + 5 ;groupbox x+5
-    Ax_craft := Ax_count + 40 ;count + 40
-    Ax_price := Awidth + Ax_craft + 5 ; width+craft + 5
-    Ax_checkbox := Ax_price + 35 + 5 ; price + 35 + 5
-
-    Gui Add, Button, x190 y50 w80 h23 vApost gAug_Post, Create Posting
-
-    Gui Font, s10
-    Gui Add, Groupbox, x%Ax_groupbox% y35 w290 h300, Augment
-    Gui Font
-	
-    yrow1 := 80
-    loop, 10 {
-        yrow1_cbOffset := yrow1 + 1
-        Gui Add, Edit, x%Ax_count% y%yrow1% w35 vA_count_%A_Index% gPrice
-        Gui Add, UpDown, Range0-20, 0
-        Gui Add, Edit, x%Ax_craft% y%yrow1% w%Awidth% vA_craft_%A_Index% 
-        Gui Add, Edit, x%Ax_price% y%yrow1% w35 vA_price_%A_Index% gprice
-        
-		gui add, Button, x%Ax_checkbox% y%yrow1_cbOffset% w19 h19 vA_del_%A_Index% gClearRow, X 
-        yrow1 += 25
-    }
-
-    ;== Section Remove ==
-    Rwidth := 120
-    Rx_groupbox := 305
-    Rx_count := Rx_groupbox + 5
-    Rx_craft := Rx_count + 40
-    Rx_price := Rwidth + Rx_craft + 5
-    Rx_checkbox := Rx_price + 35 + 5 
-
-    Gui Add, Button, x430 y50 w80 h23 vRpost gRem_Post, Create Posting
-
-    Gui Font, s10
-    Gui Add, Groupbox, x%Rx_groupbox% y35 w235 h300, Remove
-    Gui Font
-
-    yrow1 := 80
-    loop, 10 {
-        yrow1_cbOffset := yrow1 + 1
-        Gui Add, Edit, x%Rx_count% y%yrow1% w35 vR_count_%A_Index% gPrice
-        Gui Add, UpDown, Range0-20, 0
-        Gui Add, Edit, x%Rx_craft% y%yrow1% w%Rwidth% vR_craft_%A_Index% 
-        Gui Add, Edit, x%Rx_price% y%yrow1% w35 vR_price_%A_Index% gprice
-     
-	    gui add, Button, x%Rx_checkbox% y%yrow1_cbOffset% w19 h19 vR_del_%A_Index% gClearRow, X 
-        yrow1 += 25
-    }
-
-    ;== Section Rem/Add ==
-    RAwidth := 185
-    RAx_groupbox := 545
-    RAx_count := RAx_groupbox + 5
-    RAx_craft := RAx_count + 40
-    RAx_price := RAwidth + RAx_craft + 5
-    RAx_checkbox :=  RAx_price + 35 + 5 
-
-    Gui Add, Button, x735 y50 w80 h23 vRApost gRA_Post, Create Posting
-
-    Gui Font, s10
-    Gui Add, Groupbox, x%RAx_groupbox% y35 w300 h300, Remove/Add
-    Gui Font
-
-    yrow1 := 80
-    loop, 10 {
-        yrow1_cbOffset := yrow1 + 1
-        Gui Add, Edit, x%RAx_count% y%yrow1% w35 vRA_count_%A_Index% gPrice
-        Gui Add, UpDown, Range0-20, 0
-        Gui Add, Edit, x%RAx_craft% y%yrow1% w%RAwidth% vRA_craft_%A_Index% 
-        Gui Add, Edit, x%RAx_price% y%yrow1% w35 vRA_price_%A_Index% gPrice
-        
-		gui add, Button, x%RAx_checkbox% y%yrow1_cbOffset% w19 h19 vRA_del_%A_Index% gClearRow, X 
-        yrow1 += 25
-    }
-
-    ;== Section Other ==
-    Owidth := 250
-    Ox_groupbox := 850
-    Ox_count := Ox_groupbox + 5
-    Ox_craft := Ox_count + 40
-    Ox_price := Owidth + Ox_craft + 5
-    Ox_checkbox := Ox_price + 35 + 5 
-
-    Gui Add, Button, x1105 y50 w80 h23 vOpost gO_Post, Create Posting
-
-    Gui Font, s10
-    Gui Add, Groupbox, x%Ox_groupbox% y35 w365 h300, Other
-    Gui Font
-
-    yrow1 := 80
-    loop, 10 {
-        yrow1_cbOffset := yrow1 + 1
-        Gui Add, Edit, x%Ox_count% y%yrow1% w35 vO_count_%A_Index% gPrice
-        Gui Add, UpDown, Range0-20, 0
-        Gui Add, Edit, x%Ox_craft% y%yrow1% w%Owidth% vO_craft_%A_Index% 
-        Gui Add, Edit, x%Ox_price% y%yrow1% w35 vO_price_%A_Index% gPrice
-        
-		gui add, Button, x%Ox_checkbox% y%yrow1_cbOffset% w19 h19 vO_del_%A_Index% gClearRow, X 
-        yrow1 += 25
-    }    
-}
-
-; this is the part that goes through the scan and detects crafts and outputs the shortened names and levels
+; === my functions ===
 processCrafts(file) {
 	; the file parameter is just for the purpose of running a test script with different input files of crafts instead of doing scans
 	Gui, HarvestUI:Hide    
-	outArray := []	
+	outArray := {}	
 
     if ((rescan == "rescanButton" and x_start == 0) or rescan != "rescanButton" ) {
 		coordTemp := SelectArea("cffc555 t50 ms")
@@ -624,7 +705,7 @@ processCrafts(file) {
 	reforgeNonColor := ["non-Red","non-Blue","non-Green"]
 	reforge2color := ["Red and Blue","Red and Green","them Blue and Green","Red, Blue and Green","White"]
 	flaskEnchants := ["Duration.","Effect.","Maximum Charges.","Charges used."]
-	weapEnchants := ["Critical Strike Chance","Accuracy","Attack Speed","+1 Weapon Range","Elemental Damage","Area of Effect"]
+	weapEnchants := ["Critical Strike Chance","Accuracy","Attack Speed","+1 Weapon Range","Elemental","Area of Effect"]
 	bodyEnchants := ["Maximum Life","Maximum Mana","Strength","Dexterity","Intelligence","Fire Resistance","Cold Resistance","Lightning Resistance"]
 	gemPerc := ["20%","30%","40%","50%"]
 	fracture := ["modifier","Suffix","Prefix"]	
@@ -639,13 +720,17 @@ processCrafts(file) {
 			for a in augments {
 				if InStr(Arrayed[index], augments[a]) > 0 {
 					if InStr(Arrayed[index], "Lucky") > 0 {											
-						outArrayCount += 1
-						outArray[outArrayCount] := "Augment " . augments[a] . " Lucky lv" . getLVL(Arrayed[index]) 
+						outArrayCount += 1 						 
+						outArray[outArrayCount, 0] := "Augment " . augments[a] . " Lucky"
+						outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+						outArray[outArrayCount, 2] := "Aug" 						
 						continue
 					} 
 					else {
 						outArrayCount += 1
-						outArray[outArrayCount] := "Augment " . augments[a] . " lv" . getLVL(Arrayed[index])
+						outArray[outArrayCount, 0] := "Augment " . augments[a] ;*[guiDraft]
+						outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+						outArray[outArrayCount, 2] := "Aug" 
 						continue
 					}
 				}
@@ -657,8 +742,10 @@ processCrafts(file) {
 				if InStr(Arrayed[index], "non") > 0 {
 					for a in remAddsClean {
 						if InStr(Arrayed[index], remAddsClean[a]) > 0  {
-							outArrayCount += 1
-							outArray[outArrayCount] := "Remove non-" . remAddsClean[a] . " add " . remAddsClean[a] . " lv" . getLVL(Arrayed[index]) 
+							outArrayCount += 1							
+							outArray[outArrayCount, 0] := "Remove non-" . remAddsClean[a] . " add " . remAddsClean[a]
+							outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+							outArray[outArrayCount, 2] := "Rem/Add" 
 							continue
 						}
 					}
@@ -666,8 +753,10 @@ processCrafts(file) {
 				else if InStr(Arrayed[index], "non") = 0 {
 					for a in remAddsClean {
 						if InStr(Arrayed[index], remAddsClean[a]) > 0  {
-							outArrayCount += 1
-							outArray[outArrayCount] := "Remove " . remAddsClean[a] . " add " . remAddsClean[a] . " lv" . getLVL(Arrayed[index]) 
+							outArrayCount += 1						
+							outArray[outArrayCount, 0] := "Remove " . remAddsClean[a] . " add " . remAddsClean[a]
+							outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+							outArray[outArrayCount, 2] := "Rem/Add"
 							continue
 						}
 					}
@@ -676,8 +765,10 @@ processCrafts(file) {
 			else {
 				for a in augments {
 					if InStr(Arrayed[index], augments[a]) > 0 {
-						outArrayCount += 1
-						outArray[outArrayCount] := "Remove " . augments[a] . " lv" . getLVL(Arrayed[index]) 
+						outArrayCount += 1						
+						outArray[outArrayCount, 0] := "Remove " . augments[a]
+						outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+						outArray[outArrayCount, 2] := "Rem"
 						continue
 					}
 				}	
@@ -688,33 +779,90 @@ processCrafts(file) {
 			;prefixes, suffixes
 			if InStr(Arrayed[index], "Prefixes") > 0 {
 				if InStr(Arrayed[index], "Lucky") > 0 {
-					outArrayCount += 1
-					outArray[outArrayCount] := "Reforge keep Prefixes Lucky lv" . getLVL(Arrayed[index])
+					outArrayCount += 1					
+					outArray[outArrayCount, 0] := "Reforge keep Prefixes Lucky"
+					outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+					outArray[outArrayCount, 2] := "Other"
 					continue
 				} 
 				else {
-					outArrayCount += 1
-					outArray[outArrayCount] := "Reforge keep Prefixes lv" . getLVL(Arrayed[index])
+					outArrayCount += 1					
+					outArray[outArrayCount, 0] := "Reforge keep Prefixes"
+					outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+					outArray[outArrayCount, 2] := "Other"
 					continue
 				}			
 			}
 			else if InStr(Arrayed[index], "Suffixes") > 0 {	
 				if InStr(Arrayed[index], "Lucky") > 0 {
 					outArrayCount += 1
-					outArray[outArrayCount] := "Reforge keep Suffixes Lucky lv" . getLVL(Arrayed[index])
+					outArray[outArrayCount, 0] := "Reforge keep Suffixes Lucky"
+					outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+					outArray[outArrayCount, 2] := "Other"
 					continue
 				}
 				else {
-					outArrayCount += 1
-					outArray[outArrayCount] := "Reforge keep Suffixes lv" . getLVL(Arrayed[index])	
+					outArrayCount += 1						
+					outArray[outArrayCount, 0] := "Reforge keep Suffixes"
+					outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+					outArray[outArrayCount, 2] := "Other"
 					continue
 				}
-			}			
+			; reforge rares
+			} else if (InStr(Arrayed[index], "new random") > 0) { ; 'new random' text appears only in reforge rares
+				for a in remAddsClean {
+					if (InStr(Arrayed[index], remAddsClean[a]) > 0) {
+						if (InStr(Arrayed[index], "more") > 0 ) {
+							outArrayCount += 1						
+							outArray[outArrayCount, 0] := "Reforge Rare - " . remAddsClean[a] . " more common"
+							outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+							outArray[outArrayCount, 2] := "Other"
+							continue
+						} else {
+							outArrayCount += 1						
+							outArray[outArrayCount, 0] := "Reforge Rare - " . remAddsClean[a]
+							outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+							outArray[outArrayCount, 2] := "Other"
+							continue
+						}
+					}
+				}			
+			} 
+			; reforge white/magic
+			else if (InStr(Arrayed[index], "Normal or Magic") > 0) {
+				for a in remAddsClean {
+					if (InStr(Arrayed[index], remAddsClean[a]) > 0) {
+						outArrayCount += 1						
+						outArray[outArrayCount, 0] := "Reforge Norm/Magic - " . remAddsClean[a]
+						outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+						outArray[outArrayCount, 2] := "Other"
+						continue
+					}
+				}				
+			} 
+			;reforge same mod
+			else if (InStr(Arrayed[index], "less likely") > 0){
+				outArrayCount += 1						
+				outArray[outArrayCount, 0] := "Reforge Rare - same mods less likely"
+				outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+				outArray[outArrayCount, 2] := "Other"
+				continue
+			
+			} 
+			else if (InStr(Arrayed[index], "more likely") > 0){
+				outArrayCount += 1						
+				outArray[outArrayCount, 0] := "Reforge Rare - same mods more likely"
+				outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+				outArray[outArrayCount, 2] := "Other"
+				continue
+			}
 			;links
 			else if (InStr(Arrayed[index], "links") > 0 and InStr(Arrayed[index], "10 times") = 0) {
 				if InStr(Arrayed[index],"six") > 0 {
-					outArrayCount += 1
-					outArray[outArrayCount] := "Six link (6-link) lv" . getLVL(Arrayed[index])
+					outArrayCount += 1	
+					outArray[outArrayCount, 0] := "Six link (6-link)"
+					outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+					outArray[outArrayCount, 2] := "Other"
 					continue
 				}	
 			} 
@@ -722,30 +870,29 @@ processCrafts(file) {
 				for a in reforgeNonColor {
 					if InStr(Arrayed[index], reforgeNonColor[a]) > 0 {
 						outArrayCount += 1
-						outArray[outArrayCount] := "Reforge " . reforgeNonColor[a] . " into " . StrReplace(reforgeNonColor[a], "non-") . " lv" . getLVL(Arrayed[index])
+						outArray[outArrayCount, 0] := "Reforge " . reforgeNonColor[a] . " into " . StrReplace(reforgeNonColor[a], "non-")
+						outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+						outArray[outArrayCount, 2] := "Other"
 						continue
 					} 
 				}
 				for b in reforge2color {
 					if InStr(Arrayed[index], reforge2color[b]) > 0 {
-						outArrayCount += 1
-						outArray[outArrayCount] := "Reforge into " . StrReplace(reforge2color[b],"them ") . " lv" . getLVL(Arrayed[index])
+						outArrayCount += 1						
+						outArray[outArrayCount, 0] := "Reforge into " . StrReplace(reforge2color[b],"them ")
+						outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+						outArray[outArrayCount, 2] := "Other"
 						continue
 					}
 				}	
 			} 
 			else if InStr(Arrayed[index], "Influence") > 0 {				
-				outArrayCount += 1
-				outArray[outArrayCount] := "Reforge with Influence mod more common lv" . getLVL(Arrayed[index])
+				outArrayCount += 1				
+				outArray[outArrayCount, 0] := "Reforge with Influence mod more common"
+				outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+				outArray[outArrayCount, 2] := "Other"
 				continue
-			}
-			else {
-				;outArrayCount += 1
-				;outArray[outArrayCount] := RegExReplace(Arrayed[index],"(as a Rare item|item|random modifiers,|new random modifiers, |including an|including a|ifier|modifiers are)","")	
-			}
-						
-			;Reforge a Rare item, being much more likely to receive the same modifier types
-			;Reforge a Rare item, being much less likely to receive the same modifier types
+			}			
 		} 
 		;Enchant		
 		else if InStr(Arrayed[index], "Enchant") = 1 { 
@@ -754,8 +901,10 @@ processCrafts(file) {
 				for a in flaskEnchants {
 					if InStr(Arrayed[index], flaskEnchants[a]) > 0 {
 						tempArray := ["inc","inc","inc","reduced"]
-						outArrayCount += 1
-						outArray[outArrayCount] := "Enchant Flask: " . tempArray[a] . " " . flaskEnchants[a] . " lv" . getLVL(Arrayed[index])
+						outArrayCount += 1						
+						outArray[outArrayCount, 0] := "Enchant Flask: " . tempArray[a] . " " . flaskEnchants[a]
+						outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+						outArray[outArrayCount, 2] := "Other"
 						continue
 					}
 				}
@@ -764,8 +913,15 @@ processCrafts(file) {
 			else if InStr(Arrayed[index], "Weapon") > 0 {			
 				for a in weapEnchants {
 					if InStr(Arrayed[index], weapEnchants[a]) > 0 {
-						outArrayCount += 1
-						outArray[outArrayCount] := "Enchant Weapon: " . weapEnchants[a] . " lv" . getLVL(Arrayed[index])
+						if (weapEnchants[a] == "Elemental") { ; OCR was failing to detect "Elemental Damage" properly, but "Elemental" is unique enough for detection, just gotta add "damage" for the output
+							tempEnch := "Elemental Damage"
+						} else {
+							tempEnch := weapEnchants[a]
+						}
+						outArrayCount += 1						
+						outArray[outArrayCount, 0] := "Enchant Weapon: " . tempEnch
+						outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+						outArray[outArrayCount, 2] := "Other"
 						continue
 					}
 				}
@@ -775,14 +931,18 @@ processCrafts(file) {
 				for a in bodyEnchants {
 					if InStr(Arrayed[index], bodyEnchants[a]) > 0 {
 						outArrayCount += 1
-						outArray[outArrayCount] := "Enchant Body: " . bodyEnchants[a] . " lv" . getLVL(Arrayed[index])
+						outArray[outArrayCount, 0] := "Enchant Body: " . bodyEnchants[a]
+						outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+						outArray[outArrayCount, 2] := "Other"
 						continue
 					}
 				}
 			}	
 			else if InStr(Arrayed[index], "Sextant") > 0 {
-				outArrayCount += 1
-				outArray[outArrayCount] := "Enchant Map: no Sextant use" . " lv" . getLVL(Arrayed[index])
+				outArrayCount += 1				
+				outArray[outArrayCount, 0] := "Enchant Map: no Sextant use"
+				outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+				outArray[outArrayCount, 2] := "Other"
 				continue
 			}
 		}
@@ -790,14 +950,18 @@ processCrafts(file) {
 		else if InStr(Arrayed[index], "Attempt") = 1 {
 			;awaken
 			if InStr(Arrayed[index], "Awaken") > 0 {
-				outArrayCount += 1
-				outArray[outArrayCount] := "Attempt to Awaken a level 20 Support Gem" . " lv" . getLVL(Arrayed[index])
+				outArrayCount += 1				
+				outArray[outArrayCount, 0] := "Attempt to Awaken a level 20 Support Gem"
+				outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+				outArray[outArrayCount, 2] := "Other"
 				continue
 			}
 			;scarab upgrade
 			else if InStr(Arrayed[index], "Scarab") > 0 {
-				outArrayCount += 1
-				outArray[outArrayCount] := "Attempt to upgrade a Scarab" . " lv" . getLVL(Arrayed[index])
+				outArrayCount += 1				
+				outArray[outArrayCount, 0] := "Attempt to upgrade a Scarab"
+				outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+				outArray[outArrayCount, 2] := "Other"
 				continue
 			}	
 		}
@@ -812,37 +976,49 @@ processCrafts(file) {
 
 				if max(fireVal, coldVal, lightVal) == fireVal {
 					if InStr(Arrayed[index], "Cold") > 0 {
-						outArrayCount += 1
-						outArray[outArrayCount] := "Change Cold res to Fire res" . " lv" . getLVL(Arrayed[index])
+						outArrayCount += 1						
+						outArray[outArrayCount, 0] := "Change Cold res to Fire res"
+						outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+						outArray[outArrayCount, 2] := "Other"
 						continue
 					}
 					else if InStr(Arrayed[index], "Lightning") > 0 {
-						outArrayCount += 1
-						outArray[outArrayCount] := "Change Lightning res to Fire res" . " lv" . getLVL(Arrayed[index])
+						outArrayCount += 1						
+						outArray[outArrayCount, 0] := "Change Lightning res to Fire res"
+						outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+						outArray[outArrayCount, 2] := "Other"
 						continue
 					}
 				}
 				else if max(fireVal, coldVal, lightVal) == coldVal {
 					if InStr(Arrayed[index], "Fire") > 0 {
-						outArrayCount += 1
-						outArray[outArrayCount] := "Change Fire res to Cold res" . " lv" . getLVL(Arrayed[index])
+						outArrayCount += 1						
+						outArray[outArrayCount, 0] := "Change Fire res to Cold res"
+						outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+						outArray[outArrayCount, 2] := "Other"
 						continue
 					}
 					else if InStr(Arrayed[index], "Lightning") > 0 {
-						outArrayCount += 1
-						outArray[outArrayCount] := "Change Lightning res to Cold res" . " lv" . getLVL(Arrayed[index])
+						outArrayCount += 1						
+						outArray[outArrayCount, 0] := "Change Lightning res to Cold res"
+						outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+						outArray[outArrayCount, 2] := "Other"
 						continue
 					}
 				}
 				else if max(fireVal, coldVal, lightVal) == lightVal {
 					if InStr(Arrayed[index], "Fire") > 0 {
-						outArrayCount += 1
-						outArray[outArrayCount] := "Change Fire res to Lightning res" . " lv" . getLVL(Arrayed[index])
+						outArrayCount += 1						
+						outArray[outArrayCount, 0] := "Change Fire res to Lightning res"
+						outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+						outArray[outArrayCount, 2] := "Other"
 						continue
 					}
 					else if InStr(Arrayed[index], "Cold") > 0 {
-						outArrayCount += 1
-						outArray[outArrayCount] := "Change Cold res to Lightning res" . " lv" . getLVL(Arrayed[index])
+						outArrayCount += 1						
+						outArray[outArrayCount, 0] := "Change Cold res to Lightning res"
+						outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+						outArray[outArrayCount, 2] := "Other"
 						continue
 					}
 				}				
@@ -857,14 +1033,18 @@ processCrafts(file) {
 				for a in gemPerc {
 					if InStr(Arrayed[index], gemPerc[a]) > 0 {
 						if InStr(Arrayed[index],"quality")	> 0 {
-							outArrayCount += 1
-							outArray[outArrayCount] := "Sacrifice gem, get " . gemPerc[a] . " qual as GCP" . " lv" . getLVL(Arrayed[index])
+							outArrayCount += 1							
+							outArray[outArrayCount, 0] := "Sacrifice gem, get " . gemPerc[a] . " qual as GCP"
+							outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+							outArray[outArrayCount, 2] := "Other"
 							continue
 						}
 					
 						else if InStr(Arrayed[index],"experience") {
-							outArrayCount += 1
-							outArray[outArrayCount] := "Sacrifice gem, get " . gemPerc[a] . " exp as Lens" . " lv" . getLVL(Arrayed[index])
+							outArrayCount += 1							
+							outArray[outArrayCount, 0] := "Sacrifice gem, get " . gemPerc[a] . " exp as Lens"
+							outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+							outArray[outArrayCount, 2] := "Other"
 							continue
 						}
 					}
@@ -873,8 +1053,10 @@ processCrafts(file) {
 			;div cards gambling
 			else if InStr(Arrayed[index], "Divination") > 1  {
 				if InStr(Arrayed[index], "half a stack") > 1 {
-					outArrayCount += 1
-					outArray[outArrayCount] :=  "Sacrifice Div Cards" . " lv" . getLVL(Arrayed[index])
+					outArrayCount += 1					
+					outArray[outArrayCount, 0] := "Sacrifice Div Cards"
+					outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+					outArray[outArrayCount, 2] := "Other"
 					continue
 				}
 				;skipping this:
@@ -897,13 +1079,17 @@ processCrafts(file) {
 		;Improves		
 		else if InStr(Arrayed[index], "Improves") = 1 {	
 			if InStr(Arrayed[index], "Flask") > 0 {
-				outArrayCount += 1
-				outArray[outArrayCount] := "Improves the Quality of a Flask" . " lv" . getLVL(Arrayed[index])
+				outArrayCount += 1				
+				outArray[outArrayCount, 0] := "Improves the Quality of a Flask"
+				outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+				outArray[outArrayCount, 2] := "Other"
 				continue
 			}
 			else if InStr(Arrayed[index], "Gem") > 0 {
-				outArrayCount += 1
-				outArray[outArrayCount] := "Improves the Quality of a Gem" . " lv" . getLVL(Arrayed[index])
+				outArrayCount += 1				
+				outArray[outArrayCount, 0] := "Improves the Quality of a Gem"
+				outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+				outArray[outArrayCount, 2] := "Other"
 				continue
 			}
 		}	
@@ -912,10 +1098,14 @@ processCrafts(file) {
 			for a in fracture {
 				if InStr(Arrayed[index], fracture[a]) > 0 {
 					outArrayCount += 1
-					if (fracture[a] == "modifier") {
-						outArray[outArrayCount] := "Fracture 1/5 " . fracture[a] . " lv" . getLVL(Arrayed[index])		
-					} else {
-						outArray[outArrayCount] := "Fracture " . fracture[a] . " lv" . getLVL(Arrayed[index])
+					if (fracture[a] == "modifier") {						
+						outArray[outArrayCount, 0] := "Fracture 1/5 " . fracture[a]
+						outArray[outArrayCount, 1] := getLVL(Arrayed[index])	
+						outArray[outArrayCount, 2] := "Other"
+					} else {						
+						outArray[outArrayCount, 0] := "Fracture " . fracture[a]
+						outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+						outArray[outArrayCount, 2] := "Other"
 						continue
 					}
 				}
@@ -923,26 +1113,34 @@ processCrafts(file) {
 		} 		
 		else if InStr(Arrayed[index], "Reroll") = 1 {
 			if InStr(Arrayed[index], "Implicit") > 0 {
-				outArrayCount += 1
-				outArray[outArrayCount] := "Reroll All Lucky lv" . getLVL(Arrayed[index])
+				outArrayCount += 1				
+				outArray[outArrayCount, 0] := "Reroll All Lucky"
+				outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+				outArray[outArrayCount, 2] := "Other"
 				continue
 			} 
 			else if InStr(Arrayed[index], "Prefix") > 0 {
-				outArrayCount += 1
-				outArray[outArrayCount] := "Reroll Prefix Lucky lv" . getLVL(Arrayed[index])
+				outArrayCount += 1				
+				outArray[outArrayCount, 0] := "Reroll Prefix Lucky"
+				outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+				outArray[outArrayCount, 2] := "Other"
 				continue
 			}
 			else if InStr(Arrayed[index], "Suffix") > 0 {
-				outArrayCount += 1
-				outArray[outArrayCount] := "Reroll Suffix Lucky lv" . getLVL(Arrayed[index])
+				outArrayCount += 1				
+				outArray[outArrayCount, 0] := "Reroll Suffix Lucky"
+				outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+				outArray[outArrayCount, 2] := "Other"
 				continue
 			}			
 		}
 		else if InStr(Arrayed[index], "Randomise") = 1 {
 			for a in augments {
 				if InStr(Arrayed[index], augments[a]) > 0 {
-					outArrayCount += 1
-					outArray[outArrayCount]	:= "Randomise values of " . augments[a] . " mods lv" . getLVL(Arrayed[index])
+					outArrayCount += 1					
+					outArray[outArrayCount, 0] := "Randomise values of " . augments[a] . " mods"
+					outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+					outArray[outArrayCount, 2] := "Other"
 					continue
 				}
 			}		
@@ -951,33 +1149,43 @@ processCrafts(file) {
 		else if InStr(Arrayed[index], "Add") = 1 {		
 			for a in addInfluence {
 				if InStr(Arrayed[index],addInfluence[a]) > 0 {
-					outArrayCount += 1
-					outArray[outArrayCount] := 	"Add Influence to " . addInfluence[a] . " lv" . getLVL(Arrayed[index])
+					outArrayCount += 1					
+					outArray[outArrayCount, 0] := "Add Influence to " . addInfluence[a]
+					outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+					outArray[outArrayCount, 2] := "Other"
 					continue
 				}
 			}
 		}		
 		else if InStr(Arrayed[index], "Set") = 1 {	
 			if InStr(Arrayed[index], "Prismatic") > 0 {
-				outArrayCount += 1
-				outArray[outArrayCount] := "Set Implicit basic Jewel" . " lv" . getLVL(Arrayed[index])
+				outArrayCount += 1				
+				outArray[outArrayCount, 0] := "Set Implicit basic Jewel"
+				outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+				outArray[outArrayCount, 2] := "Other"
 				continue
 			}
 			else if InStr(Arrayed[index], "Timeless") > 0 {
-				outArrayCount += 1
-				outArray[outArrayCount] := "Set Implicit Abyss/Timeless Jewel" . " lv" . getLVL(Arrayed[index])
+				outArrayCount += 1				
+				outArray[outArrayCount, 0] := "Set Implicit Abyss/Timeless Jewel"
+				outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+				outArray[outArrayCount, 2] := "Other"
 				continue
 			}
 			else if InStr(Arrayed[index], "Cluster") > 0 {
-				outArrayCount += 1
-				outArray[outArrayCount] := "Set Implicit Cluster Jewel"	. " lv" . getLVL(Arrayed[index])
+				outArrayCount += 1				
+				outArray[outArrayCount, 0] := "Set Implicit Cluster Jewel"
+				outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+				outArray[outArrayCount, 2] := "Other"
 				continue
 			}				
 		}
 		;Synthesise
 		else if InStr(Arrayed[index], "Synthesise") = 1 {			
-			outArrayCount += 1
-			outArray[outArrayCount] := "Synthesise an item" . " lv" . getLVL(Arrayed[index])
+			outArrayCount += 1			
+			outArray[outArrayCount, 0] := "Synthesise an item"
+			outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+			outArray[outArrayCount, 2] := "Other"
 			continue
 		}
 
@@ -1004,21 +1212,14 @@ processCrafts(file) {
 			continue
 			;skipping Split scarab craft			
 		}
-		;just add unknown stuff as is
-		;else {
-		;	out .= Arrayed[index] . "`r`n"
-		;}		
 	}
-    for iFinal in outArray {	            
-        ;outArray[iFinal] := RegExReplace(outArray[iFinal], "([^\w\s]+|_+)","")
-		;outArray[iFinal] := RegExReplace(outArray[iFinal] , "(Level )", "lv")
-        ; removes multiple spaces, but all all non chars so it gets rid of stray .,' from OCR, we lose the  dash in non-Tag, but we can lve with that)
-        outArray[iFinal] := Trim(RegExReplace(outArray[iFinal] , " +", " ")) 
+    for iFinal in outArray {
+        outArray[iFinal, 0] := Trim(RegExReplace(outArray[iFinal, 0] , " +", " ")) 
     }	
 	;this bit is for testing purposes, it should never trigger for normal user cos processCrafts is always run with temp.txt 
 	if (file != TempPath) {
 		for s in outArray {
-			str .= outArray[s] . "`r`n"
+			str .= outArray[s, 0] . "`r`n"
 		}
 		path := "results\out-" . file
 		FileAppend, %str%, %path%
@@ -1026,71 +1227,265 @@ processCrafts(file) {
     return true
 }
 
-rememberCraft(g,r){
-	guiControlGet, craftName,, %g%_craft_%r%, value
-	guiControlGet, crafCount,, %g%_count_%r%, value
-	blank := ""
-	if (craftName != "") {
-		IniWrite, %craftName%|%crafCount%, %SettingsPath%, LastSession, %g%_craft_%r%
-	} else {
-		IniWrite, %blank%, %SettingsPath%, LastSession, %g%_craft_%r%
+CraftSort(ar) {	
+    tempC := ""
+    for k in ar {   
+		tempC := ar[k, 0]
+		tempLvl := ar[k, 1] 
+		tempType := ar[k, 2]   
+
+		loop, 20 {
+			GuiControlGet, craftInGui,, craft_%A_Index%, value
+			GuiControlGet, lvlInGui,, lvl_%A_Index%, value
+			if (craftInGui == ""){
+				insertIntoRow(A_Index, tempC, tempLvl, tempType)
+				break
+			} else if (craftInGui == tempC and lvlInGui == tempLvl) {
+				GuiControlGet, craftCount,, count_%A_index%				
+				craftCount += 1 
+				GuiControl,, count_%A_Index%, %craftCount%
+				break
+			}					
+        }
+    }	
+}
+
+insertIntoRow(rowCounter, craft, lvl, type) {    
+   
+    GuiControl,, craft_%rowCounter%, %craft%
+    GuiControl,, count_%rowCounter%, 1
+    guicontrol,, lvl_%rowCounter%, %lvl%
+	guicontrol,, type_%rowCounter%, %type%
+   
+	tempP := updatePriceInUI(craft)
+	GuiControl,, price_%rowCounter%, %tempP%
+}
+
+; === Discord message creation ===
+createPostRow(count,craft,price,group,lvl) {
+	;IniRead, outStyle, %SettingsPath%, Other, outStyle
+	mySpaces := ""
+	spacesCount := 0
+	if (price == "") {
+		price := " "
+	}	
+	spacesCount := MaxLen - StrLen(craft) + 1
+
+	loop, %spacesCount% {
+		mySpaces .= " "
+	}
+
+	if (outStyle == 1) { ; no colors, no codeblock, but highlighted
+		outString .= "   ``" . count . "x ``**``" . craft . "``**``" . mySpaces . "[" . lvl . "]" 
+		if (price == " ") {
+			outString .= "```r`n"
+		} else {
+			outString .= " <``**``" . price . "``**``>```r`n"
+		}
+	}
+
+	if (outStyle == 2) { ; message style with colors, in codeblock but text isnt highlighted in discord search
+		outString .= "  " . count . "x [" . craft . mySpaces . "]" . "[" . lvl . "]" 
+		if (price == " ") {
+			outString .= "`r`n"
+		} else {
+			outString .= " < " . price . " >`r`n"
+		}
 	}
 }
 
-rememberSession() {
-	loop, 10 {
-		rememberCraft("A",A_Index)
-		rememberCraft("R",A_Index)
-		rememberCraft("RA",A_Index)
-		rememberCraft("O",A_Index)
+codeblockWrap() {
+	if (outStyle == 1) {
+		return outString
+	}
+	if (outStyle == 2) {
+		return "``````md`r`n" . outString . "``````"
 	}
 }
 
-loadLastSessionCraft(g,r) {
-	IniRead, lastCraft, %SettingsPath%, LastSession, %g%_craft_%r%
-	if (lastCraft != "" and lastCraft != "ERROR") {
-		split := StrSplit(lastCraft, "|")
-		craft := split[1]
-		ccount := split[2]
-		GuiControl, , %g%_craft_%r% , %craft%
-		GuiControl, , %g%_count_%r% , %ccount%
-
-		tempP := updatePriceInUI(craft)
-		GuiControl, , %g%_price_%r% , %tempP%
-	} 
-}
-
-loadLastSession(){
-	loop,10{
-		loadLastSessionCraft("A",A_Index)
-		loadLastSessionCraft("R",A_Index)
-		loadLastSessionCraft("RA",A_Index)
-		loadLastSessionCraft("O",A_Index)
-	}
-
+;puts together the whole message that ends up in clipboard
+createPost(type) {
+	IniRead, outStyle, %SettingsPath%, Other, outStyle
+    tempName := ""
+	GuiControlGet, tempLeague,, League, value
+	GuiControlGet, tempName,, IGN, value
+	GuiControlGet, tempStream,, canStream, value
+	GuiControlGet, tempCustomText,, customText, value
+	GuiControlGet, tempCustomTextCB,, customText_cb, value
 	
-}
-
-clearAll() {
-    loop, 10 {
-        GuiControl,, A_craft_%A_Index%
-        GuiControl,, R_craft_%A_Index%
-        GuiControl,, RA_craft_%A_Index%
-        GuiControl,, O_craft_%A_Index%
-        GuiControl,, A_count_%A_Index%, 0
-        GuiControl,, R_count_%A_Index%, 0
-        GuiControl,, RA_count_%A_Index%, 0
-        GuiControl,, O_count_%A_Index%, 0
-		GuiControl,, A_price_%A_Index%
-        GuiControl,, R_price_%A_Index%
-        GuiControl,, RA_price_%A_Index%
-        GuiControl,, O_price_%A_Index%
+	tempLeague := RegExReplace(tempLeague, "SC", "Softcore")
+	tempLeague := RegExReplace(tempLeague, "HC", "Hardcore")
+    outString := ""
+	getMaxLenghts(type)
+    
+	if (outStyle == 1) {
+		if (tempName != "") {
+			outString .= "**WTS " . tempLeague . " - IGN: " . tempName . "** ``|  generated by HarvestVendor```r`n" 
+		} else {
+			outString .= "**WTS " . tempLeague . "** ``|  generated by HarvestVendor```r`n"
+		}
+		if (tempCustomText != "" and tempCustomTextCB == 1) {
+			outString .= "   " . tempCustomText . "`r`n"
+		}
+		if (tempStream == 1 ) {
+			outString .= "   *Can stream if requested*`r`n"
+		}
 	}
-	outArray := []
-	arr := []
+	if (outStyle == 2) {
+		if (tempName != "") {
+			outString .= "#WTS " . tempLeague . " - IGN: " . tempName . " |  generated by HarvestVendor`r`n" 
+		} else {
+			outString .= "#WTS " . tempLeague . " |  generated by HarvestVendor`r`n"
+		}
+		if (tempCustomText != "") {
+			outString .= "  " . tempCustomText . "`r`n"
+		}
+		if (tempStream == 1 ) {
+			outString .= "  Can stream if requested `r`n"
+		}
+	}
+    
+	loop, 20 {
+		row := getRowData(type,A_Index)
+		if (row[4] == 1 and row[5] == type) {
+			createPostRow(row[1],row[2],row[3],row[4],row[6])
+		} else if (row[4] == 1 and type == "All") {
+			createPostRow(row[1],row[2],row[3],row[4],row[6])
+		}
+	}
+	Clipboard := codeblockWrap()
+	readyTT()	
 }
 
-;enables Post All button if a Standard league is selected
+readyTT() {
+	ClipWait
+    ToolTip, Paste Ready,,,1
+	sleep, 2000
+	Tooltip,,,,1
+}
+
+getRowData(group, row) {
+	GuiControlGet, tempType,, type_%row%, value
+	GuiControlGet, tempCount,, count_%row%, value
+	GuiControlGet, tempCraft,, craft_%row%, value
+	GuiControlGet, tempPrice,, price_%row%, value
+	GuiControlGet, tempLvl,, lvl_%row%, value
+	if (tempCount > 0 and tempCraft != ""){
+		tempCheck := 1
+	}
+	return [tempCount, tempCraft, tempPrice, tempCheck, tempType, tempLvl]
+}
+
+getMaxLenghts(group){
+	loop, 20{
+		GuiControlGet, craftForLen,, craft_%A_Index%, value
+		guiControlGet, type,, type_%A_Index%, value
+		if (group == "All"){
+			if (StrLen(craftForLen) > MaxLen) {
+				MaxLen := StrLen(craftForLen)
+			}
+		} else
+		if (type==group) {
+			if (StrLen(craftForLen) > MaxLen) {
+				MaxLen := StrLen(craftForLen)
+			}
+		}
+	}
+}
+;============================================================
+
+updatePriceInUI(craft){	
+	iniRead, tempP, %PricesPath%, Prices, %craft%
+	if (tempP == "ERROR") {
+		tempP := ""
+	}
+	return TempP
+}
+
+getRow(elementVariable) {
+    temp := StrSplit(elementVariable, "_")
+    return temp[temp.Length()]
+}
+
+getLVL(craft) {
+	lvlpos := RegExMatch(craft, "Level \d\d") + 6    
+	lv := substr(craft, lvlpos, 2)
+	if RegExMatch(lv, "\d\d") > 0 {			
+		if (lv < 37) { ;ppl wouldn't sell lv 30 crafts, but sometimes OCR mistakes 8 for a 3 this just bumps it up for the 76+ rule
+			lv += 50
+		}		
+		return lv		
+	} 
+	else if (lvlpos == 6) {
+		lvlpos := RegExMatch(craft, "lv\d\d") + 2    
+	    lv := substr(craft, lvlpos, 2)
+        if RegExMatch(lv, "\d\d") > 0 {			
+            if (lv < 37) { ;ppl wouldn't sell lv 30 crafts, but sometimes OCR mistakes 8 for a 3 this just bumps it up for the 76+ rule
+                lv += 50
+            }		
+            return lv		
+	    } 
+	} else {
+        return "00"
+    }
+}
+
+sumPrices() {
+	tempSumChaos := 0
+	tempSumEx := 0
+	loop, 20 {
+		guiControlGet, TempCraft,, price_%A_Index%, value
+		guiControlGet, countCraft,, count_%A_Index%, value		
+		
+		if (InStr(TempCraft, "c") > 0) {				
+			tempSumChaos += strReplace(Trim(StrReplace(TempCraft, "c")),",",".") * countCraft				
+		}
+		
+		if (InStr(TempCraft, "ex") > 0) {				
+			tempSumEx += strReplace(Trim(StrReplace(TempCraft, "ex")),",",".") * countCraft			
+		}		
+	}
+	;tempSumChaos := tempSumChaos
+	tempSumEx := round(tempSumEx,1)
+	GuiControl,,sumChaos, %tempSumChaos%
+	GuiControl,,sumEx, %tempSumEx%
+}
+
+sumTypes() {
+	Acounter := 0
+	Rcounter := 0
+	RAcounter := 0
+	Ocounter := 0
+	loop, 20 {
+		GuiControlget, tempType,, type_%A_Index%, value
+		;msgBox %tempType%
+		if (tempType == "Aug") {
+			Acounter += 1			
+		}
+		if (tempType == "Rem") {
+			Rcounter += 1
+		}
+		if (tempType == "Rem\Add") {
+			RAcounter += 1
+		}
+		if (tempType == "Other") {
+			Ocounter += 1
+		}
+	}
+	Guicontrol,, Acount, %Acounter%
+	Guicontrol,, Rcount, %Rcounter%
+	Guicontrol,, RAcount, %RAcounter%
+	Guicontrol,, Ocount, %Ocounter%
+}
+
+buttonHold(buttonV, picture) {
+	while GetKeyState("LButton", "P") {
+		guiControl,, %buttonV%, %picture%_i.png	
+		sleep, 25
+	}
+	guiControl,, %buttonV%, %picture%.png
+}
+
 allowAll() {
 	IniRead selLeague, %SettingsPath%, selectedLeague, s
 	if (selLeague == "ERROR"){
@@ -1103,423 +1498,62 @@ allowAll() {
 	}
 }
 
-;creates the string of leagues for League dropdown, also sets default league to Temporary SC league if there isn't one selected yet
-leagueList() {
-    leagueString := ""
-    loop, 8 {
-        IniRead, tempList, %SettingsPath%, Leagues, %A_Index%     
-	   
-        if InStr(tempList, "Hardcore") = 0 and InStr(tempList, "HC") = 0 {
-            tempList .= " Softcore"
-        } 
-		if (tempList == "Hardcore") {
-			tempList := "Standard Hardcore"
-		}
-		if InStr(tempList,"SSF") = 0 {
-        	leagueString .= tempList . "|"
-		}
-		if (InStr(tempList, "Hardcore", true) = 0 and InStr(tempList,"SSF", true) = 0 and InStr(tempList,"Standard", true) = 0 and InStr(tempList,"HC", true) = 0){
-			defaultLeague := templist
-		}
-    }
-
-	iniRead, leagueCheck, %SettingsPath%, selectedLeague, s
-	guicontrol,, League, %leagueString%
-	if (leagueCheck == "ERROR") {		
-		guicontrol, choose, League, %defaultLeague%	
-    	iniWrite, %defaultLeague%, %SettingsPath%, selectedLeague, s	
+rememberCraft(row) {
+	guiControlGet, craftName,, craft_%row%, value
+	guiControlGet, craftLvl,, lvl_%row%, value
+	guiControlGet, crafCount,, count_%row%, value
+	guiControlGet, craftType,, type_%row%, value	
+	blank := ""
+	if (craftName != "") {
+		IniWrite, %craftName%|%craftLvl%|%crafCount%|%craftType%, %SettingsPath%, LastSession, craft_%row%
 	} else {
-		guicontrol, choose, League, %leagueCheck%	
+		IniWrite, %blank%, %SettingsPath%, LastSession, craft_%row%
 	}
 }
 
-; just reads whats in the row and section in the gui
-getRowData(group, row) {
-	GuiControlGet, tempCount,, %group%_count_%row%, value
-	GuiControlGet, tempCraft,, %group%_craft_%row%, value
-	GuiControlGet, tempPrice,, %group%_price_%row%, value
-	if (tempCount > 0 and tempCraft != ""){
-		tempCheck := 1
-	}
-	return [tempCount, tempCraft, tempPrice, tempCheck]
-}
-
-readyTT() {
-	ClipWait
-    ToolTip, Paste Ready,,,1
-	sleep, 2000
-	Tooltip,,,,1
-}
-
-;returns max lenght of string in selected group, this is for aligning in output message
-getMaxLenghts(group){
-	if (group == "All") {
-		loop, 10 {
-			GuiControlGet, AforLen,, A_craft_%A_Index%, value
-			if (StrLen(AforLen) > AMaxLen) {
-				AMaxLen := StrLen(AforLen)
-			}
-			GuiControlGet, RforLen,, R_craft_%A_Index%, value
-			if (StrLen(RforLen) > RMaxLen) {
-				RMaxLen := StrLen(RforLen)
-			}
-			GuiControlGet, RAforLen,, RA_craft_%A_Index%, value
-			if (StrLen(RAforLen) > RAMaxLen) {
-				RAMaxLen := StrLen(RAforLen)
-			}
-			GuiControlGet, OforLen,, O_craft_%A_Index%, value
-			if (StrLen(OforLen) > OMaxLen) {
-				OMaxLen := StrLen(OforLen)
-			}
-		}
-	} 
-	else {
-		loop, 10 {
-			GuiControlGet, %group%forLen,, %group%_craft_%A_Index%, value
-			if (StrLen(%group%forLen) > %group%MaxLen) {
-				%group%MaxLen := StrLen(%group%forLen)
-			}
-		}
-	}
-}
-; assembles the row with craft count, name, lvl, price
-createPostRow(count,craft,price,group) {
-	;IniRead, outStyle, %SettingsPath%, Other, outStyle
-	mySpaces := ""
-	spacesCount := 0
-	if (price == "") {
-		price := " "
-	}	
-
-	if (group == "All") {
-		spacesCount := Max(AMaxLen,RMaxLen,RAMaxLen,OMaxLen) - strlen(craft) + 1
-	} 
-	else {
-		spacesCount := %group%MaxLen - StrLen(craft) + 1
-	}
-
-	loop, %spacesCount% {
-		mySpaces .= " "
-	}
-
-	;craftLvl := RegExReplace(craft,"[^(\d\d)]","") ; this should result in a 2 digit number by deleting everything thas not a 2 digit number	
-													; this failed for 1 craft: Six link (6-link) lv83
-	craftlvl := SubStr(craft, regexmatch(craft,"lv(\d\d)")+2,2) ;find lvl get the 2 chars there
-	
-	craftNoLvl := RegExReplace(craft," lv\d\d","") ; this should result in the craft without lvl\d\d
-
-	if (outStyle == 1) { ; no colors, no codeblock, but highlighted
-		outString .= "   ``" . count . "x ``**``" . craftNoLvl . "``**``" . mySpaces . "[" . craftLvl . "]" 
-		if (price == " ") {
-			outString .= "```r`n"
-		} else {
-			outString .= " <``**``" . price . "``**``>```r`n"
-		}
-	}
-
-	if (outStyle == 2) { ; message style with colors, in codeblock but text isnt highlighted in discord search
-		outString .= "  " . count . "x [" . craftNoLvl . mySpaces . "]" . "[" . craftLvl . "]" 
-		if (price == " ") {
-			outString .= "`r`n"
-		} else {
-			outString .= " < " . price . " >`r`n"
-		}
+rememberSession() {
+	loop, 20 {
+		rememberCraft(A_Index)	
 	}
 }
 
-codeblockWrap() {
-	;IniRead, outStyle, %SettingsPath%, Other, outStyle
-	if (outStyle == 1) {
-		return outString
-	}
-	if (outStyle == 2) {
-		return "``````md`r`n" . outString . "``````"
-	}
-}
-
-;puts together the whole message that ends up in clipboard
-createPost(group) {
-	IniRead, outStyle, %SettingsPath%, Other, outStyle
-    tempName := ""
-	GuiControlGet, tempLeague,, League, value
-	GuiControlGet, tempName,, IGN, value
-	GuiControlGet, tempStream,, canStream, value
-	GuiControlGet, tempCustomText,, CustomText, value
-	GuiControlGet, tempCustomTextCB,, CustomTextCB, value
-	
-    outString := ""
-	getMaxLenghts(group)
-    
-	if (outStyle == 1) {
-		if (tempName != "") {
-			outString .= "**WTS " . tempLeague . " - IGN: " . tempName . "**`r`n" 
-		} else {
-			outString .= "**WTS " . tempLeague . "**`r`n"
-		}
-		if (tempCustomText != "" and tempCustomTextCB == 1) {
-			outString .= "   " . tempCustomText . "`r`n"
-		}
-		if (tempStream == 1 ) {
-			outString .= "   *Can stream if requested*`r`n"
-		}
-	}
-	if (outStyle == 2) {
-		if (tempName != "") {
-			outString .= "#WTS " . tempLeague . " - IGN: " . tempName . "`r`n" 
-		} else {
-			outString .= "#WTS " . tempLeague . "`r`n"
-		}
-		if (tempCustomText != "") {
-			outString .= "  " . tempCustomText . "`r`n"
-		}
-		if (tempStream == 1 ) {
-			outString .= "  Can stream if requested `r`n"
-		}
-	}
-    
-	if (group == "A") {	                 
-		loop, 10 {
-			row:= getRowData("A",A_Index)
-			if (row[4] == 1) {
-				createPostRow(row[1],row[2],row[3],"A")					
-			}
-		}
-		Clipboard := codeblockWrap()
-		readyTT()
-    }
-	if (group == "R") {	                  
-		loop, 10 {                
-			row:= getRowData("R",A_Index)
-			if (row[4] == 1) {
-				createPostRow(row[1],row[2],row[3],"R")
-			}   
-		}
-		Clipboard := codeblockWrap()
-		readyTT()
-    }
-	if (group == "RA") {					
-		loop, 10 {
-			row:= getRowData("RA",A_Index)
-			if (row[4] == 1) {
-				createPostRow(row[1],row[2],row[3],"RA")
-			}   
-		}
-		Clipboard := codeblockWrap()
-		readyTT()
-	}
-	if (group == "O") {	     
-		loop, 10 {
-			row:= getRowData("O",A_Index)
-			if (row[4] == 1) {
-				createPostRow(row[1],row[2],row[3],"O")
-			}    
-		}
-		Clipboard := codeblockWrap()
-		readyTT()
-	}
-	if (group == "All") {		
-		loop, 10 {
-			row:= getRowData("A",A_Index)
-			if (row[4] == 1) {
-				createPostRow(row[1],row[2],row[3],"All")
-			}     
-		}
-		loop, 10 {
-			row:= getRowData("R",A_Index)
-			if (row[4] == 1) {
-				createPostRow(row[1],row[2],row[3],"All")
-			}   
-		}
-		loop, 10 {
-			row:= getRowData("RA",A_Index)
-			if (row[4] == 1) {
-				createPostRow(row[1],row[2],row[3],"All")
-			}   
-		}
-		loop, 10 {
-			row:= getRowData("O",A_Index)
-			if (row[4] == 1) {
-				createPostRow(row[1],row[2],row[3],"All")
-			}    
-		}
-		Clipboard := codeblockWrap()
-		readyTT()	  
-    }    
-}
-
-;finds out the level form raw row
-getLVL(craft) {
-	lvlpos := RegExMatch(craft, "Level \d\d") + 6
-	lv := substr(craft, lvlpos, 2)
-	if RegExMatch(lv, "\d\d") > 0 {			
-		if (lv < 37) { ;ppl wouldn't sell lv 30 crafts, but sometimes OCR mistakes 8 for a 3 this just bumps it up for the 76+ rule
-			lv += 50
-		}
-		;if (lv >= 76) {
-		;	return "76+"
-		;} 
-		;else {
-			return lv
-		;}
-	} 
-	else {
-		return "00"
-	}
-}
-
-updatePriceInUI(craft){
-	craft := unlevel(craft)
-	iniRead, tempP, %PricesPath%, Prices, %craft%
-	if (tempP == "ERROR") {
-		tempP := ""
-	}
-	return TempP
-}
-
-;inputs stuff into the UI
-insertIntoRow(group, rowCounter, craft) { 
-    GuiControl,, %group%_craft_%rowCounter%, %craft%
-    GuiControl,, %group%_count_%rowCounter%, 1
-   
-	;craft := unlevel(craft)
-	;iniRead, tempP, %PricesPath%, Prices, %craft%
-	
-	;if (tempP == "ERROR") {
-	;;	tempP := ""
-	;}
-	tempP := updatePriceInUI(craft)
-	GuiControl,, %group%_price_%rowCounter%, %tempP%
-}
-
-;sorts crafts into correct groups
-CraftSort(ar) {
-    tempC := ""
-    for k in ar {   
-        ;augment
-        if InStr(ar[k], "Augment") = 1 { 
-			tempC := ar[k]  
-			loop, 10 {
-				GuiControlGet, isEmpty,, A_craft_%A_Index%, value
-				if (isEmpty == "") {
-					insertIntoRow("A", A_Index, tempC)	
-					break
-				} 
-				else if (isEmpty == tempC) {
-					GuiCOntrolGet, craftCount,, A_count_%A_index%				
-					craftCount += 1 
-					GuiControl,, A_count_%A_Index%, %craftCount%
-					break
-				}
-			}                
-        }        
-        ;remove
-        else if InStr(ar[k], "Remove") = 1 and InStr(ar[k], "add") = 0 {            
-            tempC := ar[k]
-			loop, 10 {
-				GuiControlGet, isEmpty,, R_craft_%A_Index%, value
-				if (isEmpty == "") {
-					insertIntoRow("R", A_Index, tempC)	
-					break
-				} 
-				else if (isEmpty == tempC) {
-					GuiCOntrolGet, craftCount,, R_count_%A_index%				
-					craftCount += 1 
-					GuiControl,, R_count_%A_Index%, %craftCount%
-					break
-				}
-			}      
-        }
-        ;remove/add
-        else if InStr(ar[k], "Remove") = 1 and InStr(ar[k], "add") > 0 and InStr(ar[k], "non") = 0 {            
-            tempC := ar[k]
-            loop, 10 {
-				GuiControlGet, isEmpty,, RA_craft_%A_Index%, value
-				if (isEmpty == "") {
-					insertIntoRow("RA", A_Index, tempC)	
-					break
-				} 
-				else if (isEmpty == tempC) {
-					GuiCOntrolGet, craftCount,, RA_count_%A_index%				
-					craftCount += 1 
-					GuiControl,, RA_count_%A_Index%, %craftCount%
-					break
-				}
-			} 			
-        }
-        ;other
-        else {        
-            tempC := ar[k]
-			loop, 10 {
-				GuiControlGet, isEmpty,, O_craft_%A_Index%, value
-				if (isEmpty == "") {
-					insertIntoRow("O", A_Index, tempC)	
-					break
-				} 
-				else if (isEmpty == tempC) {
-					GuiCOntrolGet, craftCount,, O_count_%A_index%				
-					craftCount += 1 
-					GuiControl,, O_count_%A_Index%, %craftCount%
-					break
-				}
-			}             
-        }
-    }	
-}
-
-sumPrices(){
-	tempSumChaos := 0
-	tempSumEx := 0
-	loop, 10 {
-		guiControlGet, TempA,, A_price_%A_Index%, value
-		guiControlGet, TempR,, R_price_%A_Index%, value
-		guiControlGet, TempRA,, RA_price_%A_Index%, value
-		guiControlGet, TempO,, O_price_%A_Index%, value
-
-		guiControlGet, countA,, A_count_%A_Index%, value
-		guiControlGet, countR,, R_count_%A_Index%, value
-		guiControlGet, countRA,, RA_count_%A_Index%, value
-		guiControlGet, countO,, O_count_%A_Index%, value
+loadLastSessionCraft(row) {
+	IniRead, lastCraft, %SettingsPath%, LastSession, craft_%row%
+	if (lastCraft != "" and lastCraft != "ERROR") {
+		split := StrSplit(lastCraft, "|")
+		craft := split[1]
+		lvl := split[2]
+		ccount := split[3]
+		type := split[4]
+		;msgbox,  %row% `r`n %craft% `r`n %lvl% `r`n %ccount% `r`n %type%
+		GuiControl,harvestUI:, craft_%row%, %craft%
+		GuiControl,harvestUI:, count_%row%, %ccount%
+		GuiControl,harvestUI:, lvl_%row%, %lvl%
+		GuiControl,harvestUI:, type_%row%, %type%
 		
-		if (InStr(TempA, "c") > 0) {				
-			tempSumChaos += strReplace(Trim(StrReplace(TempA, "c")),",",".") * countA				
-		}
-		if (InStr(TempR, "c") > 0) {			
-			tempSumChaos += strReplace(trim(StrReplace(TempR, "c")),",",".") * countR			
-		}
-		if (InStr(TempRA, "c") > 0) {				
-			tempSumChaos += strReplace(trim(StrReplace(TempRA, "c")),",",".") * countRA			
-		}
-		if (InStr(TempO, "c") > 0) {				
-			tempSumChaos += strReplace(trim(StrReplace(TempO, "c")),",",".") * countO			
-		}
-		if (InStr(TempA, "ex") > 0) {				
-			tempSumEx += strReplace(Trim(StrReplace(TempA, "ex")),",",".") * countA			
-		}
-		if (InStr(TempR, "ex") > 0) {			
-			tempSumEx += strReplace(trim(StrReplace(TempR, "ex")),",",".") * countR			
-		}
-		if (InStr(TempRA, "ex") > 0) {				
-			tempSumEx += strReplace(trim(StrReplace(TempRA, "ex")),",",".")	* countRA		
-		}
-		if (InStr(TempO, "ex") > 0) {				
-			tempSumEx += strReplace(trim(StrReplace(TempO, "ex")),",",".") * countO			
-		}
-	}
-	;tempSumChaos := tempSumChaos
-	tempSumEx := round(tempSumEx,1)
-	GuiControl,,sumChaos, %tempSumChaos%
-	GuiControl,,sumEx, %tempSumEx%
+		tempP := updatePriceInUI(craft)
+		GuiControl, harvestUI: , price_%row% , %tempP%
+	} 
 }
 
-
-winCheck(){
-	if (SubStr(A_OSVersion,1,2) != "10" and !FileExist("curl.exe")) {
- 		 msgbox, Looks like you aren't running win10. There might be a problem with WinHttpRequest(outdated Certificates).`r`nYou need to download curl, and place the curl.exe (just this 1 file) into the same directory as Harvest Vendor.`r`nLink in the FAQ section in readme on github
-	}
+loadLastSession(){
+	loop,20{
+		loadLastSessionCraft(A_Index)		
+	}	
 }
 
-;get list of active leagues from ggg
-
+clearAll() {
+    loop, 20 {
+        GuiControl,, craft_%A_Index%      
+        GuiControl,, count_%A_Index%, 0        
+		GuiControl,, price_%A_Index%
+		GuiControl,, type_%A_Index%    
+		guiControl,, lvl_%A_Index%    
+	}
+	outArray := []
+	arr := []
+}
+; === technical stuff i guess ===
 getLeagues() {
 	leagueAPIurl := "http://api.pathofexile.com/leagues?type=main&compact=1" 
 	
@@ -1574,8 +1608,35 @@ getLeagues() {
     }
 }
 
+leagueList() {
+    leagueString := ""
+    loop, 8 {
+        IniRead, tempList, %SettingsPath%, Leagues, %A_Index%     
+	   
+        if InStr(tempList, "Hardcore") = 0 and InStr(tempList, "HC") = 0 {
+            tempList .= " SC"
+        } 
+		if (tempList == "Hardcore") {
+			tempList := "Standard HC"
+		}
+		if InStr(tempList,"SSF") = 0 {
+        	leagueString .= tempList . "|"
+		}
+		if (InStr(tempList, "Hardcore", true) = 0 and InStr(tempList,"SSF", true) = 0 and InStr(tempList,"Standard", true) = 0 and InStr(tempList,"HC", true) = 0){
+			defaultLeague := templist
+		}
+    }
 
-;check harvestVendor version against github
+	iniRead, leagueCheck, %SettingsPath%, selectedLeague, s
+	guicontrol,, League, %leagueString%
+	if (leagueCheck == "ERROR") {		
+		guicontrol, choose, League, %defaultLeague%	
+    	iniWrite, %defaultLeague%, %SettingsPath%, selectedLeague, s	
+	} else {
+		guicontrol, choose, League, %leagueCheck%	
+	}
+}
+
 getVersion() {
 	versionUrl :=  "https://raw.githubusercontent.com/esge/PoE-HarvestVendor/master/version.txt"
     if FileExist("curl.exe") {
@@ -1592,7 +1653,11 @@ getVersion() {
     }
     return StrReplace(StrReplace(response,"`r"),"`n")
 }
-; checks if capture2text exists and is in the right palce
+IsGuiVisible(guiName) {
+    Gui, %guiName%: +HwndguiHwnd
+    return DllCall("User32\IsWindowVisible", "Ptr", guiHwnd)
+}
+
 checkFiles() {
 	if !FileExist("Capture2Text") {
 		if FileExist("Capture2Text.exe")	{
@@ -1609,17 +1674,13 @@ checkFiles() {
 		ExitApp
 	}
 }
-;find out monitor #
-getMonCount(){
-   monOut := ""
-   sysGet, monCount, MonitorCount
-   loop, %monCount% {
-      monOut .= A_Index . "|"
-   }
-   return monOut
+
+winCheck(){
+	if (SubStr(A_OSVersion,1,2) != "10" and !FileExist("curl.exe")) {
+ 		 msgbox, Looks like you aren't running win10. There might be a problem with WinHttpRequest(outdated Certificates).`r`nYou need to download curl, and place the curl.exe (just this 1 file) into the same directory as Harvest Vendor.`r`nLink in the FAQ section in readme on github
+	}
 }
 
-; find out resolution of specified monitor
 monitorInfo(num){
    SysGet, Mon2, monitor, %num%
   
@@ -1630,15 +1691,14 @@ monitorInfo(num){
 
    return [x,y,height,width]
 }
-
-
-IsGuiVisible(guiName) {
-    Gui, %guiName%: +HwndguiHwnd
-    return DllCall("User32\IsWindowVisible", "Ptr", guiHwnd)
+getMonCount(){
+   monOut := ""
+   sysGet, monCount, MonitorCount
+   loop, %monCount% {
+      monOut .= A_Index . "|"
+   }
+   return monOut
 }
-
-
-
 ; ========================================================================
 ; ======================== stuff i copied from internet ==================
 ; ========================================================================
@@ -1759,7 +1819,9 @@ Options: (White space separated)
     return areaRect
 }
 
-;this is for tooltips to work, got it from examples from an AHK webinar
+
+
+
 WM_MOUSEMOVE()
 {
     static CurrControl, PrevControl, _TT  ; _TT is kept blank for use by the ToolTip command below.
@@ -2031,185 +2093,3 @@ WebPic(WB, Website, Options := "") {
 	Return HTML_Page
 }
 
-; === all variables for GUI elements have to be global if i wanna run it from a function, so here we go ===
-global League
-global IGN
-global postAll
-global canStream
-global VersionLink
-global CustomText
-global AddCrafts
-global Help
-global Apost
-global Rpost
-global RApost
-global Opost
-global Monitors_v
-global CustomTextCB
-global Settings
-global outStyle
-global rescanButton
-global CustomTextWarning
-global sumChaos
-global sumEx
-global OpenRoaming
-global A_count_1
-global A_count_2
-global A_count_3
-global A_count_4
-global A_count_5
-global A_count_6
-global A_count_7
-global A_count_8
-global A_count_9
-global A_count_10
-global A_craft_1
-global A_craft_2
-global A_craft_3
-global A_craft_4
-global A_craft_5
-global A_craft_6
-global A_craft_7
-global A_craft_8
-global A_craft_9
-global A_craft_10
-global A_price_1
-global A_price_2
-global A_price_3
-global A_price_4
-global A_price_5
-global A_price_6
-global A_price_7
-global A_price_8
-global A_price_9
-global A_price_10
-global A_del_1
-global A_del_2
-global A_del_3
-global A_del_4
-global A_del_5
-global A_del_6
-global A_del_7
-global A_del_8
-global A_del_9
-global A_del_10
-global R_count_1
-global R_count_2
-global R_count_3
-global R_count_4
-global R_count_5
-global R_count_6
-global R_count_7
-global R_count_8
-global R_count_9
-global R_count_10
-global R_craft_1
-global R_craft_2
-global R_craft_3
-global R_craft_4
-global R_craft_5
-global R_craft_6
-global R_craft_7
-global R_craft_8
-global R_craft_9
-global R_craft_10
-global R_price_1
-global R_price_2
-global R_price_3
-global R_price_4
-global R_price_5
-global R_price_6
-global R_price_7
-global R_price_8
-global R_price_9
-global R_price_10
-global R_del_1
-global R_del_2
-global R_del_3
-global R_del_4
-global R_del_5
-global R_del_6
-global R_del_7
-global R_del_8
-global R_del_9
-global R_del_10
-global RA_count_1
-global RA_count_2
-global RA_count_3
-global RA_count_4
-global RA_count_5
-global RA_count_6
-global RA_count_7
-global RA_count_8
-global RA_count_9
-global RA_count_10
-global RA_craft_1
-global RA_craft_2
-global RA_craft_3
-global RA_craft_4
-global RA_craft_5
-global RA_craft_6
-global RA_craft_7
-global RA_craft_8
-global RA_craft_9
-global RA_craft_10
-global RA_price_1
-global RA_price_2
-global RA_price_3
-global RA_price_4
-global RA_price_5
-global RA_price_6
-global RA_price_7
-global RA_price_8
-global RA_price_9
-global RA_price_10
-global RA_del_1
-global RA_del_2
-global RA_del_3
-global RA_del_4
-global RA_del_5
-global RA_del_6
-global RA_del_7
-global RA_del_8
-global RA_del_9
-global RA_del_10
-global O_count_1
-global O_count_2
-global O_count_3
-global O_count_4
-global O_count_5
-global O_count_6
-global O_count_7
-global O_count_8
-global O_count_9
-global O_count_10
-global O_craft_1
-global O_craft_2
-global O_craft_3
-global O_craft_4
-global O_craft_5
-global O_craft_6
-global O_craft_7
-global O_craft_8
-global O_craft_9
-global O_craft_10
-global O_price_1
-global O_price_2
-global O_price_3
-global O_price_4
-global O_price_5
-global O_price_6
-global O_price_7
-global O_price_8
-global O_price_9
-global O_price_10
-global O_del_1
-global O_del_2
-global O_del_3
-global O_del_4
-global O_del_5
-global O_del_6
-global O_del_7
-global O_del_8
-global O_del_9
-global O_del_10
