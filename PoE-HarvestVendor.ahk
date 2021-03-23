@@ -2,7 +2,7 @@
 #SingleInstance Force
 SetBatchLines -1
 SetWorkingDir %A_ScriptDir% 
-global version := "0.7.1"
+global version := "0.7.2"
 
 ; === some global variables ===
 global outArray := {}
@@ -360,7 +360,11 @@ count:
 return
 
 craft:
-sumTypes()
+	sumTypes()
+ 	GuiControlGet, cntrl, name, %A_GuiControl%
+    tempRow := getRow(cntrl)
+	guiControlGet, tempCraft,, craft_%tempRow%, value
+	detectType(tempCraft, tempRow)
 return
 
 lvl:
@@ -1248,6 +1252,24 @@ CraftSort(ar) {
 			}					
         }
     }	
+}
+
+detectType(craft, row){
+	if (craft = "") {
+		guicontrol,, type_%row%,
+	} 
+	else if (inStr(craft, "Augment") = 1 ){
+		guicontrol,, type_%row%, Aug
+	} 
+	else if (InStr(craft, "Remove") = 1 and instr(craft, "add") = 0) {
+		guicontrol,, type_%row%, Rem
+	} 
+	else if (inStr(craft, "Remove") = 1 and instr(craft, "add") > 0 and instr(craft, "non") = 0) {
+ 		guicontrol,, type_%row%, Rem/Add
+	}
+	else {
+		guicontrol,, type_%row%, Other
+	}
 }
 
 insertIntoRow(rowCounter, craft, lvl, type) {    
