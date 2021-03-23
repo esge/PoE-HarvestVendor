@@ -76,6 +76,30 @@ A. There are 2 possible reasons:
     - Solution: Run the scan again and select only that one craft
   2. I arbitrarily decided its not worth to list that one, if you want it listed, contact me or open an issue. [List of ignored crafts](https://github.com/esge/PoE-HarvestVendor/wiki/Crafts-that-are-being-ignored)
 
+**Q. Help! When I try and take a screenshot, I get the following error about finding a file:**
+![](examples/cantReadFile.png)  
+
+A. The most likely cause for this is that your folder structure containing Capture2Text is incorrect, and you may have an additional folder. Please ensure that your folder structure looks like:
+
+```
+|--> Poe-HarvestVendor
+|----> Capture2Text
+|-------->  *files for the software, NOT another folder*
+|----> PoeHarvestVendor.exe
+```
+
+and does NOT look like:
+
+```
+|--> Poe-HarvestVendor
+|----> Capture2Text
+|--------> Capture2Text
+|--------> *files for the software, NOT another folder*
+|----> PoeHarvestVendor.exe
+```
+
+Once you've sorted out the folder structure, try restarting the application to see if it now works.
+
 ## Used libraries
 - http://capture2text.sourceforge.net/ for OCR
 - https://github.com/cocobelgica/AutoHotkey-JSON jxon function embeded in the main file
