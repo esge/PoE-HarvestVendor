@@ -1487,7 +1487,7 @@ sumTypes() {
 		if (tempType == "Rem") {
 			Rcounter += 1
 		}
-		if (tempType == "Rem\Add") {
+		if (tempType == "Rem/Add") {
 			RAcounter += 1
 		}
 		if (tempType == "Other") {
@@ -1498,6 +1498,27 @@ sumTypes() {
 	Guicontrol,, Rcount, %Rcounter%
 	Guicontrol,, RAcount, %RAcounter%
 	Guicontrol,, Ocount, %Ocounter%
+	sleep, 50
+	if (Acounter = 0) {
+		guicontrol,, augPost, resources/postA_d.png
+	} else {
+		guicontrol,, augPost, resources/postA.png
+	}
+	if (Rcounter = 0) {
+		guicontrol,, remPost, resources/postR_d.png
+	} else {
+		guicontrol,, remPost, resources/postR.png
+	}
+	if (RAcounter = 0) {
+		guicontrol,, remAddPost, resources/postRA_d.png
+	} else {
+		guicontrol,, remAddPost, resources/postRA.png
+	}
+	if (Ocounter = 0) {
+		guicontrol,, otherPost, resources/postO_d.png
+	} else {
+		guicontrol,, otherPost, resources/postO.png
+	}
 }
 
 buttonHold(buttonV, picture) {
