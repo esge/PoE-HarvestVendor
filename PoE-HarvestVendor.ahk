@@ -745,7 +745,7 @@ processCrafts(file) {
 							outArrayCount += 1							
 							outArray[outArrayCount, 0] := "Remove non-" . remAddsClean[a] . " add " . remAddsClean[a]
 							outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-							outArray[outArrayCount, 2] := "Rem/Add" 
+							outArray[outArrayCount, 2] := "Other" 
 							continue
 						}
 					}
