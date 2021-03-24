@@ -211,6 +211,13 @@ newGUI() {
 	 gui Font, s11
 ; === Right side ===
    ;y math: row + (23*rowNum)
+    
+	gui add, checkbox, x%xColumn7% y90 valwaysOnTop gAlwaysOnTop, Always on top
+		iniRead tempOnTop, %SettingsPath%, Other, alwaysOnTop
+		if (tempOnTop == "ERROR") { 
+			tempOnTop := 0 
+		}
+	guicontrol,,alwaysOnTop, %tempOnTop%
 
     gui add, picture, x%xColumn7% y114 gAdd_crafts vaddCrafts, resources\addCrafts.png
     gui add, picture, x%xColumn7% y136 gLast_Area vrescanButton, resources\lastArea.png
@@ -501,6 +508,16 @@ League_dropdown:
 	;allowAll()
 return
 
+alwaysOnTop:
+	guiControlGet, onTop,,alwaysOnTop, value
+	iniWrite, %onTop%, %SettingsPath%, Other, alwaysOnTop
+	if (onTop = 1){
+		Gui, HarvestUI:+AlwaysOnTop
+	}
+	if (onTop = 0){
+		Gui, HarvestUI:-AlwaysOnTop
+	}
+return
 ;====================================================
 ; === Settings UI ===================================
 settings:
@@ -538,8 +555,9 @@ settings:
 		iniRead, ScanKey,  %SettingsPath%, Other, ScanKey
 		gui, add, hotkey, x120 y255 vScanKey_v gScanKey_l, %ScanKey%
 
-	gui, add, button, x10 y295 h30 w390 gOpenRoaming vSettingsFolder, Open Settings Folder
-	gui, add, button, x10 y335 h30 w390 gSettingsOK, Save
+	
+	gui, add, button, x10 y315 h30 w390 gOpenRoaming vSettingsFolder, Open Settings Folder
+	gui, add, button, x10 y355 h30 w390 gSettingsOK, Save
 	gui, Settings:Show, w410 h370
 	
 return
@@ -1492,7 +1510,7 @@ sumTypes() {
 		}
 		if (tempType == "Other") {
 			Ocounter += 1
-		}
+		} 		
 	}
 	Guicontrol,, Acount, %Acounter%
 	Guicontrol,, Rcount, %Rcounter%
