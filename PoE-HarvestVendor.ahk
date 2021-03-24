@@ -366,12 +366,12 @@ count:
 
 return
 
-craft:
-	sumTypes()
+craft:	
  	GuiControlGet, cntrl, name, %A_GuiControl%
     tempRow := getRow(cntrl)
 	guiControlGet, tempCraft,, craft_%tempRow%, value
 	detectType(tempCraft, tempRow)
+	sumTypes()
 return
 
 lvl:
