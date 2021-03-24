@@ -124,7 +124,7 @@ return
 
 OpenGui: ;ctrl+shift+g opens the gui, yo go from there
 	loadLastSession()
-	if (version < getVersion()) {
+	if (version != getVersion()) {
 		guicontrol, HarvestUI:Show, versionText
 		guicontrol, HarvestUI:Show, versionLink
 	}
@@ -1714,6 +1714,7 @@ getVersion() {
     }
     return StrReplace(StrReplace(response,"`r"),"`n")
 }
+
 IsGuiVisible(guiName) {
     Gui, %guiName%: +HwndguiHwnd
     return DllCall("User32\IsWindowVisible", "Ptr", guiHwnd)
