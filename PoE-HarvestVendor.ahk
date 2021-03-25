@@ -556,8 +556,8 @@ settings:
 		gui, add, hotkey, x120 y255 vScanKey_v gScanKey_l, %ScanKey%
 
 	
-	gui, add, button, x10 y315 h30 w390 gOpenRoaming vSettingsFolder, Open Settings Folder
-	gui, add, button, x10 y355 h30 w390 gSettingsOK, Save
+	gui, add, button, x10 y295 h30 w390 gOpenRoaming vSettingsFolder, Open Settings Folder
+	gui, add, button, x10 y335 h30 w390 gSettingsOK, Save
 	gui, Settings:Show, w410 h370
 	
 return
