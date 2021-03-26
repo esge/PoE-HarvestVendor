@@ -204,7 +204,7 @@ newGUI() {
     gui Font, s12
 		gui add, text, x460 y10 cGreen vversionText, ! New Version Available !
 	;gui, Font, s11 cFFC555
-		gui add, Link, x550 y30 vversionLink c0x0d0d0d, <a href="github.com/esge/PoE-HarvestVendor/releases/latest">Github Link</a>
+		gui add, Link, x550 y30 vversionLink c0x0d0d0d, <a href="http://github.com/esge/PoE-HarvestVendor/releases/latest">Github Link</a>
 		
 	GuiControl, Hide, versionText
 	GuiControl, Hide, versionLink
