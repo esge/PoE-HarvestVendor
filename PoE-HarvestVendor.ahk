@@ -558,8 +558,7 @@ settings:
 	
 	gui, add, button, x10 y315 h30 w390 gOpenRoaming vSettingsFolder, Open Settings Folder
 	gui, add, button, x10 y355 h30 w390 gSettingsOK, Save
-	gui, Settings:Show, w410 h370
-	
+	gui, Settings:Show, w410 h390
 return
 SettingsGuiClose:
 	hotkey, %GuiKey%, on
