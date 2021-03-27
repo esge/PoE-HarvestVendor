@@ -1251,6 +1251,7 @@ processCrafts(file) {
 
 CraftSort(ar) {	
     tempC := ""
+	
     for k in ar {   
 		tempC := ar[k, 0]
 		tempLvl := ar[k, 1] 
@@ -1270,6 +1271,16 @@ CraftSort(ar) {
 			}					
         }
     }	
+}
+
+firstEmptyRow(){
+	loop, 20{
+		GuiControlGet, craftInGui,, craft_%A_Index%, value
+		if (craftInGui == ""){
+			return %A_Index%
+			break
+		}
+	}
 }
 
 detectType(craft, row){
