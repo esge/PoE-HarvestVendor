@@ -2,7 +2,7 @@
 #SingleInstance Force
 SetBatchLines -1
 SetWorkingDir %A_ScriptDir% 
-global version := "0.7.2"
+global version := "0.7.3"
 
 ; === some global variables ===
 global outArray := {}
@@ -1251,7 +1251,7 @@ processCrafts(file) {
 
 CraftSort(ar) {	
     tempC := ""
-	
+
     for k in ar {   
 		tempC := ar[k, 0]
 		tempLvl := ar[k, 1] 
