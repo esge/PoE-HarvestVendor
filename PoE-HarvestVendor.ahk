@@ -226,12 +226,14 @@ newGUI() {
     gui add, picture, x%xColumn7% y205 gHelp vhelp, resources\help.png
 
 	; === Post buttons ===
-    gui add, picture, x%xColumn7% y251 gAug_post vaugPost, resources\postA.png
-    gui add, picture, x%xColumn7% y274 gRem_post vremPost, resources\postR.png
-    gui add, picture, x%xColumn7% y297 gRemAdd_post vremAddPost, resources\postRA.png
-    gui add, picture, x%xColumn7% y320 gOther_post votherPost, resources\postO.png
-    gui add, picture, x%xColumn7% y343 vpostAll gPost_all, resources\postAll.png
-		postAll_TT := "WARNING: Don't use this for Temporary SC league on TFT Discord"
+	gui add, picture, x%xColumn7% y251 vpostAll gPost_all, resources\createPost.png
+
+    ;gui add, picture, x%xColumn7% y251 gAug_post vaugPost, resources\postA.png
+    ;gui add, picture, x%xColumn7% y274 gRem_post vremPost, resources\postR.png
+    ;gui add, picture, x%xColumn7% y297 gRemAdd_post vremAddPost, resources\postRA.png
+    ;gui add, picture, x%xColumn7% y320 gOther_post votherPost, resources\postO.png
+    ;gui add, picture, x%xColumn7% y343 vpostAll gPost_all, resources\postAll.png
+	;	postAll_TT := "WARNING: Don't use this for Temporary SC league on TFT Discord"
 
 	; === League dropdown ===
     gui add, text, x%xColumn7% y370, League:
@@ -337,9 +339,10 @@ Dn:
         tempCount -= 1
         GuiControl,, count_%tempRow%, %tempCount%
     }
+
 return
 
-Add_crafts:
+Add_crafts: 
 	buttonHold("addCrafts", "resources\addCrafts")
 	GuiControlGet, rescan, name, %A_GuiControl%	
     if (processCrafts(TempPath)) {
@@ -492,12 +495,13 @@ Other_post:
 return
 
 Post_all:
-	buttonHold("postAll", "resources\postAll")
+	;buttonHold("postAll", "resources\postAll")
+	buttonHold("postAll", "resources\createPost")
 
-	guiControlGet, selectedLeague,, League, value
-	if !(InStr(selectedLeague, "HC") > 0 or InStr(selectedLeague, "Hardcore") > 0 or InStr(selectedLeague, "Standard") > 0){
-		msgbox, You are posting All for Temporary SC league `r`nTFT has split channels based on craft types`r`nThis message will get you timed out
-	}
+	;guiControlGet, selectedLeague,, League, value
+	;if !(InStr(selectedLeague, "HC") > 0 or InStr(selectedLeague, "Hardcore") > 0 or InStr(selectedLeague, "Standard") > 0){
+	;	msgbox, You are posting All for Temporary SC league `r`nTFT has split channels based on craft types`r`nThis message will get you timed out
+	;}
 
 	createPost("All")
 return
@@ -703,7 +707,7 @@ processCrafts(file) {
 	sleep, 500
 
 	Tooltip, Please Wait
-	command = Capture2Text\Capture2Text.exe -s `"%x_start% %y_start% %x_end% %y_end%`" -o `"%TempPath%`" -l English --trim-capture 
+	command = Capture2Text\Capture2Text.exe -s `"%x_start% %y_start% %x_end% %y_end%`" -o `"%TempPath%`" -l English --trim-capture
 	RunWait, %command%
     
     sleep, 1000 ;sleep cos if i show the Gui too quick the capture will grab screenshot of gui   	
