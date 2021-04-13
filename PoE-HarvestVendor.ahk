@@ -1688,18 +1688,19 @@ leagueList() {
     leagueString := ""
     loop, 8 {
         IniRead, tempList, %SettingsPath%, Leagues, %A_Index%     
-	   
-        if InStr(tempList, "Hardcore") = 0 and InStr(tempList, "HC") = 0 {
-            tempList .= " SC"
-        } 
-		if (tempList == "Hardcore") {
-			tempList := "Standard HC"
-		}
-		if InStr(tempList,"SSF") = 0 {
-        	leagueString .= tempList . "|"
-		}
-		if (InStr(tempList, "Hardcore", true) = 0 and InStr(tempList,"SSF", true) = 0 and InStr(tempList,"Standard", true) = 0 and InStr(tempList,"HC", true) = 0){
-			defaultLeague := templist
+        if (templist != "") { 	   
+			if InStr(tempList, "Hardcore") = 0 and InStr(tempList, "HC") = 0 {
+				tempList .= " SC"
+			} 
+			if (tempList == "Hardcore") {
+				tempList := "Standard HC"
+			}
+			if InStr(tempList,"SSF") = 0 {
+				leagueString .= tempList . "|"
+			}
+			if (InStr(tempList, "Hardcore", true) = 0 and InStr(tempList,"SSF", true) = 0 and InStr(tempList,"Standard", true) = 0 and InStr(tempList,"HC", true) = 0){
+				defaultLeague := templist
+			}
 		}
     }
 
