@@ -193,9 +193,11 @@ newGUI() {
     gui, Font, s11 cA38D6D
         gui add, text, x%xColumn3% y40 vValue, You have:          ex            c in station   
         gui add, text, x%xColumn3% y63 vStored, Augs:  `t`tRems:   `tRem/Adds:  `t`tOther: 
+		gui add, text, x412 y40 vcrafts, Total Crafts: 
     gui, Font, s11 cFFC555
         gui add, text, x170 y40 w30 right vsumEx, 0
         gui add, text, x220 y40 w30 right vsumChaos, 0
+		gui add, text, x485 y40 vCraftsSum, 0
 		gui add, text, x150 y64 w20 vAcount,0
 		gui add, text, x250 y64 w20 vRcount,0
 		gui add, text, x375 y64 w20 vRAcount,0
@@ -1511,6 +1513,7 @@ sumTypes() {
 	Rcounter := 0
 	RAcounter := 0
 	Ocounter := 0
+	Allcounter := 0
 	loop, 20 {
 		GuiControlget, tempType,, type_%A_Index%, value
 		;msgBox %tempType%
@@ -1527,31 +1530,33 @@ sumTypes() {
 			Ocounter += 1
 		} 		
 	}
+	Allcounter := Acounter + Rcounter + RAcounter + Ocounter
 	Guicontrol,, Acount, %Acounter%
 	Guicontrol,, Rcount, %Rcounter%
 	Guicontrol,, RAcount, %RAcounter%
 	Guicontrol,, Ocount, %Ocounter%
-	sleep, 50
-	if (Acounter = 0) {
-		guicontrol,, augPost, resources/postA_d.png
-	} else {
-		guicontrol,, augPost, resources/postA.png
-	}
-	if (Rcounter = 0) {
-		guicontrol,, remPost, resources/postR_d.png
-	} else {
-		guicontrol,, remPost, resources/postR.png
-	}
-	if (RAcounter = 0) {
-		guicontrol,, remAddPost, resources/postRA_d.png
-	} else {
-		guicontrol,, remAddPost, resources/postRA.png
-	}
-	if (Ocounter = 0) {
-		guicontrol,, otherPost, resources/postO_d.png
-	} else {
-		guicontrol,, otherPost, resources/postO.png
-	}
+	Guicontrol,, CraftsSum, %Allcounter%
+	;sleep, 50
+	;if (Acounter = 0) {
+	;	guicontrol,, augPost, resources/postA_d.png
+	;} else {
+	;	guicontrol,, augPost, resources/postA.png
+	;}
+	;if (Rcounter = 0) {
+	;	guicontrol,, remPost, resources/postR_d.png
+	;} else {
+	;	guicontrol,, remPost, resources/postR.png
+	;}
+	;if (RAcounter = 0) {
+	;	guicontrol,, remAddPost, resources/postRA_d.png
+	;} else {
+	;	guicontrol,, remAddPost, resources/postRA.png
+	;}
+	;if (Ocounter = 0) {
+	;	guicontrol,, otherPost, resources/postO_d.png
+	;} else {
+	;	guicontrol,, otherPost, resources/postO.png
+	;}
 }
 
 buttonHold(buttonV, picture) {
