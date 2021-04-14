@@ -424,15 +424,15 @@ Custom_text:
 	iniWrite, %cust%, %SettingsPath%, Other, customText
 	guicontrol,, customText_cb, 1
 			
-	if (RegExMatch(cust, "not|remove|aug|add") > 0) {
-		gui, Font, cRed Bold
-		guiControl, font, customText
-		tooltip, This message might get blocked by the discord bot because it containts not|remove|aug|add
-	} else {
-		gui, Font, s11 cA38D6D norm	
-		guicontrol, font, customText
-		tooltip
-	}
+	;if (RegExMatch(cust, "not|remove|aug|add") > 0) {
+	;	gui, Font, cRed Bold
+	;	guiControl, font, customText
+	;	tooltip, This message might get blocked by the discord bot because it containts not|remove|aug|add
+	;} else {
+	;	gui, Font, s11 cA38D6D norm	
+	;	guicontrol, font, customText
+	;	tooltip
+	;}
 return
 
 Custom_text_cb:
