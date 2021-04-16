@@ -1,48 +1,50 @@
-Add a random Influence to a Normal, Magic or Rare Weapon that isn't influenced
-Add a random Influence to Normal, Magic or Rare Armour that isn't influenced
-Add a random Influence to Normal, Magic or Rare Jewellery that isn't influenced
+Adds 10 random Wild and Primal harvest outcomes.
+Allows you to give an item a Synthesised implicit modifier when Harvested
+Allows you to add an Implicit modifier to certain Jewel types when Harvested
+Allows you to enhance specialised Currency a certain way when Harvested
+Allows you to exchange Pale Court Keys, Splinters, Breachstones or Emblems for others of the same type when Harvested
+Allows you to exchange a Unique, Bestiary or Harbinger item for a related item when Harvested
+Allows you to exchange certain Map Fragments for another of the same type when Harvested
+Allows you to change a Map into other Maps when Harvested
+Allows you to modify a Scarab a certain way when Harvested
+Allows you to modify an item, resulting in Lucky modifier values when Harvested
+Allows you to randomise the Atlas Influence types on an Influenced item when Harvested
+Allows you to sacrifice Divination Cards to create Divination Cards when Harvested
+Allows you to Sacrifice a Map to create items for the Atlas when Harvested
+Allows you to sacrifice a Map to gain additional Atlas missions when Harvested
+Allows you to Sacrifice a Map to influence Zana's crafting options when Harvested
+Allows you to sacrifice a Weapon or Armour to create Jewellery or Jewels when Harvested
+Allows you to upgrade an Offering to the Goddess when Harvested
 Attempt to Awaken a level 20 Support Gem that can be Awakened with a 5% chance. If it does not Awaken, it is destroyed.
 Attempt to upgrade a Scarab, with a chance for it to become Winged
-Augment a Magic or Rare item with a new Caster modifier
-Augment a Magic or Rare item with a new Caster modifier with Lucky values
-Augment a Magic or Rare item with a new Fire modifier
-Augment a Magic or Rare item with a new Fire modifier with Lucky values
-Augment a Magic or Rare item with a new Physical modifier
-Augment a Magic or Rare item with a new Physical modifier with Lucky values
-Augment a Rare item with a new modifier, with Lucky modifier values
-Augment an item with a new Attack modifier
-Augment an item with a new Attack modifier with Lucky values
-Augment an item with a new Cold modifier
-Augment an item with a new Cold modifier with Lucky values
-Augment an item with a new Critical modifier
-Augment an item with a new Critical modifier with lucky values
-Augment an item with a new Defence modifier
-Augment an item with a new Defence modifier with Lucky values
-Augment an item with a new Chaos modifier
-Augment an item with a new Chaos modifier with Lucky values
-Augment an item with a new Influence modifier
-Augment an item with a new Influence modifier with Lucky values
-Augment an item with a new Life modifier
-Augment an item with a new Life modifier with Lucky values
-Augment an item with a new Lightning modifier
-Augment an item with a new Lightning modifier with Lucky values
-Augment an item with a new Speed modifier
-Augment an item with a new Speed modifier with Lucky values
+Augment a Magic or Rare item with a new Influence modifier
+Augment a Magic or Rare item with a new Influence modifier with Lucky values
+Augment a non-Influenced Magic or Rare item with a new Attack modifier
+Augment a non-Influenced Magic or Rare item with a new Attack modifier with Lucky values
+Augment a non-Influenced Magic or Rare item with a new Caster modifier
+Augment a non-Influenced Magic or Rare item with a new Caster modifier with Lucky values
+Augment a non-Influenced Magic or Rare item with a new Cold modifier
+Augment a non-Influenced Magic or Rare item with a new Cold modifier with Lucky values
+Augment a non-Influenced Magic or Rare item with a new Critical modifier
+Augment a non-Influenced Magic or Rare item with a new Critical modifier with lucky values
+Augment a non-Influenced Magic or Rare item with a new Defence modifier
+Augment a non-Influenced Magic or Rare item with a new Defence modifier with Lucky values
+Augment a non-Influenced Magic or Rare item with a new Fire modifier
+Augment a non-Influenced Magic or Rare item with a new Fire modifier with Lucky values
+Augment a non-Influenced Magic or Rare item with a new Chaos modifier
+Augment a non-Influenced Magic or Rare item with a new Chaos modifier with Lucky values
+Augment a non-Influenced Magic or Rare item with a new Life modifier
+Augment a non-Influenced Magic or Rare item with a new Life modifier with Lucky values
+Augment a non-Influenced Magic or Rare item with a new Lightning modifier
+Augment a non-Influenced Magic or Rare item with a new Lightning modifier with Lucky values
+Augment a non-Influenced Magic or Rare item with a new Physical modifier
+Augment a non-Influenced Magic or Rare item with a new Physical modifier with Lucky values
+Augment a non-Influenced Magic or Rare item with a new Speed modifier
+Augment a non-Influenced Magic or Rare item with a new Speed modifier with Lucky values
+Augment a non-Influenced Rare item with a new modifier, with Lucky modifier values
+Causes other seeds to offer a Lucky crafting outcome.
+Causes other seeds to offer an additional crafting outcome.
 Corrupt an item 10 times, or until getting a corrupted implicit modifier
-Enchant a Flask with a modifier that grants increased Duration. The magnitude of this effect decreases with each use
-Enchant a Flask with a modifier that grants increased Effect. The magnitude of this effect decreases with each use
-Enchant a Flask with a modifier that grants increased Maximum Charges. The magnitude of this effect decreases with each use
-Enchant a Flask with a modifier that grants reduced Charges used. The magnitude of this effect decreases with each use
-Enchant a Melee Weapon. Quality does not increase its Physical Damage, has +1 Weapon Range per 10% Quality
-Enchant a non-Unique Map with "Has an additional modifier from Zana's crafting bench at random"
-Enchant a non-Unique Map with "Map boss is surrounded by Tormented Spirits"
-Enchant a non-Unique Map with "Map doesn't consume Sextant charges"
-Enchant a non-Unique Map with "Map has a Vaal Side Area"
-Enchant a Weapon. Quality does not increase its Physical Damage, grants 1% increased Accuracy per 2% Quality
-Enchant a Weapon. Quality does not increase its Physical Damage, grants 1% increased Area of Effect per 4% Quality
-Enchant a Weapon. Quality does not increase its Physical Damage, grants 1% increased Elemental Damage per 2% Quality
-Enchant a Weapon. Quality does not increase its Physical Damage, has 1% increased Attack Speed per 8% Quality
-Enchant a Weapon. Quality does not increase its Physical Damage, has 1% increased Critical Strike Chance per 4% Quality
 Enchant Body Armour. Quality does not increase its Defences, grants +1 Dexterity per 2% quality
 Enchant Body Armour. Quality does not increase its Defences, grants +1 Intelligence per 2% quality
 Enchant Body Armour. Quality does not increase its Defences, grants +1 Maximum Life per 2% quality
@@ -51,6 +53,20 @@ Enchant Body Armour. Quality does not increase its Defences, grants +1 Strength 
 Enchant Body Armour. Quality does not increase its Defences, grants 1% Cold Resistance per 2% quality
 Enchant Body Armour. Quality does not increase its Defences, grants 1% Fire Resistance per 2% quality
 Enchant Body Armour. Quality does not increase its Defences, grants 1% Lightning Resistance per 2% quality
+Enchant a non-Unique Map with "Has an additional modifier from Zana's crafting bench at random"
+Enchant a non-Unique Map with "Map boss is surrounded by Tormented Spirits"
+Enchant a non-Unique Map with "Map doesn't consume Sextant charges"
+Enchant a non-Unique Map with "Map has a Vaal Side Area"
+Enchant a Flask with a modifier that grants increased Duration. The magnitude of this effect decreases with each use
+Enchant a Flask with a modifier that grants increased Effect. The magnitude of this effect decreases with each use
+Enchant a Flask with a modifier that grants increased Maximum Charges. The magnitude of this effect decreases with each use
+Enchant a Flask with a modifier that grants reduced Charges used. The magnitude of this effect decreases with each use
+Enchant a Melee Weapon. Quality does not increase its Physical Damage, has +1 Weapon Range per 10% Quality
+Enchant a Weapon. Quality does not increase its Physical Damage, grants 1% increased Accuracy per 2% Quality
+Enchant a Weapon. Quality does not increase its Physical Damage, grants 1% increased Area of Effect per 4% Quality
+Enchant a Weapon. Quality does not increase its Physical Damage, grants 1% increased Elemental Damage per 2% Quality
+Enchant a Weapon. Quality does not increase its Physical Damage, has 1% increased Attack Speed per 8% Quality
+Enchant a Weapon. Quality does not increase its Physical Damage, has 1% increased Critical Strike Chance per 4% Quality
 Exchange 10 Blessed Orbs for 20 Orbs of Alteration
 Exchange 10 Cartographer's Chisels for 10 Vaal Orbs
 Exchange 10 Chaos Orbs for an Exalted Orb
@@ -83,20 +99,12 @@ Exchange a Resonator for a Fossil or vice versa. Rare outcomes are more likely w
 Fracture a random modifier on an item with at least 5 modifiers, locking it in place. This can't be used on Influenced, Synthesised, or Fractured items
 Fracture a random Prefix on an item with at least 3 Prefixes. This can't be used on Influenced, Synthesised, or Fractured items.
 Fracture a random Suffix on an item with at least 3 Suffixes. This can't be used on Influenced, Synthesised, or Fractured items
-Change a Divination Card into another random Divination Card
-Change a Gem into another Gem, carrying over experience and quality if possible
-Change a Harbinger Unique or Unique Piece into a random Beachhead Map
-Change a Map into another of the same tier, prioritising Maps that you have not yet completed
 Change a modifier that grants Cold Resistance into a similar-tier modifier that grants Fire Resistance
 Change a modifier that grants Cold Resistance into a similar-tier modifier that grants Lightning Resistance
 Change a modifier that grants Fire Resistance into a similar-tier modifier that grants Cold Resistance
 Change a modifier that grants Fire Resistance into a similar-tier modifier that grants Lightning Resistance
 Change a modifier that grants Lightning Resistance into a similar-tier modifier that grants Cold Resistance
 Change a modifier that grants Lightning Resistance into a similar-tier modifier that grants Fire Resistance
-Change a Pale Court Key into another random Pale Court Key
-Change a Sacrifice or Mortal Fragment into another random Fragment of that type
-Change a Scarab to another Scarab of the same rarity
-Change a Shaper Fragment into another random Shaper Fragment
 Change a stack of Breach Splinters or a Breachstone into Splinters or a Breachstone of another type
 Change a stack of Catalysts into a different type of Catalyst
 Change a stack of Delirium Orbs into a different type of Delirium Orb
@@ -104,13 +112,21 @@ Change a stack of Essences into a different type of the same tier
 Change a stack of Fossils into a different type of Fossil. The new Fossil type may have a smaller stack size.
 Change a stack of Oils into a different colour of Oil
 Change a stack of Timeless Splinters or a Timeless Emblem into Splinters or an Emblem of another type
-Change a Unique Armour into another Unique Armour of that type
+Change a Divination Card into another random Divination Card
+Change a Gem into another Gem, carrying over experience and quality if possible
+Change a Harbinger Unique or Unique Piece into a random Beachhead Map
+Change a Map into another of the same tier, prioritising Maps that you have not yet completed
+Change a Pale Court Key into another random Pale Court Key
+Change a Sacrifice or Mortal Fragment into another random Fragment of that type
+Change a Scarab to another Scarab of the same rarity
+Change a Shaper Fragment into another random Shaper Fragment
 Change a Unique Bestiary item or item with an Aspect into Lures of the same beast family
+Change a Unique Item into Perandus Coins. Rarer Unique Items are worth more Perandus Coins
+Change a Unique Armour into another Unique Armour of that type
 Change a Unique into a random Unique Armour
 Change a Unique into a random Unique Ring, Amulet or Belt
 Change a Unique into a random Unique Weapon
 Change a Unique item into another random Unique item
-Change a Unique Item into Perandus Coins. Rarer Unique Items are worth more Perandus Coins
 Change a Unique Jewel into another Unique Jewel
 Change a Unique Ring, Amulet or Belt into another Unique item of that type
 Change a Unique Weapon into another Unique Weapon of that weapon type
@@ -132,6 +148,11 @@ Randomise the numeric values of the random Life modifiers on a Magic or Rare ite
 Randomise the numeric values of the random Lightning modifiers on a Magic or Rare item
 Randomise the numeric values of the random Physical modifiers on a Magic or Rare item
 Randomise the numeric values of the random Speed modifiers on a Magic or Rare item
+Randomise the Influence types on an Influenced Normal, Magic or Rare Armour, as well as reforging the item with new random modifiers
+Randomise the Influence types on an Influenced Normal, Magic or Rare Jewellery, as well as reforging the item with new random modifiers
+Randomise the Influence types on an Influenced Normal, Magic or Rare Weapon, as well as reforging the item with new random modifiers
+Reforge a Rare item with new random modifiers, including an Influence modifier. Influence modifiers are more common
+Reforge a Rare item with new random modifiers 10 times, using the outcome with the highest average modifier level
 Reforge a Normal or Magic item as a Rare item with random modifiers, including a Caster modifier
 Reforge a Normal or Magic item as a Rare item with random modifiers, including a Cold modifier
 Reforge a Normal or Magic item as a Rare item with random modifiers, including a Critical modifier
@@ -145,7 +166,6 @@ Reforge a Normal or Magic item as a Rare item with random modifiers, including a
 Reforge a Normal or Magic item as a Rare item with random modifiers, including an Attack modifier
 Reforge a Rare item with Lucky modifier values, keeping all Prefixes
 Reforge a Rare item with Lucky modifier values, keeping all Suffixes
-Reforge a Rare item with new random modifiers 10 times, using the outcome with the highest average modifier level
 Reforge a Rare item with new random modifiers, including a Caster modifier
 Reforge a Rare item with new random modifiers, including a Caster modifier. Caster modifiers are more common
 Reforge a Rare item with new random modifiers, including a Cold modifier
@@ -168,68 +188,65 @@ Reforge a Rare item with new random modifiers, including a Speed modifier
 Reforge a Rare item with new random modifiers, including a Speed modifier. Speed modifiers are more common
 Reforge a Rare item with new random modifiers, including an Attack modifier
 Reforge a Rare item with new random modifiers, including an Attack modifier. Attack modifiers are more common
-Reforge a Rare item with new random modifiers, including an Influence modifier. Influence modifiers are more common
 Reforge a Rare item, being much less likely to receive the same modifier types
 Reforge a Rare item, being much more likely to receive the same modifier types
 Reforge a Rare item, keeping all Prefixes
 Reforge a Rare item, keeping all Suffixes
-Reforge the colour of a non-Blue socket on an item, turning it Blue
-Reforge the colour of a non-Blue socket on an item, turning it Blue
-Reforge the colour of a non-Green socket on an item, turning it Green
-Reforge the colour of a non-Green socket on an item, turning it Green
-Reforge the colour of a non-Red socket on an item, turning it Red
-Reforge the colour of a non-Red socket on an item, turning it Red
 Reforge the colour of a random socket on an item, turning it White
+Reforge the colour of a non-Blue socket on an item, turning it Blue
+Reforge the colour of a non-Green socket on an item, turning it Green
+Reforge the colour of a non-Red socket on an item, turning it Red
 Reforge the colour of three random sockets on an item, turning them Red, Blue and Green
 Reforge the colour of two random sockets on an item, turning them Blue and Green
 Reforge the colour of two random sockets on an item, turning them Red and Blue
 Reforge the colour of two random sockets on an item, turning them Red and Green
-Reforge the colours of sockets on an item 10 times, using the outcome with the greatest number of less-common socket colours
-Reforge the links between sockets on an item 10 times, using the outcome with the greatest number of linked sockets
 Reforge the links between sockets on an item, linking five sockets
 Reforge the links between sockets on an item, linking four sockets
 Reforge the links between sockets on an item, linking six sockets
 Reforge the links between sockets on an item, linking three sockets
+Reforge the colours of sockets on an item 10 times, using the outcome with the greatest number of less-common socket colours
+Reforge the links between sockets on an item 10 times, using the outcome with the greatest number of linked sockets
 Reforge the number of sockets on an item 10 times, using the outcome with the greatest number of sockets
-Remove a random Attack modifier from an item
-Remove a random Attack modifier from an item and add a new Attack modifier
-Remove a random Caster modifier from an item
-Remove a random Caster modifier from an item and add a new Caster modifier
-Remove a random Cold modifier from an item
-Remove a random Cold modifier from an item and add a new Cold modifier
-Remove a random Critical modifier from an item
-Remove a random Critical modifier from an item and add a new Critical modifier
-Remove a random Defence modifier from an item
-Remove a random Defence modifier from an item and add a new Defence modifier
-Remove a random Fire modifier from an item
-Remove a random Fire modifier from an item and add a new Fire modifier
-Remove a random Chaos modifier from an item
-Remove a random Chaos modifier from an item and add a new Chaos modifier
+Remove a random Attack modifier from a non-Influenced item
+Remove a random Attack modifier from a non-Influenced item and add a new Attack modifier
+Remove a random Caster modifier from a non-Influenced item
+Remove a random Caster modifier from a non-Influenced item and add a new Caster modifier
+Remove a random Cold modifier from a non-Influenced item
+Remove a random Cold modifier from a non-Influenced item and add a new Cold modifier
+Remove a random Critical modifier from a non-Influenced item
+Remove a random Critical modifier from a non-Influenced item and add a new Critical modifier
+Remove a random Defence modifier from a non-Influenced item
+Remove a random Defence modifier from a non-Influenced item and add a new Defence modifier
+Remove a random Fire modifier from a non-Influenced item
+Remove a random Fire modifier from a non-Influenced item and add a new Fire modifier
+Remove a random Chaos modifier from a non-Influenced item
+Remove a random Chaos modifier from a non-Influenced item and add a new Chaos modifier
 Remove a random Influence modifier from an item
 Remove a random Influence modifier from an item and add a new Influence modifier
-Remove a random Life modifier from an item
-Remove a random Life modifier from an item and add a new Life modifier
-Remove a random Lightning modifier from an item
-Remove a random Lightning modifier from an item and add a new Lightning modifier
-Remove a random non-Attack modifier from an item and add a new Attack modifier
-Remove a random non-Caster modifier from an item and add a new Caster modifier
-Remove a random non-Cold modifier from an item and add a new Cold modifier
-Remove a random non-Critical modifier from an item and add a new Critical modifier
-Remove a random non-Defence modifier from an item and add a new Defence modifier
-Remove a random non-Fire modifier from an item and add a new Fire modifier
-Remove a random non-Chaos modifier from an item and add a new Chaos modifier
+Remove a random Life modifier from a non-Influenced item
+Remove a random Life modifier from a non-Influenced item and add a new Life modifier
+Remove a random Lightning modifier from a non-Influenced item
+Remove a random Lightning modifier from a non-Influenced item and add a new Lightning modifier
+Remove a random non-Attack modifier from a non-Influenced item and add a new Attack modifier
+Remove a random non-Caster modifier from a non-Influenced item and add a new Caster modifier
+Remove a random non-Cold modifier from a non-Influenced item and add a new Cold modifier
+Remove a random non-Critical modifier from a non-Influenced item and add a new Critical modifier
+Remove a random non-Defence modifier from a non-Influenced item and add a new Defence modifier
+Remove a random non-Fire modifier from a non-Influenced item and add a new Fire modifier
+Remove a random non-Chaos modifier from a non-Influenced item and add a new Chaos modifier
 Remove a random non-Influence modifier from an item and add a new Influence modifier
-Remove a random non-Life modifier from an item and add a new Life modifier
-Remove a random non-Lightning modifier from an item and add a new Lightning modifier
-Remove a random non-Physical modifier from an item and add a new Physical modifier
-Remove a random non-Speed modifier from an item and add a new Speed modifier
-Remove a random Physical modifier from an item
-Remove a random Physical modifier from an item and add a new Physical modifier
-Remove a random Speed modifier from an item
-Remove a random Speed modifier from an item and add a new Speed modifier
+Remove a random non-Life modifier from a non-Influenced item and add a new Life modifier
+Remove a random non-Lightning modifier from a non-Influenced item and add a new Lightning modifier
+Remove a random non-Physical modifier from a non-Influenced item and add a new Physical modifier
+Remove a random non-Speed modifier from a non-Influenced item and add a new Speed modifier
+Remove a random Physical modifier from a non-Influenced item
+Remove a random Physical modifier from a non-Influenced item and add a new Physical modifier
+Remove a random Speed modifier from a non-Influenced item
+Remove a random Speed modifier from a non-Influenced item and add a new Speed modifier
 Reroll the values of Prefix modifiers on a Magic or Rare item, with Lucky modifier values
 Reroll the values of Prefix, Suffix and Implicit modifiers on a Rare item, with Lucky modifier values
 Reroll the values of Suffix modifiers on a Magic or Rare item, with Lucky modifier values
+Sacrifice a stack of Divination Cards for that many different Divination Cards
 Sacrifice a Corrupted Gem to gain 20% of the gem's quality as Gemcutter's Prisms
 Sacrifice a Corrupted Gem to gain 20% of the gem's total experience stored as a Facetor's Lens
 Sacrifice a Corrupted Gem to gain 30% of the gem's quality as Gemcutter's Prisms
@@ -258,7 +275,6 @@ Sacrifice a Map. Add a free Infused Nemesis craft to your Map device
 Sacrifice a Map. Add a free Infused Perandus craft to your Map device
 Sacrifice a Map. Add a free Infused Rampage craft to your Map device
 Sacrifice a Red Map to create random Map Fragments based on its tier
-Sacrifice a stack of Divination Cards for that many different Divination Cards
 Sacrifice a Tier 14 Map or higher to create a random Elder Guardian-occupied Map
 Sacrifice a Tier 14 Map or higher to create a random Shaper Guardian-occupied Map
 Sacrifice a Tier 14 Map or higher to create a random Unique Synthesis Map
@@ -266,7 +282,6 @@ Sacrifice a Weapon or Armour to create a Belt with similar modifiers
 Sacrifice a Weapon or Armour to create a Jewel with similar modifiers
 Sacrifice a Weapon or Armour to create a Ring with similar modifiers
 Sacrifice a Weapon or Armour to create an Amulet with similar modifiers
-Sacrifice a White or Yellow Map to create random Map Fragments based on its tier
 Sacrifice a White or Yellow Map to create random Map Fragments based on its tier
 Sacrifice up to half a stack of Divination Cards to receive between 0 and twice that amount of the same Card
 Set a new Implicit modifier on a Cluster Jewel
@@ -278,16 +293,15 @@ Set an item to six sockets
 Set an item to three sockets
 Split a Scarab into two Scarabs of lower rarity
 Synthesise an item, giving random Synthesised implicits. Cannot be used on Unique, Influenced, Synthesised or Fractured items
-Upgrade a Magic item to a Rare item, adding four random high-tier modifiers
 Upgrade a Magic item to a Rare item, adding four random modifiers
-Upgrade a Magic item to a Rare item, adding three random high-tier modifiers
+Upgrade a Magic item to a Rare item, adding four random high-tier modifiers
 Upgrade a Magic item to a Rare item, adding three random modifiers
-Upgrade a Magic item to a Rare item, adding two random high-tier modifiers
+Upgrade a Magic item to a Rare item, adding three random high-tier modifiers
 Upgrade a Magic item to a Rare item, adding two random modifiers
+Upgrade a Magic item to a Rare item, adding two random high-tier modifiers
 Upgrade a Normal item to a Magic item, adding one random high-tier modifier
 Upgrade a Normal item to a Magic item, adding two random high-tier modifiers
 Upgrade an Engineer's Orb to an Infused Engineer's Orb
 Upgrade an Oil into an Oil one tier higher
 Upgrade the tier of an Essence
 Upgrades a Normal Item to a random rarity 10 times, using the outcome with the highest rarity
-

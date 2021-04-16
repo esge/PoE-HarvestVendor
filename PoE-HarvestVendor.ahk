@@ -193,7 +193,7 @@ newGUI() {
     gui, Font, s11 cA38D6D
         gui add, text, x%xColumn3% y40 vValue, You have:          ex            c in station   
         gui add, text, x%xColumn3% y63 vStored, Augs:  `t`tRems:   `tRem/Adds:  `t`tOther: 
-		gui add, text, x412 y40 vcrafts, Total Crafts: 
+		gui add, text, x412 y40 w20 vcrafts, Total Crafts: 
     gui, Font, s11 cFFC555
         gui add, text, x170 y40 w30 right vsumEx, 0
         gui add, text, x220 y40 w30 right vsumChaos, 0
@@ -727,9 +727,9 @@ processCrafts(file) {
 	NewLined := RegExReplace(temp, "(Reforge |Randomise |Remove |Augment |Improves |Upgrades |Upgrade |Set |Change |Exchange |Sacrifice a|Sacrifice up|Attempt |Enchant |Reroll |Fracture |Add a random |Synthesise |Split |Corrupt )" , "`r`n$1")
 	Arrayed := StrSplit(NewLined, "`r`n")
 	
-	augments := ["Caster","Physical","Fire","Attack","Life","Cold","Speed","Defence","Lightning","Chaos","Critical","Influence","a new modifier"]
-	remAddsClean := ["Caster","Physical","Fire","Attack","Life","Cold","Speed","Defence","Lightning","Chaos","Critical","Influence"]
-	remAddsNon := ["non-Caster","non-Physical","non-Fire","non-Attack","non-Life","non-Cold","non-Speed","non-Defence","non-Lightning","non-Chaos","non-Critical","non-Influence"]
+	augments := ["Caster","Physical","Fire","Attack","Life","Cold","Speed","Defence","Lightning","Chaos","Critical","a new modifier"]
+	remAddsClean := ["Caster","Physical","Fire","Attack","Life","Cold","Speed","Defence","Lightning","Chaos","Critical"]
+	remAddsNon := ["non-Caster","non-Physical","non-Fire","non-Attack","non-Life","non-Cold","non-Speed","non-Defence","non-Lightning","non-Chaos","non-Critical"]
 	reforgeNonColor := ["non-Red","non-Blue","non-Green"]
 	reforge2color := ["Red and Blue","Red and Green","them Blue and Green","Red, Blue and Green","White"]
 	flaskEnchants := ["Duration.","Effect.","Maximum Charges.","Charges used."]
@@ -745,62 +745,106 @@ processCrafts(file) {
 		}
 		;Augment
 		else if InStr(Arrayed[index], "Augment") = 1 {
-			for a in augments {
-				if InStr(Arrayed[index], augments[a]) > 0 {
-					if InStr(Arrayed[index], "Lucky") > 0 {											
-						outArrayCount += 1 						 
-						outArray[outArrayCount, 0] := "Augment non-influenced - " . augments[a] . " Lucky"
-						outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-						outArray[outArrayCount, 2] := "Aug" 						
-						continue
-					} 
-					else {
-						outArrayCount += 1
-						outArray[outArrayCount, 0] := "Augment non-influenced - " . augments[a]
-						outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-						outArray[outArrayCount, 2] := "Aug" 
-						continue
+			if (inStr(Arrayed[index], "Influenced") > 0) {
+				for a in augments {								
+					if (InStr(Arrayed[index], augments[a]) > 0) {
+						if (InStr(Arrayed[index], "Lucky") > 0) {											
+							outArrayCount += 1 						 
+							outArray[outArrayCount, 0] := "Augment non-influenced - " . augments[a] . " Lucky"
+							outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+							outArray[outArrayCount, 2] := "Aug" 						
+							continue
+						} 
+						else {
+							outArrayCount += 1
+							outArray[outArrayCount, 0] := "Augment non-influenced - " . augments[a]
+							outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+							outArray[outArrayCount, 2] := "Aug" 
+							continue
+						}
 					}
 				}
+			} else {
+				if (InStr(Arrayed[index], "Lucky") > 0) {											
+					outArrayCount += 1 						 
+					outArray[outArrayCount, 0] := "Augment Influence Lucky"
+					outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+					outArray[outArrayCount, 2] := "Aug" 						
+					continue
+				} 
+				else {
+					outArrayCount += 1
+					outArray[outArrayCount, 0] := "Augment Influence"
+					outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+					outArray[outArrayCount, 2] := "Aug" 
+					continue
+				}
 			}
+			
 		}
 		;Remove
 		else if InStr(Arrayed[index], "Remove") = 1 {
-			if InStr(Arrayed[index], "add") > 0 {				
-				if InStr(Arrayed[index], "non") > 0 {
-					for a in remAddsClean {
-						if InStr(Arrayed[index], remAddsClean[a]) > 0  {
-							outArrayCount += 1							
-							outArray[outArrayCount, 0] := "Remove non-" . remAddsClean[a] . " add " . remAddsClean[a]
-							outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-							outArray[outArrayCount, 2] := "Other" 
-							continue
+			if (inStr(Arrayed[index], "Influenced") > 0 or inStr(Arrayed[index], "influenced") > 0) {
+				if InStr(Arrayed[index], "add") > 0 {				
+					if InStr(Arrayed[index], "non") > 0 {
+						for a in remAddsClean {
+							if InStr(Arrayed[index], remAddsClean[a]) > 0  {
+								outArrayCount += 1							
+								outArray[outArrayCount, 0] := "Remove non-" . remAddsClean[a] . " add " . remAddsClean[a]
+								outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+								outArray[outArrayCount, 2] := "Other" 
+								continue
+							}
 						}
-					}
-				} 
-				else if InStr(Arrayed[index], "non") = 0 {
-					for a in remAddsClean {
-						if InStr(Arrayed[index], remAddsClean[a]) > 0  {
+					} 
+					else if InStr(Arrayed[index], "non") = 0 {
+						for a in remAddsClean {
+							if InStr(Arrayed[index], remAddsClean[a]) > 0  {
+								outArrayCount += 1						
+								outArray[outArrayCount, 0] := "Remove " . remAddsClean[a] . " add " . remAddsClean[a]
+								outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+								outArray[outArrayCount, 2] := "Rem/Add"
+								continue
+							}
+						}
+					}				
+				} 			
+				else {
+					for a in augments {
+						if InStr(Arrayed[index], augments[a]) > 0 {
 							outArrayCount += 1						
-							outArray[outArrayCount, 0] := "Remove " . remAddsClean[a] . " add " . remAddsClean[a]
+							outArray[outArrayCount, 0] := "Remove " . augments[a]
 							outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-							outArray[outArrayCount, 2] := "Rem/Add"
+							outArray[outArrayCount, 2] := "Rem"
 							continue
 						}
-					}
-				}				
-			} 
-			else {
-				for a in augments {
-					if InStr(Arrayed[index], augments[a]) > 0 {
+					}	
+				}	
+			} else {				
+				if (instr(Arrayed[index], "add") > 0) {
+					if InStr(Arrayed[index], "non") > 0 {
 						outArrayCount += 1						
-						outArray[outArrayCount, 0] := "Remove " . augments[a]
+						outArray[outArrayCount, 0] := "Remove non-Influence add Influence"
+						outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+						outArray[outArrayCount, 2] := "Rem"
+						continue		
+					}
+					else if (InStr(Arrayed[index], "non") = 0) {
+						outArrayCount += 1						
+						outArray[outArrayCount, 0] := "Remove Influence add Influence"
 						outArray[outArrayCount, 1] := getLVL(Arrayed[index])
 						outArray[outArrayCount, 2] := "Rem"
 						continue
 					}
-				}	
-			}					
+				}
+				else {
+					outArrayCount += 1						
+					outArray[outArrayCount, 0] := "Remove Influence"
+					outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+					outArray[outArrayCount, 2] := "Rem"
+					continue	
+				}				
+			}				
 		}
 		;Reforge
 		else if InStr(Arrayed[index], "Reforge") = 1 {
