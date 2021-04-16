@@ -749,14 +749,14 @@ processCrafts(file) {
 				if InStr(Arrayed[index], augments[a]) > 0 {
 					if InStr(Arrayed[index], "Lucky") > 0 {											
 						outArrayCount += 1 						 
-						outArray[outArrayCount, 0] := "Augment " . augments[a] . " Lucky"
+						outArray[outArrayCount, 0] := "Augment non-influenced - " . augments[a] . " Lucky"
 						outArray[outArrayCount, 1] := getLVL(Arrayed[index])
 						outArray[outArrayCount, 2] := "Aug" 						
 						continue
 					} 
 					else {
 						outArrayCount += 1
-						outArray[outArrayCount, 0] := "Augment " . augments[a] ;*[guiDraft]
+						outArray[outArrayCount, 0] := "Augment non-influenced - " . augments[a]
 						outArray[outArrayCount, 1] := getLVL(Arrayed[index])
 						outArray[outArrayCount, 2] := "Aug" 
 						continue
