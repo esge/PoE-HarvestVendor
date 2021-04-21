@@ -937,6 +937,13 @@ processCrafts(file) {
 					outArray[outArrayCount, 2] := "Other"
 					continue
 				}	
+				else if InStr(Arrayed[index],"five") > 0 {
+					outArrayCount += 1	
+					outArray[outArrayCount, 0] := "Five link (5-link)"
+					outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+					outArray[outArrayCount, 2] := "Other"
+					continue
+				}	
 			} 
 			else if (InStr(Arrayed[index], "colour") > 0 and InStr(Arrayed[index], "10 times") = 0) {		
 				for a in reforgeNonColor {
