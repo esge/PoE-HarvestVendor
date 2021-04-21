@@ -2,7 +2,7 @@
 #SingleInstance Force
 SetBatchLines -1
 SetWorkingDir %A_ScriptDir% 
-global version := "0.7.5"
+global version := "0.7.6"
 
 ; === some global variables ===
 global outArray := {}
@@ -729,7 +729,7 @@ processCrafts(file) {
 	
 	augments := ["Caster","Physical","Fire","Attack","Life","Cold","Speed","Defence","Lightning","Chaos","Critical","a new modifier"]
 	remAddsClean := ["Caster","Physical","Fire","Attack","Life","Cold","Speed","Defence","Lightning","Chaos","Critical"]
-	remAddsNon := ["non-Caster","non-Physical","non-Fire","non-Attack","non-Life","non-Cold","non-Speed","non-Defence","non-Lightning","non-Chaos","non-Critical"]
+	;remAddsNon := ["non-Caster","non-Physical","non-Fire","non-Attack","non-Life","non-Cold","non-Speed","non-Defence","non-Lightning","non-Chaos","non-Critical"]
 	reforgeNonColor := ["non-Red","non-Blue","non-Green"]
 	reforge2color := ["Red and Blue","Red and Green","them Blue and Green","Red, Blue and Green","White"]
 	flaskEnchants := ["Duration.","Effect.","Maximum Charges.","Charges used."]
@@ -1214,13 +1214,26 @@ processCrafts(file) {
 			}			
 		}
 		else if InStr(Arrayed[index], "Randomise") = 1 {
-			for a in augments {
-				if InStr(Arrayed[index], augments[a]) > 0 {
-					outArrayCount += 1					
-					outArray[outArrayCount, 0] := "Randomise values of " . augments[a] . " mods"
-					outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-					outArray[outArrayCount, 2] := "Other"
-					continue
+			if InStr(Arrayed[index], "Influence") > 0 {	
+			for a in addInfluence {
+					if InStr(Arrayed[index], addInfluence[a]) > 0 {
+						outArrayCount += 1					
+						outArray[outArrayCount, 0] := "Randomise Influence - " . addInfluence[a]
+						outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+						outArray[outArrayCount, 2] := "Other"
+						continue
+					}
+				}				
+			}	
+			else {	
+				for a in augments {
+					if InStr(Arrayed[index], augments[a]) > 0 {
+						outArrayCount += 1					
+						outArray[outArrayCount, 0] := "Randomise values of " . augments[a] . " mods"
+						outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+						outArray[outArrayCount, 2] := "Other"
+						continue
+					}
 				}
 			}		
 		}
