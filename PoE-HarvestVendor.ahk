@@ -917,7 +917,7 @@ processCrafts(file) {
 			;reforge same mod
 			else if (InStr(Arrayed[index], "less likely") > 0){
 				outArrayCount += 1						
-				outArray[outArrayCount, 0] := "Reforge Rare - same mods less likely"
+				outArray[outArrayCount, 0] := "Reforge Rare - Same mods LESS likely"
 				outArray[outArrayCount, 1] := getLVL(Arrayed[index])
 				outArray[outArrayCount, 2] := "Other"
 				continue
@@ -925,7 +925,7 @@ processCrafts(file) {
 			} 
 			else if (InStr(Arrayed[index], "more likely") > 0){
 				outArrayCount += 1						
-				outArray[outArrayCount, 0] := "Reforge Rare - same mods more likely"
+				outArray[outArrayCount, 0] := "Reforge Rare - Same mods MORE likely"
 				outArray[outArrayCount, 1] := getLVL(Arrayed[index])
 				outArray[outArrayCount, 2] := "Other"
 				continue
