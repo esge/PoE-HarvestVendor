@@ -13,10 +13,12 @@
 - It works as long as OCR doesn't do stupid stuff
 
 ## FIRST TIME INSTALL
-1. Download 4.6.2 release of Capture2Text: https://sourceforge.net/projects/capture2text/files/Capture2Text/
-2. Download last release of HarvestVendor: https://github.com/esge/PoE-HarvestVendor/releases/latest
-3. Create a new folder and put HarvestVendor (ahk or exe) and extracted Cature2text folder into it  
-    ![](examples/folder.png)
+1. click on DOWNLOAD HERE up there ^ it takes you to the latest releases
+2. get the ahk or exe zip thats marked First_Install
+3. unpack it, it contains all neccessary stuff:
+    - capture2text
+    - resources folder
+    - the tool itself (harvestVendor ahk or exe)
 
 4. Run HarvestVendor `.ahk`/`.exe` 🎉
 
