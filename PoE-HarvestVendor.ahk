@@ -2,7 +2,7 @@
 #SingleInstance Force
 SetBatchLines -1
 SetWorkingDir %A_ScriptDir% 
-global version := "0.7.6"
+global version := "0.7.7"
 
 ; === some global variables ===
 global outArray := {}
@@ -194,7 +194,7 @@ newGUI() {
     gui, Font, s11 cA38D6D
         gui add, text, x%xColumn3% y40 vValue, You have:          ex            c in station   
         gui add, text, x%xColumn3% y63 vStored, Augs:  `t`tRems:   `tRem/Adds:  `t`tOther: 
-		gui add, text, x412 y40 w20 vcrafts, Total Crafts: 
+		gui add, text, x412 y40 w100 vcrafts, Total Crafts: 
     gui, Font, s11 cFFC555
         gui add, text, x170 y40 w30 right vsumEx, 0
         gui add, text, x220 y40 w30 right vsumChaos, 0
