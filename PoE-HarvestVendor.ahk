@@ -198,7 +198,7 @@ newGUI() {
     gui, Font, s11 cFFC555
         gui add, text, x170 y40 w30 right vsumEx, 0
         gui add, text, x220 y40 w30 right vsumChaos, 0
-		gui add, text, x485 y40 vCraftsSum, 0
+		gui add, text, x485 y40 w30 vCraftsSum, 0
 		gui add, text, x150 y64 w20 vAcount,0
 		gui add, text, x250 y64 w20 vRcount,0
 		gui add, text, x375 y64 w20 vRAcount,0
@@ -350,7 +350,7 @@ Add_crafts:
 	GuiControlGet, rescan, name, %A_GuiControl%	
     if (processCrafts(TempPath)) {
         Gui, HarvestUI:Show, w650 h585
-        CraftSort(outArray)	
+        CraftSort(outArray)			
         rememberSession()
     } else {
         Gui, HarvestUI:Show, w650 h585
@@ -378,6 +378,7 @@ craft:
 	guiControlGet, tempCraft,, craft_%tempRow%, value
 	detectType(tempCraft, tempRow)
 	sumTypes()
+	rememberSession()
 return
 
 lvl:
