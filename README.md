@@ -2,6 +2,8 @@
 
 ```diff
 - Only works if PoE is in WINDOWED / WINDOWED BORDERLESS mode, doesnt work in Fullscreen
+
+- Bigger resolution = more fucked up UI design because i don't know how to handle windows display scaling properly.
 ```
 # [DOWNLOAD HERE](https://github.com/esge/PoE-HarvestVendor/releases/latest)
 
