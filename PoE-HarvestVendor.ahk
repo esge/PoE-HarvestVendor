@@ -2,7 +2,7 @@
 #SingleInstance Force
 SetBatchLines -1
 SetWorkingDir %A_ScriptDir% 
-global version := "0.7.7"
+global version := "0.7.8"
 
 ; === some global variables ===
 global outArray := {}
