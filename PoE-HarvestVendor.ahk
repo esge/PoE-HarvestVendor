@@ -731,7 +731,8 @@ processCrafts(file) {
 	Arrayed := StrSplit(NewLined, "`r`n")
 	
 	augments := ["Caster","Physical","Fire","Attack","Life","Cold","Speed","Defence","Lightning","Chaos","Critical","a new modifier"]
-	remAddsClean := ["Caster","Physical","Fire","Attack","Life","Cold","Speed","Defence","Lightning","Chaos","Critical"]
+	remAddsClean := ["Caster","Physical","Fire","Attack","Life","Cold","Speed","Defence","Lightning","Chaos","Critical","Influence"]
+	removes := ["Caster","Physical","Fire","Attack","Life","Cold","Speed","Defence","Lightning","Chaos","Critical"]
 	;remAddsNon := ["non-Caster","non-Physical","non-Fire","non-Attack","non-Life","non-Cold","non-Speed","non-Defence","non-Lightning","non-Chaos","non-Critical"]
 	reforgeNonColor := ["non-Red","non-Blue","non-Green"]
 	reforge2color := ["Red and Blue","Red and Green","them Blue and Green","Red, Blue and Green","White"]
@@ -790,10 +791,10 @@ processCrafts(file) {
 			if (inStr(Arrayed[index], "Influenced") > 0 or inStr(Arrayed[index], "influenced") > 0) {
 				if InStr(Arrayed[index], "add") > 0 {				
 					if InStr(Arrayed[index], "non") > 0 {
-						for a in remAddsClean {
-							if InStr(Arrayed[index], remAddsClean[a]) > 0  {
+						for a in removes {
+							if InStr(Arrayed[index], removes[a]) > 0  {
 								outArrayCount += 1							
-								outArray[outArrayCount, 0] := "Remove non-" . remAddsClean[a] . " add " . remAddsClean[a]
+								outArray[outArrayCount, 0] := "Remove non-" . removes[a] . " add " . removes[a]
 								outArray[outArrayCount, 1] := getLVL(Arrayed[index])
 								outArray[outArrayCount, 2] := "Other" 
 								continue
@@ -801,10 +802,10 @@ processCrafts(file) {
 						}
 					} 
 					else if InStr(Arrayed[index], "non") = 0 {
-						for a in remAddsClean {
-							if InStr(Arrayed[index], remAddsClean[a]) > 0  {
+						for a in removes {
+							if InStr(Arrayed[index], removes[a]) > 0  {
 								outArrayCount += 1						
-								outArray[outArrayCount, 0] := "Remove " . remAddsClean[a] . " add " . remAddsClean[a]
+								outArray[outArrayCount, 0] := "Remove " . removes[a] . " add " . removes[a]
 								outArray[outArrayCount, 1] := getLVL(Arrayed[index])
 								outArray[outArrayCount, 2] := "Rem/Add"
 								continue
