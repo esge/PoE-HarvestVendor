@@ -1137,7 +1137,7 @@ processCrafts(file) {
 			else if InStr(Arrayed[index], "Divination") > 1  {
 				if InStr(Arrayed[index], "half a stack") > 1 {
 					outArrayCount += 1					
-					outArray[outArrayCount, 0] := "Sacrifice Div Cards"
+					outArray[outArrayCount, 0] := "Sacrifice half stack for 0-2x return"
 					outArray[outArrayCount, 1] := getLVL(Arrayed[index])
 					outArray[outArrayCount, 2] := "Other"
 					continue
