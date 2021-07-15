@@ -1,5 +1,13 @@
 # PoE-HarvestVendor
 
+## A little status update (15.7.2021)
+- i think the tool as envisioned now is essentially feature complete
+    - adding things like WTB section, or tech like sorting would require major reworks and rethinking both visually and technically
+- the last thing i want to do before i call this 1.0 release is figure out how to properly handle scaling of the GUI on big resolution screens
+    - problem is, as of now, i don't have the time for it or a clue how to do it properly
+
+- i will still keep fixing bugs and updating to keep it in line with any harvest changes
+
 ```diff
 - Only works if PoE is in WINDOWED / WINDOWED BORDERLESS mode, doesnt work in Fullscreen
 
