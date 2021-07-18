@@ -2,7 +2,7 @@
 #SingleInstance Force
 SetBatchLines -1
 SetWorkingDir %A_ScriptDir% 
-global version := "0.7.9"
+global version := "0.7.10"
 
 ; === some global variables ===
 global outArray := {}
@@ -678,12 +678,12 @@ gui, font, s10
 	Gui, Add, text, x410 y10 w380, Important:
 	
 	gui, font, s10
-	gui, add, text, x420 y30 w370, If you are using Big resolution (more than 1080p) and have scaling for display set in windwos to more than 100`% (in Display settings)`r`nYou need to go into Settings in HarvestVendor and set Scale to match whats set in windows
+	gui, add, text, x420 y30 w370, If you are using Big resolution (more than 1080p) and have scaling for display set in windows to more than 100`% (in Display settings)`r`nYou need to go into Settings in HarvestVendor and set Scale to match whats set in windows
 	gui, font, s14 cBlack
 
 	gui, add, text, x410 y110 w380, Hidden features
 	gui, font, s10
-	gui, add, text, x420 y130 w370, - Hodling shift while clicking the X in a row will reduce the count by 1 and also write the craft and price into log.csv (you can find it through the Settings folder button in Settings)
+	gui, add, text, x420 y130 w370, - Holding shift while clicking the X in a row will reduce the count by 1 and also write the craft and price into log.csv (you can find it through the Settings folder button in Settings)
 	gui, font
 	Gui, Help:Show, w800 h610
 return
