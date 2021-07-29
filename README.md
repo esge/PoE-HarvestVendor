@@ -15,6 +15,8 @@
 ```
 # [DOWNLOAD HERE](https://github.com/esge/PoE-HarvestVendor/releases/latest)
 
+# [HOW TO USE - YT video](https://www.youtube.com/watch?v=l2syzeQ0YZQ)
+
 ⚠️ It's a BETA there will be issues and lacking features :)
 
 - Convert your Horticrafting station crafts into a post, almost in a smart way
