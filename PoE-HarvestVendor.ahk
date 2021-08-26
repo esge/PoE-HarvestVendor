@@ -1710,7 +1710,7 @@ getLeagues() {
 		; Hack for people with outdated certificates
 		shell := ComObjCreate("WScript.Shell")
 		exec := shell.Exec("curl.exe -k " . leagueAPIurl)
-		response := exec.StdOut.ReadAll()
+		response := exec.StdOut.ReadAll()		
 	} else {
 		oWhr := ComObjCreate("WinHttp.WinHttpRequest.5.1")
     	oWhr.Open("GET", leagueAPIurl, false)
@@ -1718,7 +1718,7 @@ getLeagues() {
     	oWhr.Send()
 		response := oWhr.ResponseText
 	}
-    if oWhr.Status == "200" {
+    if (oWhr.Status == "200" or FileExist("curl.exe")) {
         if InStr(response, "Standard") > 0 {
             parsed := Jxon_load(response) 
         ;couldnt figure out how to make the number in parsed.1.id work as paramter, it doesnt like %% in there between the dots
