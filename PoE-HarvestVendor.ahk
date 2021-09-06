@@ -2,7 +2,7 @@
 #SingleInstance Force
 SetBatchLines -1
 SetWorkingDir %A_ScriptDir% 
-global version := "0.7.10"
+global version := "0.7.11"
 
 ; === some global variables ===
 global outArray := {}
@@ -37,26 +37,32 @@ sleep, 250
 ; == init settings ==
 iniRead, seenInstructions,  %SettingsPath%, Other, seenInstructions
 if (seenInstructions == "ERROR" or seenInstructions == "") {
-		IniWrite, 0, %SettingsPath%, Other, seenInstructions 	
-		;GuiKey := "^+g"	
+		IniWrite, 0, %SettingsPath%, Other, seenInstructions 		
 		IniRead, seenInstructions, %SettingsPath%, Other, seenInstructions
 	}
 
 IniRead, GuiKey, %SettingsPath%, Other, GuiKey
-	if (GuiKey == "ERROR" or GuiKey == "") {
-		IniWrite, ^+g, %SettingsPath%, Other, GuiKey 	
-		;GuiKey := "^+g"	
+	checkValidChars := RegExMatch(GuiKey, "[a-zA-Z0-9]")
+	if (GuiKey == "ERROR" or GuiKey == "" or checkValidChars == 0) {
+		IniWrite, ^+g, %SettingsPath%, Other, GuiKey 			
 		sleep, 250
 		IniRead, GuiKey, %SettingsPath%, Other, GuiKey
+		if (checkValidChars == 0) {
+			msgBox, Open GUI hotkey was set to a non latin letter or number, it was reset to ctrl+shift+g
+		}
 	}
 hotkey, %GuiKey%, OpenGui
 
 IniRead, ScanKey, %SettingsPath%, Other, ScanKey
-	if (ScanKey == "ERROR" or ScanKey == "") {
+	checkValidChars := RegExMatch(ScanKey, "[a-zA-Z0-9]")
+	if (ScanKey == "ERROR" or ScanKey == "" or checkValidChars == 0) {
 		IniWrite, ^g, %SettingsPath%, Other, ScanKey 	
 		sleep, 250
 		IniRead, ScanKey, %SettingsPath%, Other, ScanKey
 		;ScanKey == "^g"	
+		if (checkValidChars == 0) {
+			msgBox, Scan hotkey was set to a non latin letter or number, it was reset to ctrl+g
+		}
 	}
 hotkey, %ScanKey%, Scan
 
