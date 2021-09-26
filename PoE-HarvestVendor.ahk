@@ -17,6 +17,7 @@ global outString
 global outStyle
 global MaxLen
 global seenInstructions
+global sessionLoading := False
 
 global PID := DllCall("Kernel32\GetCurrentProcessId")
 
@@ -114,9 +115,9 @@ Menu, Tray, Standard
     del_pic := LoadPicture("resources\del.png")
 ; =================================================================
 
-tooltip, loading... building GUI
+tooltip, loading... building GUI ;*[PoE-HarvestVendor]
 sleep, 250
-newGUI()
+newGUI() ;*[PoE-HarvestVendor]
 tooltip, ready
 sleep, 500
 Tooltip
@@ -141,12 +142,12 @@ Return
 
 Scan: ;ctrl+g launches straight into the capture, opens gui afterwards
     _wasVisible := IsGuiVisible("HarvestUI")
-    if (processCrafts(TempPath)) {
- 
+    if (processCrafts(TempPath)) {  
         Gui, HarvestUI:Show, w650 h585
         OnMessage(0x200, "WM_MOUSEMOVE") ;activates tooltip function		
         craftSort(outArray)
 		if (firstGuiOpen == 1) {
+			loadLastSession()
 			rememberSession()
 			firstGuiOpen := 0
 		}
@@ -339,6 +340,7 @@ Up:
     GuiControlget, tempCount,, count_%tempRow%
     tempCount += 1
     GuiControl,, count_%tempRow%, %tempCount%
+	
 return
 Dn:
     GuiControlGet, cntrl, name, %A_GuiControl%
@@ -348,13 +350,13 @@ Dn:
         tempCount -= 1
         GuiControl,, count_%tempRow%, %tempCount%
     }
-
+	
 return
 
 Add_crafts: 
 	buttonHold("addCrafts", "resources\addCrafts")
 	GuiControlGet, rescan, name, %A_GuiControl%	
-    if (processCrafts(TempPath)) {
+    if (processCrafts(TempPath)) {	
         Gui, HarvestUI:Show, w650 h585
         CraftSort(outArray)			
         rememberSession()
@@ -375,7 +377,7 @@ Clear_all:
 return
 
 count:
-
+	;rememberSession()
 return
 
 craft:	
@@ -383,16 +385,17 @@ craft:
     tempRow := getRow(cntrl)
 	guiControlGet, tempCraft,, craft_%tempRow%, value
 	detectType(tempCraft, tempRow)
-	sumTypes()
+	sumTypes()	
 	rememberSession()
+	
 return
 
 lvl:
-
+	;rememberSession()
 return
 
 type:
-sumTypes()
+	sumTypes()
 return
 
 Price:
@@ -481,8 +484,7 @@ ClearRow:
 		GuiControl,, type_%tempRow%	
 		guiControl,, lvl_%tempRow%
 	}
-	rememberSession()
-	
+	rememberSession()	
 return
 
 Aug_Post:
@@ -1666,14 +1668,16 @@ rememberCraft(row) {
 	}
 }
 
-rememberSession() {
-	loop, 20 {
-		rememberCraft(A_Index)	
+rememberSession() { ;*[PoE-HarvestVendor]
+	if (sessionLoading == False) { ;*[PoE-HarvestVendor]
+		loop, 20 { ;*[PoE-HarvestVendor]
+			rememberCraft(A_Index) ;*[PoE-HarvestVendor]
+		}
 	}
 }
 
-loadLastSessionCraft(row) {
-	IniRead, lastCraft, %SettingsPath%, LastSession, craft_%row%
+loadLastSessionCraft(row) { ;*[PoE-HarvestVendor]
+	IniRead, lastCraft, %SettingsPath%, LastSession, craft_%row% ;*[PoE-HarvestVendor]
 	if (lastCraft != "" and lastCraft != "ERROR") {
 		split := StrSplit(lastCraft, "|")
 		craft := split[1]
@@ -1692,9 +1696,11 @@ loadLastSessionCraft(row) {
 }
 
 loadLastSession(){
+	sessionLoading := True
 	loop,20{
 		loadLastSessionCraft(A_Index)		
 	}	
+	sessionLoading := False
 }
 
 clearAll() {
