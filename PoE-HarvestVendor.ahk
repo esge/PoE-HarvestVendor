@@ -144,10 +144,11 @@ Scan: ;ctrl+g launches straight into the capture, opens gui afterwards
     _wasVisible := IsGuiVisible("HarvestUI")
     if (processCrafts(TempPath)) {  
         Gui, HarvestUI:Show, w650 h585
+		loadLastSession()
         OnMessage(0x200, "WM_MOUSEMOVE") ;activates tooltip function		
         craftSort(outArray)
 		if (firstGuiOpen == 1) {
-			loadLastSession()
+			
 			rememberSession()
 			firstGuiOpen := 0
 		}
@@ -339,9 +340,9 @@ Up:
     tempRow := getRow(cntrl)
     GuiControlget, tempCount,, count_%tempRow%
     tempCount += 1
-    GuiControl,, count_%tempRow%, %tempCount%
-	
+    GuiControl,, count_%tempRow%, %tempCount%	
 return
+
 Dn:
     GuiControlGet, cntrl, name, %A_GuiControl%
     tempRow := getRow(cntrl)
@@ -349,8 +350,7 @@ Dn:
     if (tempCount > 0) {
         tempCount -= 1
         GuiControl,, count_%tempRow%, %tempCount%
-    }
-	
+    }	
 return
 
 Add_crafts: 
@@ -386,8 +386,7 @@ craft:
 	guiControlGet, tempCraft,, craft_%tempRow%, value
 	detectType(tempCraft, tempRow)
 	sumTypes()	
-	rememberSession()
-	
+	rememberSession()	
 return
 
 lvl:
