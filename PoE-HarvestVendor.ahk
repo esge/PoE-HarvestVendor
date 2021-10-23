@@ -2,7 +2,7 @@
 #SingleInstance Force
 SetBatchLines -1
 SetWorkingDir %A_ScriptDir% 
-global version := "0.7.11"
+global version := "0.7.12"
 
 ; === some global variables ===
 global outArray := {}
@@ -32,6 +32,15 @@ global SettingsPath := RoamingDir . "\settings.ini"
 global PricesPath := RoamingDir . "\prices.ini"
 global LogPath := RoamingDir . "\log.csv"
 global TempPath := RoamingDir . "\temp.txt"
+
+; detecting mouse button swap
+swapped := DllCall("GetSystemMetrics",UInt,"23")
+
+;	if (swapped) {		
+;		global primaryButton := "RButton"
+;	} else {
+;		global primaryButton := "LButton"
+;	}
 
 tooltip, loading... Initializing Settings
 sleep, 250
@@ -892,7 +901,7 @@ processCrafts(file) {
 					continue
 				}
 			; reforge rares
-			} else if (InStr(Arrayed[index], "new random") > 0) { ; 'new random' text appears only in reforge rares
+			} else if (InStr(Arrayed[index], "or Rare") > 0) { ; 'new random' text appears only in reforge rares
 				for a in remAddsClean {
 					if (InStr(Arrayed[index], remAddsClean[a]) > 0) {
 						if (InStr(Arrayed[index], "more") > 0 ) {
@@ -911,18 +920,18 @@ processCrafts(file) {
 					}
 				}			
 			} 
-			; reforge white/magic
-			else if (InStr(Arrayed[index], "Normal or Magic") > 0) {
-				for a in remAddsClean {
-					if (InStr(Arrayed[index], remAddsClean[a]) > 0) {
-						outArrayCount += 1						
-						outArray[outArrayCount, 0] := "Reforge Norm/Magic - " . remAddsClean[a]
-						outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-						outArray[outArrayCount, 2] := "Other"
-						continue
-					}
-				}				
-			} 
+			; reforge white/magic - removed in 3.16, was combined with reforge rare
+			;else if (InStr(Arrayed[index], "Normal or Magic") > 0) {
+			;	for a in remAddsClean {
+			;		if (InStr(Arrayed[index], remAddsClean[a]) > 0) {
+			;			outArrayCount += 1						
+			;			outArray[outArrayCount, 0] := "Reforge Norm/Magic - " . remAddsClean[a]
+			;			outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+			;;			outArray[outArrayCount, 2] := "Other"
+			;			continue
+			;		}
+			;	}				
+			;} 
 			;reforge same mod
 			else if (InStr(Arrayed[index], "less likely") > 0){
 				outArrayCount += 1						
@@ -1895,7 +1904,8 @@ Options: (White space separated)
     Gui, +LastFound +ToolWindow -Caption +AlwaysOnTop
     WinSet, Transparent, 120
     Gui, Select:Show, x%coverX% y%coverY% h%coverH% w%coverW%,"AutoHotkeySnapshotApp"
-    
+
+
     isLButtonDown := false
     SelectAreaEscapePressed := false
     Hotkey, Escape, SelectAreaEscape, On
