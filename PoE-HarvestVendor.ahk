@@ -350,6 +350,7 @@ Up:
     GuiControlget, tempCount,, count_%tempRow%
     tempCount += 1
     GuiControl,, count_%tempRow%, %tempCount%	
+	sumTypes()
 return
 
 Dn:
@@ -360,6 +361,7 @@ Dn:
         tempCount -= 1
         GuiControl,, count_%tempRow%, %tempCount%
     }	
+	sumTypes()
 return
 
 Add_crafts: 
@@ -387,6 +389,7 @@ return
 
 count:
 	;rememberSession()
+	
 return
 
 craft:	
@@ -1611,7 +1614,8 @@ sumTypes() {
 			RAcounter += 1
 		}
 		if (tempType == "Other") {
-			Ocounter += 1
+			guicontrolget, tempAmount,, count_%A_Index%, value
+			Ocounter += tempAmount
 		} 		
 	}
 	Allcounter := Acounter + Rcounter + RAcounter + Ocounter
