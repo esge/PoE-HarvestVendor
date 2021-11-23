@@ -2,7 +2,7 @@
 #SingleInstance Force
 SetBatchLines -1
 SetWorkingDir %A_ScriptDir% 
-global version := "0.7.12"
+global version := "0.7.13"
 
 ; === some global variables ===
 global outArray := {}
@@ -1320,6 +1320,58 @@ processCrafts(file) {
 		} 
 		;Upgrade
 		else if InStr(Arrayed[index], "Upgrade") = 1 {
+			if InStr(Arrayed[index], "Normal") > 0 {
+				if InStr(Arrayed[index], "one random ") > 0 {
+					outArrayCount += 1			
+					outArray[outArrayCount, 0] := "Upgrade Normal to Magic adding one high-tier mod"
+					outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+					outArray[outArrayCount, 2] := "Other"
+				}
+				else if InStr(Arrayed[index], "two random ") > 0 {
+					outArrayCount += 1			
+					outArray[outArrayCount, 0] := "Upgrade Normal to Magic adding two high-tier mods"
+					outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+					outArray[outArrayCount, 2] := "Other"
+				}
+			} 
+			else if InStr(Arrayed[index], "Rare") > 0 {
+				if InStr(Arrayed[index], "two random modifiers") > 0 {
+					outArrayCount += 1			
+					outArray[outArrayCount, 0] := "Upgrade Magic to Rare adding two mods"
+					outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+					outArray[outArrayCount, 2] := "Other"
+				}
+				else if InStr(Arrayed[index], "two random high-tier modifiers") > 0 {
+					outArrayCount += 1			
+					outArray[outArrayCount, 0] := "Upgrade Magic to Rare adding two high-tier mods"
+					outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+					outArray[outArrayCount, 2] := "Other"
+				}
+				else if InStr(Arrayed[index], "three random modifiers") > 0 {
+					outArrayCount += 1			
+					outArray[outArrayCount, 0] := "Upgrade Magic to Rare adding three mods"
+					outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+					outArray[outArrayCount, 2] := "Other"
+				}
+				else if InStr(Arrayed[index], "three random high-tier modifiers") > 0 {
+					outArrayCount += 1			
+					outArray[outArrayCount, 0] := "Upgrade Magic to Rare adding three high-tier mods"
+					outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+					outArray[outArrayCount, 2] := "Other"
+				}
+				else if InStr(Arrayed[index], "four random modifiers") > 0 {
+					outArrayCount += 1			
+					outArray[outArrayCount, 0] := "Upgrade Magic to Rare adding four mods"
+					outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+					outArray[outArrayCount, 2] := "Other"
+				}
+				else if InStr(Arrayed[index], "four random high—tier modifiers") > 0 {
+					outArrayCount += 1			
+					outArray[outArrayCount, 0] := "Upgrade Magic to Rare adding four high-tier mods"
+					outArray[outArrayCount, 1] := getLVL(Arrayed[index])
+					outArray[outArrayCount, 2] := "Other"
+				}
+			}
 			continue
 			;skipping upgrade crafts			
 		}		
