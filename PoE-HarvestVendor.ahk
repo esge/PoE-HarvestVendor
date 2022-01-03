@@ -1620,25 +1620,22 @@ getRow(elementVariable) {
 }
 
 getLVL(craft) {
-	lvlpos := RegExMatch(craft, "Level \d\d") + 6    
-	lv := substr(craft, lvlpos, 2)
-	if RegExMatch(lv, "\d\d") > 0 {			
-		if (lv < 37) { ;ppl wouldn't sell lv 30 crafts, but sometimes OCR mistakes 8 for a 3 this just bumps it up for the 76+ rule
-			lv += 50
-		}		
-		return lv		
-	} 
-	else if (lvlpos == 6) {
-		lvlpos := RegExMatch(craft, "lv\d\d") + 2    
-	    lv := substr(craft, lvlpos, 2)
-        if RegExMatch(lv, "\d\d") > 0 {			
-            if (lv < 37) { ;ppl wouldn't sell lv 30 crafts, but sometimes OCR mistakes 8 for a 3 this just bumps it up for the 76+ rule
-                lv += 50
-            }		
-            return lv		
-	    } 
-	} else {
-        return "00"
+    map_levels := {"S1": "81", "Sz": "82", "SQ": "80"}
+    lvlpos := RegExMatch(craft, "Oi)L[BEeOo]V[BEeOo][lI1] *(\w\w)", matchObj) ; + 6    
+    lv := matchObj[1] ;substr(craft, lvlpos, 2)
+    if RegExMatch(lv, "\d\d") > 0 {
+        if (lv < 37) { ;ppl wouldn't sell lv 30 crafts, but sometimes OCR mistakes 8 for a 3 this just bumps it up for the 76+ rule
+            lv += 50
+        }
+        return lv > 86 ? "" : lv
+    } 
+    else {
+        for k, v in map_levels {
+            if (k == lv) {
+                return v
+            }
+        }
+        return ""
     }
 }
 
