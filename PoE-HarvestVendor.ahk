@@ -1365,7 +1365,7 @@ processCrafts(file) {
 					outArray[outArrayCount, 1] := getLVL(Arrayed[index])
 					outArray[outArrayCount, 2] := "Other"
 				}
-				else if InStr(Arrayed[index], "four random high—tier modifiers") > 0 {
+				else if InStr(Arrayed[index], "four random high-tier modifiers") > 0 {
 					outArrayCount += 1			
 					outArray[outArrayCount, 0] := "Upgrade Magic to Rare adding four high-tier mods"
 					outArray[outArrayCount, 1] := getLVL(Arrayed[index])
