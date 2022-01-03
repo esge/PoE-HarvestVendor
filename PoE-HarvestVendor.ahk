@@ -144,7 +144,7 @@ OpenGui: ;ctrl+shift+g opens the gui, yo go from there
 		guicontrol, HarvestUI:Show, versionText
 		guicontrol, HarvestUI:Show, versionLink
 	}
-    Gui, HarvestUI:Show, w650 h585
+    showGUI() 
 	OnMessage(0x200, "WM_MOUSEMOVE")
 	
 Return
@@ -152,7 +152,7 @@ Return
 Scan: ;ctrl+g launches straight into the capture, opens gui afterwards
     _wasVisible := IsGuiVisible("HarvestUI")
     if (processCrafts(TempPath)) {  
-        Gui, HarvestUI:Show, w650 h585
+        showGUI()		
 		loadLastSession()
         OnMessage(0x200, "WM_MOUSEMOVE") ;activates tooltip function		
         craftSort(outArray)
@@ -166,13 +166,16 @@ Scan: ;ctrl+g launches straight into the capture, opens gui afterwards
         ; If processCrafts failed (e.g. the user pressed Escape), we should show the
         ; HarvestUI only if it was visible to the user before they pressed Ctrl+G
         if (_wasVisible)
-            Gui, HarvestUI:Show, w650 h585
+            showGUI() 			
     }
 return
 
 HarvestUIGuiEscape:
 HarvestUIGuiClose:
 	rememberSession()	
+	;save window position
+    WinGetPos, gui_x, gui_y,,, PoE-HarvestVendor v%version%
+    IniWrite, x%gui_x% y%gui_y%, %SettingsPath%, window position, gui_position
     Gui, HarvestUI:Hide
 return
 
@@ -352,6 +355,10 @@ newGUI() {
     gui temp:hide
 }
 
+showGUI() {
+    IniRead, gui_position, %SettingsPath%, window position, gui_position, Center
+    Gui, HarvestUI:Show, %gui_position% w650 h585
+}
 ; === Button actions ===
 Up:
     GuiControlGet, cntrl, name, %A_GuiControl%
@@ -377,11 +384,11 @@ Add_crafts:
 	buttonHold("addCrafts", "resources\addCrafts")
 	GuiControlGet, rescan, name, %A_GuiControl%	
     if (processCrafts(TempPath)) {	
-        Gui, HarvestUI:Show, w650 h585
+        showGUI() 		
         CraftSort(outArray)			
         rememberSession()
     } else {
-        Gui, HarvestUI:Show, w650 h585
+        showGUI() 		
     }
 return
 
