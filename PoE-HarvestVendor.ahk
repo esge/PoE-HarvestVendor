@@ -762,8 +762,27 @@ processCrafts(file) {
 	FileRead, temp, %file%
 	;FileRead, temp, test2.txt
 
-	NewLined := RegExReplace(temp, "(Reforge |Randomise |Remove |Augment |Improves |Upgrades |Upgrade |Set |Change |Exchange |Sacrifice a|Sacrifice up|Attempt |Enchant |Reroll |Fracture |Add a random |Synthesise |Split |Corrupt |Set. )" , "`r`n$1")
-	Arrayed := StrSplit(NewLined, "`r`n")
+	global CraftNames := {"Augment" : "Augment ", "Remove" : "Remove "
+    , "Reforge" : "Reforge ", "Enchant" : "Enchant "
+    , "Attempt" : "Attempt ", "Change" : "Change "
+    , "Sacrifice" : "Sacrifice a|Sacrifice up", "Improves" : "Improves "
+    , "Fracture" : "Fracture ", "Reroll" : "Reroll "
+    , "Randomise" : "Randomise ", "Add" : "Add a random "
+    , "Set" : "Set(a|ai|ta|ca)*? ", "Synthesise" : "Synthesise "
+    , "Corrupt" : "Corrupt ", "Exchange" : "Exchange "
+    , "Upgrade" : "Upgrade ", "Split" : "Split "}
+	global RegexpTemplateForCraft := "("
+	for k, v in CraftNames {
+		RegexpTemplateForCraft .= v . "|"
+	}
+	RegexpTemplateForCraft := RTrim(RegexpTemplateForCraft, "|") . ")"
+
+	NewLined := RegExReplace(temp, RegexpTemplateForCraft, "#$1")
+	NewLined := SubStr(NewLined, inStr(NewLined, "#") + 1) ; remove all before "#" and "#" too
+	Arrayed := StrSplit(NewLined, "#")
+
+	;NewLined := RegExReplace(temp, "(Reforge |Randomise |Remove |Augment |Improves |Upgrades |Upgrade |Set |Change |Exchange |Sacrifice a|Sacrifice up|Attempt |Enchant |Reroll |Fracture |Add a random |Synthesise |Split |Corrupt |Set. )" , "`r`n$1")
+	;Arrayed := StrSplit(NewLined, "`r`n")
 	
 	augments := ["Caster","Physical","Fire","Attack","Life","Cold","Speed","Defence","Lightning","Chaos","Critical","a new modifier"]
 	remAddsClean := ["Caster","Physical","Fire","Attack","Life","Cold","Speed","Defence","Lightning","Chaos","Critical","Influence"]
