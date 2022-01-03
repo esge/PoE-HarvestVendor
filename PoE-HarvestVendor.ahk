@@ -179,6 +179,15 @@ return
 newGUI() {
     Global
     Gui, HarvestUI:New,, PoE-HarvestVendor v%version% 
+
+	iniRead tempOnTop, %SettingsPath%, Other, alwaysOnTop	
+	;set window state
+	if (tempOnTop = 1) {
+		Gui, HarvestUI:+AlwaysOnTop
+	}
+	if (tempOnTop = 0) {
+		Gui, HarvestUI:-AlwaysOnTop
+	}
 	;Gui -DPIScale  	;this will turn off scaling on big screens, which is nice for keeping layout but doesn't solve the font size, and fact that it would be tiny on big screens
     Gui, Color, 0x0d0d0d, 0x1A1B1B
     gui, Font, s11 cFFC555
