@@ -1798,22 +1798,13 @@ getLeagues() {
         if InStr(response, "Standard") > 0 {
             parsed := Jxon_load(response) 
         ;couldnt figure out how to make the number in parsed.1.id work as paramter, it doesnt like %% in there between the dots
-            tempParse := parsed.1.id          
-            iniWrite, %tempParse%, %SettingsPath%, Leagues, 1
-            tempParse := parsed.2.id          
-            iniWrite, %tempParse%, %SettingsPath%, Leagues, 2
-            tempParse := parsed.3.id          
-            iniWrite, %tempParse%, %SettingsPath%, Leagues, 3
-            tempParse := parsed.4.id          
-            iniWrite, %tempParse%, %SettingsPath%, Leagues, 4
-            tempParse := parsed.5.id          
-            iniWrite, %tempParse%, %SettingsPath%, Leagues, 5
-            tempParse := parsed.6.id          
-            iniWrite, %tempParse%, %SettingsPath%, Leagues, 6
-            tempParse := parsed.7.id          
-            iniWrite, %tempParse%, %SettingsPath%, Leagues, 7
-            tempParse := parsed.8.id          
-            iniWrite, %tempParse%, %SettingsPath%, Leagues, 8
+			for k, v in parsed {
+				if (k > 8) { ;take first 8
+					break
+				}
+				tempParse := v["id"]
+				iniWrite, %tempParse%, %SettingsPath%, Leagues, %k%
+			}
         } else {
             IniRead, lc, %SettingsPath%, Leagues, 1
             if (lc == "ERROR" or lc == "") {
