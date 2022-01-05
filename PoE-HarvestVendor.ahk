@@ -989,11 +989,11 @@ Handle_Reforge(craftText, ByRef out) {
 Handle_Enchant(craftText, ByRef out) {
     ;flask
     if InStr(craftText, "Flask") > 0 {
-        flaskEnchants := ["Duration", "Effect", "Maximum Charges", "Charges used"]
-        for k, v in flaskEnchants {
-            if InStr(craftText, v) > 0 {
-                tempArray := ["inc", "inc", "inc", "reduced"]
-                out.push(["Enchant Flask: " . tempArray[k] . " " . v
+        flaskEnchants := {"Duration": "inc", "Effect": "inc"
+            , "Maximum Charges": "inc", "Charges used": "reduced"}
+        for flaskEnchant, mod in flaskEnchants {
+            if InStr(craftText, flaskEnchant) > 0 {
+                out.push(["Enchant Flask: " . mod . " " . flaskEnchant
                     , getLVL(craftText)
                     , "Other"])
                 return
@@ -1073,7 +1073,8 @@ Handle_Change(craftText, ByRef out) {
         coldVal := InStr(craftText, "Cold")
         lightVal := InStr(craftText, "Lightning")
 
-        if max(fireVal, coldVal, lightVal) == fireVal {
+        maxVal := max(fireVal, coldVal, lightVal)
+        if maxVal == fireVal {
             if (coldVal > 0) {
                 out.push(["Change Resist: Cold to Fire"
                     , getLVL(craftText)
@@ -1083,7 +1084,7 @@ Handle_Change(craftText, ByRef out) {
                     , getLVL(craftText)
                     , "Other"])
             }
-        } else if max(fireVal, coldVal, lightVal) == coldVal {
+        } else if maxVal == coldVal {
             if (fireVal > 0) {
                 out.push(["Change Resist: Fire to Cold"
                     , getLVL(craftText)
@@ -1093,7 +1094,7 @@ Handle_Change(craftText, ByRef out) {
                     , getLVL(craftText)
                     , "Other"])
             }
-        } else if max(fireVal, coldVal, lightVal) == lightVal {
+        } else if maxVal == lightVal {
             if (fireVal > 0) {
                 out.push(["Change Resist: Fire to Lightning"
                     , getLVL(craftText)
