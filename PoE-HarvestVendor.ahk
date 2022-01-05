@@ -2,7 +2,7 @@
 #SingleInstance Force
 SetBatchLines -1
 SetWorkingDir %A_ScriptDir% 
-global version := "0.7.14"
+global version := "0.8"
 
 ; === some global variables ===
 global outArray := {}
@@ -33,6 +33,21 @@ global SettingsPath := RoamingDir . "\settings.ini"
 global PricesPath := RoamingDir . "\prices.ini"
 global LogPath := RoamingDir . "\log.csv"
 global TempPath := RoamingDir . "\temp.txt"
+
+global CraftNames := {"Augment" : "Augment ", "Remove" : "Remove "
+    , "Reforge" : "Reforge ", "Enchant" : "Enchant "
+    , "Attempt" : "Attempt ", "Change" : "Change "
+    , "Sacrifice" : "Sacrifice a|Sacrifice up", "Improves" : "Improves "
+    , "Fracture" : "Fracture ", "Reroll" : "Reroll "
+    , "Randomise" : "Randomise ", "Add" : "Add a random "
+    , "Set" : "Set(a|ai|ta|ca)*? ", "Synthesise" : "Synthesise "
+    , "Corrupt" : "Corrupt ", "Exchange" : "Exchange "
+    , "Upgrade" : "Upgrade ", "Split" : "Split "}
+global RegexpTemplateForCraft := "("
+for k, v in CraftNames {
+    RegexpTemplateForCraft .= v . "|"
+}
+RegexpTemplateForCraft := RTrim(RegexpTemplateForCraft, "|") . ")"
 
 ; detecting mouse button swap
 ;swapped := DllCall("GetSystemMetrics",UInt,"23")
@@ -137,6 +152,10 @@ if (seenInstructions == 0) {
 }
 return
 
+showGUI() {
+    IniRead, gui_position, %SettingsPath%, window position, gui_position, Center
+    Gui, HarvestUI:Show, %gui_position% w650 h585
+}
 
 OpenGui: ;ctrl+shift+g opens the gui, yo go from there
     loadLastSession()
@@ -155,13 +174,11 @@ Scan: ;ctrl+g launches straight into the capture, opens gui afterwards
         showGUI()
         loadLastSession()
         OnMessage(0x200, "WM_MOUSEMOVE") ;activates tooltip function
-        CraftSort(outArray)
+        updateCraftTable(outArray)
         if (firstGuiOpen == 1) {
-            
             rememberSession()
             firstGuiOpen := 0
         }
-        
     } else {
         ; If processCrafts failed (e.g. the user pressed Escape), we should show the
         ; HarvestUI only if it was visible to the user before they pressed Ctrl+G
@@ -176,21 +193,13 @@ HarvestUIGuiClose:
     ;save window position
     WinGetPos, gui_x, gui_y,,, PoE-HarvestVendor v%version%
     IniWrite, x%gui_x% y%gui_y%, %SettingsPath%, window position, gui_position
+
     Gui, HarvestUI:Hide
 return
 
 newGUI() {
     Global
     Gui, HarvestUI:New,, PoE-HarvestVendor v%version% 
-
-    iniRead tempOnTop, %SettingsPath%, Other, alwaysOnTop    
-    ;set window state
-    if (tempOnTop = 1) {
-        Gui, HarvestUI:+AlwaysOnTop
-    }
-    if (tempOnTop = 0) {
-        Gui, HarvestUI:-AlwaysOnTop
-    }
     ;Gui -DPIScale      ;this will turn off scaling on big screens, which is nice for keeping layout but doesn't solve the font size, and fact that it would be tiny on big screens
     Gui, Color, 0x0d0d0d, 0x1A1B1B
     gui, Font, s11 cFFC555
@@ -250,7 +259,15 @@ newGUI() {
             tempOnTop := 0 
         }
     guicontrol,,alwaysOnTop, %tempOnTop%
-
+    ;set window state
+    if (tempOnTop = 1) {
+        Gui, HarvestUI:+AlwaysOnTop
+    }
+    if (tempOnTop = 0) {
+        Gui, HarvestUI:-AlwaysOnTop
+    }
+    
+    
     gui add, picture, x%xColumn7% y114 gAdd_crafts vaddCrafts, resources\addCrafts.png
     gui add, picture, x%xColumn7% y136 gLast_Area vrescanButton, resources\lastArea.png
     gui add, picture, x%xColumn7% y159 gClear_All vclearAll, resources\clear.png
@@ -340,7 +357,7 @@ newGUI() {
             gui add, picture, x%xColumnUpDn% y%row2dn% gDn vDn_%A_Index%, % "HBITMAP:*" dn_pic
 
         gui add, picture, x%xColumn3% y%row2% AltSubmit , % "HBITMAP:*" craft_pic ;resources\craft.png
-            gui add, edit, x%xEditOffset3% y%row2p% w295 h18 -E0x200 +BackgroundTrans vcraft_%A_Index% gcraft
+            gui add, edit, x%xEditOffset3% y%row2p% w295 h18 -E0x200  +BackgroundTrans vcraft_%A_Index% gcraft        
 
         gui add, picture, x%xColumn4% y%row2% AltSubmit , % "HBITMAP:*" lvl_pic ;resources\lvl.png
             gui add, edit, x%xEditOffset4% y%row2p% w23 h18 -E0x200 +BackgroundTrans Center vlvl_%A_Index% glvl
@@ -355,10 +372,7 @@ newGUI() {
     gui temp:hide
 }
 
-showGUI() {
-    IniRead, gui_position, %SettingsPath%, window position, gui_position, Center
-    Gui, HarvestUI:Show, %gui_position% w650 h585
-}
+
 ; === Button actions ===
 Up:
     GuiControlGet, cntrl, name, %A_GuiControl%
@@ -387,7 +401,7 @@ Add_crafts:
     GuiControlGet, rescan, name, %A_GuiControl% 
     if (processCrafts(TempPath)) {
         showGUI()
-        CraftSort(outArray)
+        updateCraftTable(outArray)
         rememberSession()
     } else {
         showGUI()
@@ -430,7 +444,7 @@ return
 Price:
     GuiControlGet, priceField, name, %A_GuiControl%
     guiControlGet, craftPrice,, %priceField%, value
-    priceFieldArray := strsplit(priceField,"_")
+    priceFieldArray := strsplit(priceField, "_")
     
     if (priceFieldArray[1] == "price") {
         r := priceFieldArray[2] ;row
@@ -502,6 +516,8 @@ ClearRow:
             GuiControl,, price_%tempRow%
             GuiControl,, type_%tempRow%
             guiControl,, lvl_%tempRow%
+
+            sortCraftTable()
         }
     } else {
         GuiControl,, craft_%tempRow%
@@ -509,7 +525,10 @@ ClearRow:
         GuiControl,, price_%tempRow%
         GuiControl,, type_%tempRow%
         guiControl,, lvl_%tempRow%
+
+        sortCraftTable()
     }
+    sumTypes()
     rememberSession()
 return
 
@@ -730,14 +749,560 @@ HelpGuiClose:
 return
 
 ; === my functions ===
+
+Handle_Augment(craftText, ByRef out) {
+    if (inStr(craftText, "Influenced") > 0) {
+        augments := ["Caster", "Physical", "Fire", "Attack", "Life", "Cold"
+        , "Speed", "Defence", "Lightning", "Chaos", "Critical", "a new modifier"]
+        for k, v in augments {
+            if (InStr(craftText, v) > 0) {
+                if (InStr(craftText, "Lucky") > 0) {
+                    out.push(["Augment non-influenced - " . v . " Lucky"
+                        , getLVL(craftText)
+                        , "Aug"])
+                } else {
+                    out.push(["Augment non-influenced - " . v
+                        , getLVL(craftText)
+                        , "Aug"])
+                }
+                return
+            }
+        }
+        return
+    }
+    if (InStr(craftText, "Lucky") > 0) {
+        out.push(["Augment Influence Lucky"
+            , getLVL(craftText)
+            , "Aug"])
+    } else {
+        out.push(["Augment Influence"
+            , getLVL(craftText)
+            , "Aug"])
+    }
+}
+
+Handle_Remove(craftText, ByRef out) {
+    if (InStr(craftText, "Influenced") > 0 or InStr(craftText, "influenced") > 0) {
+        if InStr(craftText, "add") > 0 {
+            removes := ["Caster", "Physical", "Fire", "Attack", "Life", "Cold"
+                , "Speed", "Defence", "Lightning", "Chaos", "Critical"]
+            if InStr(craftText, "non") > 0 {
+                for k, v in removes {
+                    if InStr(craftText, v) > 0  {
+                        out.push(["Remove non-" . v . " add " . v
+                            , getLVL(craftText)
+                            , "Other"])
+                        return
+                    }
+                }
+            } else if InStr(craftText, "non") = 0 {
+                for k, v in removes {
+                    if InStr(craftText, v) > 0  {
+                        out.push(["Remove " . v . " add " . v
+                            , getLVL(craftText)
+                            , "Rem/Add"])
+                        return
+                    }
+                }
+            }
+        } else {
+            augments := ["Caster", "Physical", "Fire", "Attack", "Life", "Cold"
+                , "Speed", "Defence", "Lightning", "Chaos", "Critical", "a new modifier"]
+            for k, v in augments {
+                if InStr(craftText, v) > 0 {
+                    out.push(["Remove " . v
+                        , getLVL(craftText)
+                        , "Rem"])
+                    return
+                }
+            }
+        }
+        return
+    }
+    if (InStr(craftText, "add") > 0) {
+        if InStr(craftText, "non") > 0 {
+            out.push(["Remove non-Influence add Influence"
+                , getLVL(craftText)
+                , "Rem"])
+        } else if (InStr(craftText, "non") = 0) {
+            out.push(["Remove Influence add Influence"
+                , getLVL(craftText)
+                , "Rem"])
+        }
+    } else {
+        out.push(["Remove Influence"
+            , getLVL(craftText)
+            , "Rem"])
+    }
+}
+
+Handle_Reforge(craftText, ByRef out) {
+    ;prefixes
+    if InStr(craftText, "Prefixes") > 0 {
+        if InStr(craftText, "Lucky") > 0 {
+            out.push(["Reforge keep Prefixes Lucky"
+                , getLVL(craftText)
+                , "Other"])
+        } else {
+            out.push(["Reforge keep Prefixes"
+                , getLVL(craftText)
+                , "Other"])
+        }
+        return
+    }
+    ;suffixes
+    if InStr(craftText, "Suffixes") > 0 { 
+        if InStr(craftText, "Lucky") > 0 {
+            out.push(["Reforge keep Suffixes Lucky"
+                , getLVL(craftText)
+                , "Other"])
+        } else {
+            out.push(["Reforge keep Suffixes"
+                , getLVL(craftText)
+                , "Other"])
+        }
+        return
+    }
+    ; reforge rares
+    remAddsClean := ["Caster", "Physical", "Fire", "Attack", "Life", "Cold"
+        , "Speed", "Defence", "Lightning", "Chaos", "Critical", "Influence"]
+    if (InStr(craftText, "or Rare") > 0 or InStr(craftText, "orRare") > 0) { ; 'new random' text appears only in reforge rares
+        for k, v in remAddsClean {
+            if (InStr(craftText, v) > 0) {
+                if (InStr(craftText, "more") > 0 ) {
+                    out.push(["Reforge Rare - " . v . " more common"
+                        , getLVL(craftText)
+                        , "Other"])
+                } else {
+                    out.push(["Reforge Rare - " . v
+                        , getLVL(craftText)
+                        , "Other"])
+                }
+                return
+            }
+        }
+        return
+    } 
+    ; reforge white/magic - removed in 3.16, was combined with reforge rare
+    ;else if (InStr(craftText, "Normal or Magic") > 0) {
+    ;   for k, v in remAddsClean {
+    ;       if (InStr(craftText, v) > 0) {
+    ;           out.push(["Reforge Norm/Magic - " . v
+    ;               , getLVL(craftText)
+    ;               , "Other"]
+    ;           return
+    ;       }
+    ;   }
+    ;} 
+    ;reforge same mod
+    if (InStr(craftText, "less likely") > 0) {
+        out.push(["Reforge Rare - Less Likely"
+            , getLVL(craftText)
+            , "Other"])
+        return
+    }
+    if (InStr(craftText, "more likely") > 0) {
+        out.push(["Reforge Rare - More Likely"
+            , getLVL(craftText)
+            , "Other"])
+        return
+    }
+    ;links
+    if (InStr(craftText, "links") > 0 and InStr(craftText, "10 times") = 0) { 
+        if InStr(craftText,"six") > 0 {
+            out.push(["Six link (6-link)"
+                , getLVL(craftText)
+                , "Other"])
+        } else if InStr(craftText, "five") > 0 {
+            out.push(["Five link (5-link)"
+                , getLVL(craftText)
+                , "Other"])
+        }
+        return
+    }
+    ;colour
+    if (InStr(craftText, "colour") > 0 and InStr(craftText, "10 times") = 0) {
+        reforgeNonColor := ["non-Red", "non-Blue", "non-Green"]
+        for k, v in reforgeNonColor {
+            if InStr(craftText, v) > 0 {
+                out.push(["Reforge Сolour: " . v . " into " . StrReplace(v, "non-")
+                    , getLVL(craftText)
+                    , "Other"])
+                return
+            } 
+        }
+        reforge2color := ["Red and Blue", "Red and Green", "them Blue and Green"
+            , "Red Blue and Green", "White"]
+        for k, v in reforge2color {
+            if InStr(craftText, v) > 0 {
+                out.push(["Reforge into " . StrReplace(v, "them ")
+                    , getLVL(craftText)
+                    , "Other"])
+                return
+            }
+        }
+        return
+    }
+    if InStr(craftText, "Influence") > 0 {
+        out.push(["Reforge with Influence mod more common"
+            , getLVL(craftText)
+            , "Other"])
+        return
+    }
+}
+
+Handle_Enchant(craftText, ByRef out) {
+    ;flask
+    if InStr(craftText, "Flask") > 0 {
+        flaskEnchants := ["Duration", "Effect", "Maximum Charges", "Charges used"]
+        for k, v in flaskEnchants {
+            if InStr(craftText, v) > 0 {
+                tempArray := ["inc", "inc", "inc", "reduced"]
+                out.push(["Enchant Flask: " . tempArray[k] . " " . v
+                    , getLVL(craftText)
+                    , "Other"])
+                return
+            }
+        }
+        return
+    }
+    ;weapon
+    if InStr(craftText, "Weapon") > 0 {
+        weapEnchants := ["Critical Strike Chance", "Accuracy", "Attack Speed"
+            , "+1 Weapon Range", "Elemental", "Area of Effect"]
+        for k, enchant in weapEnchants {
+            if InStr(craftText, enchant) > 0 {
+                if (enchant == "Elemental") { ; OCR was failing to detect "Elemental Damage" properly, but "Elemental" is unique enough for detection, just gotta add "damage" for the output
+                    tempEnch := "Elemental Damage"
+                } else {
+                    tempEnch := enchant
+                }
+                out.push(["Enchant Weapon: " . tempEnch
+                    , getLVL(craftText)
+                    , "Other"])
+                return
+            }
+        }
+        return
+    }
+    ;body armour
+    if InStr(craftText, "Armour") > 0 { 
+        bodyEnchants := ["Maximum Life", "Maximum Mana", "Strength", "Dexterity"
+            , "Intelligence", "Fire Resistance", "Cold Resistance", "Lightning Resistance"]
+        for k, v in bodyEnchants {
+            if InStr(craftText, v) > 0 {
+                out.push(["Enchant Body: " . v
+                    , getLVL(craftText)
+                    , "Other"])
+                return
+            }
+        }
+        return
+    }
+    ;Map
+    if InStr(craftText, "Sextant") > 0 {
+        out.push(["Enchant Map: no Sextant use"
+            , getLVL(craftText)
+            , "Other"])
+        return
+    }
+    if InStr(craftText, "Tormented") > 0 {
+        out.push(["Enchant Map: surrounded by Tormented Spirits"
+            , getLVL(craftText)
+            , "Other"])
+        return
+    }
+}
+
+Handle_Attempt(craftText, ByRef out) {
+    ;awaken
+    if InStr(craftText, "Awaken") > 0 {
+        out.push(["Attempt to Awaken a level 20 Support Gem"
+            , getLVL(craftText)
+            , "Other"])
+        return
+    }
+    ;scarab upgrade
+    if InStr(craftText, "Scarab") > 0 { 
+        out.push(["Attempt to upgrade a Scarab"
+            , getLVL(craftText)
+            , "Other"])
+        return
+    }
+}
+
+Handle_Change(craftText, ByRef out) {
+    ; res mods
+    if InStr(craftText, "Resistance") > 0 {
+        fireVal := InStr(craftText, "Fire")
+        coldVal := InStr(craftText, "Cold")
+        lightVal := InStr(craftText, "Lightning")
+
+        if max(fireVal, coldVal, lightVal) == fireVal {
+            if (coldVal > 0) {
+                out.push(["Change Resist: Cold to Fire"
+                    , getLVL(craftText)
+                    , "Other"])
+            } else if (lightVal > 0) {
+                out.push(["Change Resist: Lightning to Fire"
+                    , getLVL(craftText)
+                    , "Other"])
+            }
+        } else if max(fireVal, coldVal, lightVal) == coldVal {
+            if (fireVal > 0) {
+                out.push(["Change Resist: Fire to Cold"
+                    , getLVL(craftText)
+                    , "Other"])
+            } else if (lightVal > 0) {
+                out.push(["Change Resist: Lightning to Cold"
+                    , getLVL(craftText)
+                    , "Other"])
+            }
+        } else if max(fireVal, coldVal, lightVal) == lightVal {
+            if (fireVal > 0) {
+                out.push(["Change Resist: Fire to Lightning"
+                    , getLVL(craftText)
+                    , "Other"])
+            } else if (coldVal > 0) {
+                out.push(["Change Resist: Cold to Lightning"
+                    , getLVL(craftText)
+                    , "Other"])
+            }
+        }
+        return
+    }
+    if (InStr(craftText, "Bestiary") > 0 or InStr(craftText, "Lures") > 0) {
+        out.push(["Change Unique Bestiary item or item with Aspect into Lures"
+            , getLVL(craftText)
+            , "Other"])
+        return
+    }
+    ; ignore others ?
+}
+
+Handle_Sacrifice(craftText, ByRef out) {
+    ;gem for gcp/xp
+    if InStr(craftText, "Gem") > 10 {
+        gemPerc := ["20%", "30%", "40%", "50%"]
+        for k, v in gemPerc {
+            if InStr(craftText, v) > 0 {
+                if InStr(craftText, "quality") > 0 {
+                    out.push(["Sacrifice gem, get " . v . " qual as GCP"
+                        , getLVL(craftText)
+                        , "Other"])
+                } else if InStr(craftText,"experience") {
+                    out.push(["Sacrifice gem, get " . v . " exp as Lens"
+                        , getLVL(craftText)
+                        , "Other"])
+                }
+                return
+            }
+        }
+        return
+    }
+    ;div cards gambling
+    if InStr(craftText, "Divination") > 1 { 
+        if InStr(craftText, "half a stack") > 1 {
+            out.push(["Sacrifice half stack for 0-2x return"
+                , getLVL(craftText)
+                , "Other"])
+        }
+        return
+        ;skipping this:
+        ;   Sacrifice a stack of Divination Cards for that many different Divination Cards
+    }
+    ;ignores the rest of sacrifice crafts:
+        ;Sacrifice or Mortal Fragment into another random Fragment of that type
+        ;Sacrificie Maps for same or lower tier stuff
+        ;Sacrifice maps for missions
+        ;Sacrifice maps for map device infusions
+        ;Sacrifice maps for fragments
+        ;Sacrifice maps for map currency
+        ;Sacrifice maps for scarabs
+        ;sacrifice t14+ map for elder/shaper/synth map
+        ;sacrifice weap/ar to make similiar belt/ring/amulet/jewel
+   
+}
+
+Handle_Improves(craftText, ByRef out) {
+    if InStr(craftText, "Flask") > 0 {
+        out.push(["Improves the Quality of a Flask"
+            , getLVL(craftText)
+            , "Other"])
+        return
+    }
+    if InStr(craftText, "Gem") > 0 {
+        out.push(["Improves the Quality of a Gem"
+            , getLVL(craftText)
+            , "Other"])
+        return
+    }
+}
+
+Handle_Fracture(craftText, ByRef out) {
+    fracture := ["modifier", "Suffix", "Prefix"]
+    for k, v in fracture {
+        if InStr(craftText, v) > 0 {
+            out.push(["Fracture " . (v == "modifier") ? "1/5 ": "1/3 " . v
+                , getLVL(craftText)
+                , "Other"])
+            return
+        }
+    }
+}
+
+Handle_Reroll(craftText, ByRef out) {
+    if InStr(craftText, "Implicit") > 0 {
+        out.push(["Reroll All Lucky"
+            , getLVL(craftText)
+            , "Other"])
+        return  
+    }
+    if InStr(craftText, "Prefix") > 0 {
+        out.push(["Reroll Prefix Lucky"
+            , getLVL(craftText)
+            , "Other"])
+        return
+    }
+    if InStr(craftText, "Suffix") > 0 {
+        out.push(["Reroll Suffix Lucky"
+            , getLVL(craftText)
+            , "Other"])
+        return
+    }
+}
+
+Handle_Randomise(craftText, ByRef out) {
+    if InStr(craftText, "Influence") > 0 { 
+        addInfluence := ["Weapon", "Armour", "Jewellery"]
+        for k, v in addInfluence {
+            if InStr(craftText, v) > 0 {
+                out.push(["Randomise Influence - " . v
+                    , getLVL(craftText)
+                    , "Other"])
+                return
+            }
+        }
+        return
+    }
+    augments := ["Caster", "Physical", "Fire", "Attack", "Life", "Cold"
+        , "Speed", "Defence", "Lightning", "Chaos", "Critical", "a new modifier"]
+    for k, v in augments {
+        if InStr(craftText, v) > 0 {
+            out.push(["Randomise values of " . v . " mods"
+                , getLVL(craftText)
+                , "Other"])
+            return
+        }
+    }
+}
+
+Handle_Add(craftText, ByRef out) {
+    addInfluence := ["Weapon", "Armour", "Jewellery"]
+    for k, v in addInfluence {
+        if InStr(craftText, v) > 0 {
+            out.push(["Add Influence to " . v
+                , getLVL(craftText)
+                , "Other"])
+            return
+        }
+    }
+}
+
+Handle_Set(craftText, ByRef out) {
+    if InStr(craftText, "Prismatic") > 0 {
+        out.push(["Set Implicit Basic Jewel"
+            , getLVL(craftText)
+            , "Other"])
+        return
+    }
+    if (InStr(craftText, "Timeless") > 0 or InStr(craftText, "Abyss") > 0) {
+        out.push(["Set Implicit Abyss/Timeless Jewel"
+            , getLVL(craftText)
+            , "Other"])
+        return
+    }
+    if InStr(craftText, "Cluster") > 0 {
+        out.push(["Set Implicit Cluster Jewel"
+            , getLVL(craftText)
+            , "Other"])
+        return
+    }
+}
+
+Handle_Synthesise(craftText, ByRef out) {
+    out.push(["Synthesise an item"
+        , getLVL(craftText)
+        , "Other"])
+}
+
+Handle_Corrupt(craftText, ByRef out) {
+    ;Corrupt an item 10 times, or until getting a corrupted implicit modifier
+
+    ;outArrCount += 1
+    ;outArr[outArrCount] := craftText
+}
+
+Handle_Exchange(craftText, ByRef out) {
+    ;skipping all exchange crafts assuming anybody would just use them for themselfs
+}
+
+Handle_Upgrade(craftText, ByRef out) {
+    if InStr(craftText, "Normal") > 0 {
+        if InStr(craftText, "one random ") > 0 {
+            out.push(["Upgrade Normal to Magic adding 1 high-tier mod"
+                , getLVL(craftText)
+                , "Other"])
+        } else if InStr(craftText, "two random ") > 0 {
+            out.push(["Upgrade Normal to Magic adding 2 high-tier mods"
+                , getLVL(craftText)
+                , "Other"])
+        }
+        return
+    }
+    if InStr(craftText, "Rare") > 0 {
+        if InStr(craftText, "two random modifiers") > 0 {
+            out.push(["Upgrade Magic to Rare adding 2 mods"
+                , getLVL(craftText)
+                , "Other"])
+        } else if InStr(craftText, "two random high-tier modifiers") > 0 {
+            out.push(["Upgrade Magic to Rare adding 2 high-tier mods"
+                , getLVL(craftText)
+                , "Other"])
+        } else if InStr(craftText, "three random modifiers") > 0 {
+            out.push(["Upgrade Magic to Rare adding 3 mods"
+                , getLVL(craftText)
+                , "Other"])
+        } else if InStr(craftText, "three random high-tier modifiers") > 0 {
+            out.push(["Upgrade Magic to Rare adding 3 high-tier mods"
+                , getLVL(craftText)
+                , "Other"])
+        } else if InStr(craftText, "four random modifiers") > 0 {
+            out.push(["Upgrade Magic to Rare adding 4 mods"
+                , getLVL(craftText)
+                , "Other"])
+        } else if InStr(craftText, "four random high-tier modifiers") > 0 {
+            out.push(["Upgrade Magic to Rare adding 4 high-tier mods"
+                , getLVL(craftText)
+                , "Other"])
+        }
+        return
+    }
+    ;skipping upgrade crafts
+}
+
+Handle_Split(craftText, ByRef out) {
+    ;skipping Split scarab craft
+}
+
+; === my functions ===
 processCrafts(file) {
     ; the file parameter is just for the purpose of running a test script with different input files of crafts instead of doing scans
     Gui, HarvestUI:Hide    
-    outArray := {}    
 
     if ((rescan == "rescanButton" and x_start == 0) or rescan != "rescanButton" ) {
         coordTemp := SelectArea("cffc555 t50 ms")
-        if (!coordTemp OR coordTemp.Length() == 0)
+        if (!coordTemp or coordTemp.Length() == 0)
             return false
 
         x_start := coordTemp[1]
@@ -749,10 +1314,11 @@ processCrafts(file) {
     sleep, 500
 
     Tooltip, Please Wait
-    command = Capture2Text\Capture2Text.exe -s `"%x_start% %y_start% %x_end% %y_end%`" -o `"%TempPath%`" -l English --trim-capture
+    whitelist := "1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-+%,. "
+    command = Capture2Text\Capture2Text.exe -s `"%x_start% %y_start% %x_end% %y_end%`" -o `"%TempPath%`" -l English --whitelist=`"%whitelist%`" --trim-capture
     RunWait, %command%
     
-    sleep, 1000 ;sleep cos if i show the Gui too quick the capture will grab screenshot of gui       
+    sleep, 1000 ;sleep cos if i show the Gui too quick the capture will grab screenshot of gui
     WinActivate, ahk_pid %PID%
     Tooltip
 
@@ -763,667 +1329,47 @@ processCrafts(file) {
 
     FileRead, temp, %file%
     ;FileRead, temp, test2.txt
+    
 
-    global CraftNames := {"Augment" : "Augment ", "Remove" : "Remove "
-    , "Reforge" : "Reforge ", "Enchant" : "Enchant "
-    , "Attempt" : "Attempt ", "Change" : "Change "
-    , "Sacrifice" : "Sacrifice a|Sacrifice up", "Improves" : "Improves "
-    , "Fracture" : "Fracture ", "Reroll" : "Reroll "
-    , "Randomise" : "Randomise ", "Add" : "Add a random "
-    , "Set" : "Set(a|ai|ta|ca)*? ", "Synthesise" : "Synthesise "
-    , "Corrupt" : "Corrupt ", "Exchange" : "Exchange "
-    , "Upgrade" : "Upgrade ", "Split" : "Split "}
-    global RegexpTemplateForCraft := "("
-    for k, v in CraftNames {
-        RegexpTemplateForCraft .= v . "|"
-    }
-    RegexpTemplateForCraft := RTrim(RegexpTemplateForCraft, "|") . ")"
-
+    
+    temp := RegExReplace(temp, "[\.\,]+", " ") ;remove all "," and "."
+    temp := RegExReplace(temp, " +?[^a1234567890] +?", " ") ;remove all single symbols except "a" and digits
+    
+    temp := Trim(RegExReplace(temp, " +", " ")) ;remove possible double spaces
+    
+    ;"(Reforge |Randomise |Remove |Augment |Improves |Upgrades |Upgrade |Change |Exchange |Sacrifice a|Sacrifice up|Attempt |Enchant |Reroll |Fracture |Add a random |Synthesise |Split |Corrupt |Set(a|ai|ta|ca)*? )"
     NewLined := RegExReplace(temp, RegexpTemplateForCraft, "#$1")
+    
     NewLined := SubStr(NewLined, inStr(NewLined, "#") + 1) ; remove all before "#" and "#" too
     Arrayed := StrSplit(NewLined, "#")
-
-    ;NewLined := RegExReplace(temp, "(Reforge |Randomise |Remove |Augment |Improves |Upgrades |Upgrade |Set |Change |Exchange |Sacrifice a|Sacrifice up|Attempt |Enchant |Reroll |Fracture |Add a random |Synthesise |Split |Corrupt |Set. )" , "`r`n$1")
-    ;Arrayed := StrSplit(NewLined, "`r`n")
     
-    augments := ["Caster","Physical","Fire","Attack","Life","Cold","Speed","Defence","Lightning","Chaos","Critical","a new modifier"]
-    remAddsClean := ["Caster","Physical","Fire","Attack","Life","Cold","Speed","Defence","Lightning","Chaos","Critical","Influence"]
-    removes := ["Caster","Physical","Fire","Attack","Life","Cold","Speed","Defence","Lightning","Chaos","Critical"]
     ;remAddsNon := ["non-Caster","non-Physical","non-Fire","non-Attack","non-Life","non-Cold","non-Speed","non-Defence","non-Lightning","non-Chaos","non-Critical"]
-    reforgeNonColor := ["non-Red","non-Blue","non-Green"]
-    reforge2color := ["Red and Blue","Red and Green","them Blue and Green","Red, Blue and Green","White"]
-    flaskEnchants := ["Duration.","Effect.","Maximum Charges.","Charges used."]
-    weapEnchants := ["Critical Strike Chance","Accuracy","Attack Speed","+1 Weapon Range","Elemental","Area of Effect"]
-    bodyEnchants := ["Maximum Life","Maximum Mana","Strength","Dexterity","Intelligence","Fire Resistance","Cold Resistance","Lightning Resistance"]
-    gemPerc := ["20%","30%","40%","50%"]
-    fracture := ["modifier","Suffix","Prefix"]    
-    addInfluence := ["Weapon", "Armour","Jewellery"]    
-    for index in Arrayed {    
-        Arrayed[index] := Trim(RegExReplace(Arrayed[index] , " +", " ")) ;remove possible double spaces from ocr
-        if (Arrayed[index] == "") {
+    outArray := {}
+    outArrayCount := 0
+    for index in Arrayed {  
+        ;Arrayed[index] := Trim(RegExReplace(Arrayed[index] , " +", " ")) ;remove possible double spaces from ocr
+        craftText := Trim(Arrayed[index])
+        ;StrLen("Set an item to six sockets") = 26. its min length for craft
+        if (craftText == "" or StrLen(craftText) < 26) {
             ;skip empty fields
-        }
-        ;Augment
-        else if InStr(Arrayed[index], "Augment") = 1 {
-            if (inStr(Arrayed[index], "Influenced") > 0) {
-                for a in augments {                                
-                    if (InStr(Arrayed[index], augments[a]) > 0) {
-                        if (InStr(Arrayed[index], "Lucky") > 0) {                                            
-                            outArrayCount += 1                          
-                            outArray[outArrayCount, 0] := "Augment non-influenced - " . augments[a] . " Lucky"
-                            outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                            outArray[outArrayCount, 2] := "Aug"                         
-                            continue
-                        } 
-                        else {
-                            outArrayCount += 1
-                            outArray[outArrayCount, 0] := "Augment non-influenced - " . augments[a]
-                            outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                            outArray[outArrayCount, 2] := "Aug" 
-                            continue
-                        }
+        } else {
+            for k in CraftNames {
+                if InStr(craftText, k) = 1 {
+                    if IsFunc("Handle_" . k) {
+                        Handle_%k%(craftText, outArray)
                     }
+                    break
                 }
-            } else {
-                if (InStr(Arrayed[index], "Lucky") > 0) {                                            
-                    outArrayCount += 1                          
-                    outArray[outArrayCount, 0] := "Augment Influence Lucky"
-                    outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                    outArray[outArrayCount, 2] := "Aug"                         
-                    continue
-                } 
-                else {
-                    outArrayCount += 1
-                    outArray[outArrayCount, 0] := "Augment Influence"
-                    outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                    outArray[outArrayCount, 2] := "Aug" 
-                    continue
-                }
-            }
-            
-        }
-        ;Remove
-        else if InStr(Arrayed[index], "Remove") = 1 {
-            if (inStr(Arrayed[index], "Influenced") > 0 or inStr(Arrayed[index], "influenced") > 0) {
-                if InStr(Arrayed[index], "add") > 0 {                
-                    if InStr(Arrayed[index], "non") > 0 {
-                        for a in removes {
-                            if InStr(Arrayed[index], removes[a]) > 0  {
-                                outArrayCount += 1
-                                outArray[outArrayCount, 0] := "Remove non-" . removes[a] . " add " . removes[a]
-                                outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                                outArray[outArrayCount, 2] := "Other" 
-                                continue
-                            }
-                        }
-                    } 
-                    else if InStr(Arrayed[index], "non") = 0 {
-                        for a in removes {
-                            if InStr(Arrayed[index], removes[a]) > 0  {
-                                outArrayCount += 1                        
-                                outArray[outArrayCount, 0] := "Remove " . removes[a] . " add " . removes[a]
-                                outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                                outArray[outArrayCount, 2] := "Rem/Add"
-                                continue
-                            }
-                        }
-                    }                
-                }             
-                else {
-                    for a in augments {
-                        if InStr(Arrayed[index], augments[a]) > 0 {
-                            outArrayCount += 1                        
-                            outArray[outArrayCount, 0] := "Remove " . augments[a]
-                            outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                            outArray[outArrayCount, 2] := "Rem"
-                            continue
-                        }
-                    }    
-                }    
-            } else {                
-                if (instr(Arrayed[index], "add") > 0) {
-                    if InStr(Arrayed[index], "non") > 0 {
-                        outArrayCount += 1                        
-                        outArray[outArrayCount, 0] := "Remove non-Influence add Influence"
-                        outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                        outArray[outArrayCount, 2] := "Rem"
-                        continue        
-                    }
-                    else if (InStr(Arrayed[index], "non") = 0) {
-                        outArrayCount += 1                        
-                        outArray[outArrayCount, 0] := "Remove Influence add Influence"
-                        outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                        outArray[outArrayCount, 2] := "Rem"
-                        continue
-                    }
-                }
-                else {
-                    outArrayCount += 1                        
-                    outArray[outArrayCount, 0] := "Remove Influence"
-                    outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                    outArray[outArrayCount, 2] := "Rem"
-                    continue    
-                }                
-            }                
-        }
-        ;Reforge
-        else if InStr(Arrayed[index], "Reforge") = 1 {
-            ;prefixes, suffixes
-            if InStr(Arrayed[index], "Prefixes") > 0 {
-                if InStr(Arrayed[index], "Lucky") > 0 {
-                    outArrayCount += 1                    
-                    outArray[outArrayCount, 0] := "Reforge keep Prefixes Lucky"
-                    outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                    outArray[outArrayCount, 2] := "Other"
-                    continue
-                } 
-                else {
-                    outArrayCount += 1                    
-                    outArray[outArrayCount, 0] := "Reforge keep Prefixes"
-                    outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                    outArray[outArrayCount, 2] := "Other"
-                    continue
-                }            
-            }
-            else if InStr(Arrayed[index], "Suffixes") > 0 {    
-                if InStr(Arrayed[index], "Lucky") > 0 {
-                    outArrayCount += 1
-                    outArray[outArrayCount, 0] := "Reforge keep Suffixes Lucky"
-                    outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                    outArray[outArrayCount, 2] := "Other"
-                    continue
-                }
-                else {
-                    outArrayCount += 1                        
-                    outArray[outArrayCount, 0] := "Reforge keep Suffixes"
-                    outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                    outArray[outArrayCount, 2] := "Other"
-                    continue
-                }
-            ; reforge rares
-            } else if (InStr(Arrayed[index], "or Rare") > 0) { ; 'new random' text appears only in reforge rares
-                for a in remAddsClean {
-                    if (InStr(Arrayed[index], remAddsClean[a]) > 0) {
-                        if (InStr(Arrayed[index], "more") > 0 ) {
-                            outArrayCount += 1                        
-                            outArray[outArrayCount, 0] := "Reforge Rare - " . remAddsClean[a] . " more common"
-                            outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                            outArray[outArrayCount, 2] := "Other"
-                            continue
-                        } else {
-                            outArrayCount += 1                        
-                            outArray[outArrayCount, 0] := "Reforge Rare - " . remAddsClean[a]
-                            outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                            outArray[outArrayCount, 2] := "Other"
-                            continue
-                        }
-                    }
-                }            
-            } 
-            ; reforge white/magic - removed in 3.16, was combined with reforge rare
-            ;else if (InStr(Arrayed[index], "Normal or Magic") > 0) {
-            ;    for a in remAddsClean {
-            ;        if (InStr(Arrayed[index], remAddsClean[a]) > 0) {
-            ;            outArrayCount += 1                        
-            ;            outArray[outArrayCount, 0] := "Reforge Norm/Magic - " . remAddsClean[a]
-            ;            outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-            ;;            outArray[outArrayCount, 2] := "Other"
-            ;            continue
-            ;        }
-            ;    }                
-            ;} 
-            ;reforge same mod
-            else if (InStr(Arrayed[index], "less likely") > 0){
-                outArrayCount += 1                        
-                outArray[outArrayCount, 0] := "Reforge Rare - Same mods LESS likely"
-                outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                outArray[outArrayCount, 2] := "Other"
-                continue
-            
-            } 
-            else if (InStr(Arrayed[index], "more likely") > 0){
-                outArrayCount += 1                        
-                outArray[outArrayCount, 0] := "Reforge Rare - Same mods MORE likely"
-                outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                outArray[outArrayCount, 2] := "Other"
-                continue
-            }
-            ;links
-            else if (InStr(Arrayed[index], "links") > 0 and InStr(Arrayed[index], "10 times") = 0) {
-                if InStr(Arrayed[index],"six") > 0 {
-                    outArrayCount += 1    
-                    outArray[outArrayCount, 0] := "Six link (6-link)"
-                    outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                    outArray[outArrayCount, 2] := "Other"
-                    continue
-                }    
-                else if InStr(Arrayed[index],"five") > 0 {
-                    outArrayCount += 1    
-                    outArray[outArrayCount, 0] := "Five link (5-link)"
-                    outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                    outArray[outArrayCount, 2] := "Other"
-                    continue
-                }    
-            } 
-            else if (InStr(Arrayed[index], "colour") > 0 and InStr(Arrayed[index], "10 times") = 0) {        
-                for a in reforgeNonColor {
-                    if InStr(Arrayed[index], reforgeNonColor[a]) > 0 {
-                        outArrayCount += 1
-                        outArray[outArrayCount, 0] := "Reforge " . reforgeNonColor[a] . " into " . StrReplace(reforgeNonColor[a], "non-")
-                        outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                        outArray[outArrayCount, 2] := "Other"
-                        continue
-                    } 
-                }
-                for b in reforge2color {
-                    if InStr(Arrayed[index], reforge2color[b]) > 0 {
-                        outArrayCount += 1                        
-                        outArray[outArrayCount, 0] := "Reforge into " . StrReplace(reforge2color[b],"them ")
-                        outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                        outArray[outArrayCount, 2] := "Other"
-                        continue
-                    }
-                }    
-            } 
-            else if InStr(Arrayed[index], "Influence") > 0 {                
-                outArrayCount += 1                
-                outArray[outArrayCount, 0] := "Reforge with Influence mod more common"
-                outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                outArray[outArrayCount, 2] := "Other"
-                continue
-            }            
-        } 
-        ;Enchant        
-        else if InStr(Arrayed[index], "Enchant") = 1 { 
-            ;flask
-            if InStr(Arrayed[index], "Flask") > 0 {
-                for a in flaskEnchants {
-                    if InStr(Arrayed[index], flaskEnchants[a]) > 0 {
-                        tempArray := ["inc","inc","inc","reduced"]
-                        outArrayCount += 1                        
-                        outArray[outArrayCount, 0] := "Enchant Flask: " . tempArray[a] . " " . flaskEnchants[a]
-                        outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                        outArray[outArrayCount, 2] := "Other"
-                        continue
-                    }
-                }
-            }
-            ;weapon            
-            else if InStr(Arrayed[index], "Weapon") > 0 {            
-                for a in weapEnchants {
-                    if InStr(Arrayed[index], weapEnchants[a]) > 0 {
-                        if (weapEnchants[a] == "Elemental") { ; OCR was failing to detect "Elemental Damage" properly, but "Elemental" is unique enough for detection, just gotta add "damage" for the output
-                            tempEnch := "Elemental Damage"
-                        } else {
-                            tempEnch := weapEnchants[a]
-                        }
-                        outArrayCount += 1                        
-                        outArray[outArrayCount, 0] := "Enchant Weapon: " . tempEnch
-                        outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                        outArray[outArrayCount, 2] := "Other"
-                        continue
-                    }
-                }
-            }            
-            ;body armour
-            else if InStr(Arrayed[index], "Armour") > 0 {
-                for a in bodyEnchants {
-                    if InStr(Arrayed[index], bodyEnchants[a]) > 0 {
-                        outArrayCount += 1
-                        outArray[outArrayCount, 0] := "Enchant Body: " . bodyEnchants[a]
-                        outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                        outArray[outArrayCount, 2] := "Other"
-                        continue
-                    }
-                }
-            }    
-            else if InStr(Arrayed[index], "Sextant") > 0 {
-                outArrayCount += 1                
-                outArray[outArrayCount, 0] := "Enchant Map: no Sextant use"
-                outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                outArray[outArrayCount, 2] := "Other"
-                continue
-            }
-        }
-        ;Attempt
-        else if InStr(Arrayed[index], "Attempt") = 1 {
-            ;awaken
-            if InStr(Arrayed[index], "Awaken") > 0 {
-                outArrayCount += 1                
-                outArray[outArrayCount, 0] := "Attempt to Awaken a level 20 Support Gem"
-                outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                outArray[outArrayCount, 2] := "Other"
-                continue
-            }
-            ;scarab upgrade
-            else if InStr(Arrayed[index], "Scarab") > 0 {
-                outArrayCount += 1                
-                outArray[outArrayCount, 0] := "Attempt to upgrade a Scarab"
-                outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                outArray[outArrayCount, 2] := "Other"
-                continue
-            }    
-        }
-        ;Change
-        
-        else if InStr(Arrayed[index], "Change") = 1 {
-            ; res mods
-            if InStr(Arrayed[index], "Resistance") > 0 {
-                fireVal := InStr(Arrayed[index], "Fire")
-                coldVal := InStr(Arrayed[index], "Cold")
-                lightVal := InStr(Arrayed[index], "Lightning")
-
-                if max(fireVal, coldVal, lightVal) == fireVal {
-                    if InStr(Arrayed[index], "Cold") > 0 {
-                        outArrayCount += 1                        
-                        outArray[outArrayCount, 0] := "Change Cold res to Fire res"
-                        outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                        outArray[outArrayCount, 2] := "Other"
-                        continue
-                    }
-                    else if InStr(Arrayed[index], "Lightning") > 0 {
-                        outArrayCount += 1                        
-                        outArray[outArrayCount, 0] := "Change Lightning res to Fire res"
-                        outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                        outArray[outArrayCount, 2] := "Other"
-                        continue
-                    }
-                }
-                else if max(fireVal, coldVal, lightVal) == coldVal {
-                    if InStr(Arrayed[index], "Fire") > 0 {
-                        outArrayCount += 1                        
-                        outArray[outArrayCount, 0] := "Change Fire res to Cold res"
-                        outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                        outArray[outArrayCount, 2] := "Other"
-                        continue
-                    }
-                    else if InStr(Arrayed[index], "Lightning") > 0 {
-                        outArrayCount += 1                        
-                        outArray[outArrayCount, 0] := "Change Lightning res to Cold res"
-                        outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                        outArray[outArrayCount, 2] := "Other"
-                        continue
-                    }
-                }
-                else if max(fireVal, coldVal, lightVal) == lightVal {
-                    if InStr(Arrayed[index], "Fire") > 0 {
-                        outArrayCount += 1                        
-                        outArray[outArrayCount, 0] := "Change Fire res to Lightning res"
-                        outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                        outArray[outArrayCount, 2] := "Other"
-                        continue
-                    }
-                    else if InStr(Arrayed[index], "Cold") > 0 {
-                        outArrayCount += 1                        
-                        outArray[outArrayCount, 0] := "Change Cold res to Lightning res"
-                        outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                        outArray[outArrayCount, 2] := "Other"
-                        continue
-                    }
-                }                
-            } else {
-            ; ignore others ?                
-            }        
-        } 
-        ;sacrifice         
-        else if InStr(Arrayed[index], "Sacrifice") = 1 {
-            ;gem for gcp/xp
-            if InStr(Arrayed[index], "Gem") > 10 {
-                for a in gemPerc {
-                    if InStr(Arrayed[index], gemPerc[a]) > 0 {
-                        if InStr(Arrayed[index],"quality")    > 0 {
-                            outArrayCount += 1                            
-                            outArray[outArrayCount, 0] := "Sacrifice gem, get " . gemPerc[a] . " qual as GCP"
-                            outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                            outArray[outArrayCount, 2] := "Other"
-                            continue
-                        }
-                    
-                        else if InStr(Arrayed[index],"experience") {
-                            outArrayCount += 1                            
-                            outArray[outArrayCount, 0] := "Sacrifice gem, get " . gemPerc[a] . " exp as Lens"
-                            outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                            outArray[outArrayCount, 2] := "Other"
-                            continue
-                        }
-                    }
-                }        
-            } 
-            ;div cards gambling
-            else if InStr(Arrayed[index], "Divination") > 1  {
-                if InStr(Arrayed[index], "half a stack") > 1 {
-                    outArrayCount += 1                    
-                    outArray[outArrayCount, 0] := "Sacrifice half stack for 0-2x return"
-                    outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                    outArray[outArrayCount, 2] := "Other"
-                    continue
-                }
-                ;skipping this:
-                ;    Sacrifice a stack of Divination Cards for that many different Divination Cards
-            } else {
-                continue
-                ;ignores the rest of sacrifice crafts:
-                    ;Sacrifice or Mortal Fragment into another random Fragment of that type
-                    ;Sacrificie Maps for same or lower tier stuff
-                    ;Sacrifice maps for missions
-                    ;Sacrifice maps for map device infusions
-                    ;Sacrifice maps for fragments
-                    ;Sacrifice maps for map currency
-                    ;Sacrifice maps for scarabs
-                    ;sacrifice t14+ map for elder/shaper/synth map
-                    ;sacrifice weap/ar to make similiar belt/ring/amulet/jewel                
             }
         } 
-
-        ;Improves        
-        else if InStr(Arrayed[index], "Improves") = 1 {    
-            if InStr(Arrayed[index], "Flask") > 0 {
-                outArrayCount += 1                
-                outArray[outArrayCount, 0] := "Improves the Quality of a Flask"
-                outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                outArray[outArrayCount, 2] := "Other"
-                continue
-            }
-            else if InStr(Arrayed[index], "Gem") > 0 {
-                outArrayCount += 1                
-                outArray[outArrayCount, 0] := "Improves the Quality of a Gem"
-                outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                outArray[outArrayCount, 2] := "Other"
-                continue
-            }
-        }    
-        
-        else if InStr(Arrayed[index], "Fracture") = 1 {
-            for a in fracture {
-                if InStr(Arrayed[index], fracture[a]) > 0 {
-                    outArrayCount += 1
-                    if (fracture[a] == "modifier") {                        
-                        outArray[outArrayCount, 0] := "Fracture 1/5 " . fracture[a]
-                        outArray[outArrayCount, 1] := getLVL(Arrayed[index])    
-                        outArray[outArrayCount, 2] := "Other"
-                    } else {                        
-                        outArray[outArrayCount, 0] := "Fracture " . fracture[a]
-                        outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                        outArray[outArrayCount, 2] := "Other"
-                        continue
-                    }
-                }
-            }
-        }         
-        else if InStr(Arrayed[index], "Reroll") = 1 {
-            if InStr(Arrayed[index], "Implicit") > 0 {
-                outArrayCount += 1                
-                outArray[outArrayCount, 0] := "Reroll All Lucky"
-                outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                outArray[outArrayCount, 2] := "Other"
-                continue
-            } 
-            else if InStr(Arrayed[index], "Prefix") > 0 {
-                outArrayCount += 1                
-                outArray[outArrayCount, 0] := "Reroll Prefix Lucky"
-                outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                outArray[outArrayCount, 2] := "Other"
-                continue
-            }
-            else if InStr(Arrayed[index], "Suffix") > 0 {
-                outArrayCount += 1                
-                outArray[outArrayCount, 0] := "Reroll Suffix Lucky"
-                outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                outArray[outArrayCount, 2] := "Other"
-                continue
-            }            
-        }
-        else if InStr(Arrayed[index], "Randomise") = 1 {
-            if InStr(Arrayed[index], "Influence") > 0 {    
-            for a in addInfluence {
-                    if InStr(Arrayed[index], addInfluence[a]) > 0 {
-                        outArrayCount += 1                    
-                        outArray[outArrayCount, 0] := "Randomise Influence - " . addInfluence[a]
-                        outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                        outArray[outArrayCount, 2] := "Other"
-                        continue
-                    }
-                }                
-            }    
-            else {    
-                for a in augments {
-                    if InStr(Arrayed[index], augments[a]) > 0 {
-                        outArrayCount += 1                    
-                        outArray[outArrayCount, 0] := "Randomise values of " . augments[a] . " mods"
-                        outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                        outArray[outArrayCount, 2] := "Other"
-                        continue
-                    }
-                }
-            }        
-        }
-        
-        else if InStr(Arrayed[index], "Add") = 1 {        
-            for a in addInfluence {
-                if InStr(Arrayed[index],addInfluence[a]) > 0 {
-                    outArrayCount += 1                    
-                    outArray[outArrayCount, 0] := "Add Influence to " . addInfluence[a]
-                    outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                    outArray[outArrayCount, 2] := "Other"
-                    continue
-                }
-            }
-        }        
-        else if InStr(Arrayed[index], "Set") = 1 {    
-            if InStr(Arrayed[index], "Prismatic") > 0 {
-                outArrayCount += 1                
-                outArray[outArrayCount, 0] := "Set Implicit basic Jewel"
-                outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                outArray[outArrayCount, 2] := "Other"
-                continue
-            }
-            else if InStr(Arrayed[index], "Timeless") > 0 {
-                outArrayCount += 1                
-                outArray[outArrayCount, 0] := "Set Implicit Abyss/Timeless Jewel"
-                outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                outArray[outArrayCount, 2] := "Other"
-                continue
-            }
-            else if InStr(Arrayed[index], "Cluster") > 0 {
-                outArrayCount += 1                
-                outArray[outArrayCount, 0] := "Set Implicit Cluster Jewel"
-                outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                outArray[outArrayCount, 2] := "Other"
-                continue
-            }                
-        }
-        ;Synthesise
-        else if InStr(Arrayed[index], "Synthesise") = 1 {            
-            outArrayCount += 1            
-            outArray[outArrayCount, 0] := "Synthesise an item"
-            outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-            outArray[outArrayCount, 2] := "Other"
-            continue
-        }
-
-        else if InStr(Arrayed[index], "Corrupt") = 1 {    
-            continue
-            ;Corrupt an item 10 times, or until getting a corrupted implicit modifier
-
-            ;outArrayCount += 1
-            ;outArray[outArrayCount] := Arrayed[index]
-        }
-     ; ignoring this section of mods
-     ; and i do realize i could put them in a single if, but this way its already neatly split if i might want to add them into processing     
-        ;Exchange 
-        else if InStr(Arrayed[index], "Exchange") = 1 {
-            continue
-            ;skipping all exchange crafts assuming anybody would just use them for themselfs            
-        } 
-        ;Upgrade
-        else if InStr(Arrayed[index], "Upgrade") = 1 {
-            if InStr(Arrayed[index], "Normal") > 0 {
-                if InStr(Arrayed[index], "one random ") > 0 {
-                    outArrayCount += 1            
-                    outArray[outArrayCount, 0] := "Upgrade Normal to Magic adding one high-tier mod"
-                    outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                    outArray[outArrayCount, 2] := "Other"
-                }
-                else if InStr(Arrayed[index], "two random ") > 0 {
-                    outArrayCount += 1            
-                    outArray[outArrayCount, 0] := "Upgrade Normal to Magic adding two high-tier mods"
-                    outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                    outArray[outArrayCount, 2] := "Other"
-                }
-            } 
-            else if InStr(Arrayed[index], "Rare") > 0 {
-                if InStr(Arrayed[index], "two random modifiers") > 0 {
-                    outArrayCount += 1            
-                    outArray[outArrayCount, 0] := "Upgrade Magic to Rare adding two mods"
-                    outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                    outArray[outArrayCount, 2] := "Other"
-                }
-                else if InStr(Arrayed[index], "two random high-tier modifiers") > 0 {
-                    outArrayCount += 1            
-                    outArray[outArrayCount, 0] := "Upgrade Magic to Rare adding two high-tier mods"
-                    outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                    outArray[outArrayCount, 2] := "Other"
-                }
-                else if InStr(Arrayed[index], "three random modifiers") > 0 {
-                    outArrayCount += 1            
-                    outArray[outArrayCount, 0] := "Upgrade Magic to Rare adding three mods"
-                    outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                    outArray[outArrayCount, 2] := "Other"
-                }
-                else if InStr(Arrayed[index], "three random high-tier modifiers") > 0 {
-                    outArrayCount += 1            
-                    outArray[outArrayCount, 0] := "Upgrade Magic to Rare adding three high-tier mods"
-                    outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                    outArray[outArrayCount, 2] := "Other"
-                }
-                else if InStr(Arrayed[index], "four random modifiers") > 0 {
-                    outArrayCount += 1            
-                    outArray[outArrayCount, 0] := "Upgrade Magic to Rare adding four mods"
-                    outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                    outArray[outArrayCount, 2] := "Other"
-                }
-                else if InStr(Arrayed[index], "four random high-tier modifiers") > 0 {
-                    outArrayCount += 1            
-                    outArray[outArrayCount, 0] := "Upgrade Magic to Rare adding four high-tier mods"
-                    outArray[outArrayCount, 1] := getLVL(Arrayed[index])
-                    outArray[outArrayCount, 2] := "Other"
-                }
-            }
-            continue
-            ;skipping upgrade crafts            
-        }        
-        else if InStr(Arrayed[index], "Split") = 1 {
-            continue
-            ;skipping Split scarab craft            
-        }
     }
-    for iFinal in outArray {
-        outArray[iFinal, 0] := Trim(RegExReplace(outArray[iFinal, 0] , " +", " ")) 
-    }    
+    for iFinal, v in outArray {
+        outArray[iFinal, 1] := Trim(RegExReplace(v[1] , " +", " ")) 
+    }   
     ;this bit is for testing purposes, it should never trigger for normal user cos processCrafts is always run with temp.txt 
     if (file != TempPath) {
         for s in outArray {
-            str .= outArray[s, 0] . "`r`n"
+            str .= outArray[s, 1] . "`r`n"
         }
         path := "results\out-" . file
         FileAppend, %str%, %path%
@@ -1431,30 +1377,60 @@ processCrafts(file) {
     return true
 }
 
-CraftSort(ar) {    
+updateCraftTable(ar) { 
     tempC := ""
+    isNeedSort := False
+    for k, v in ar {   
+        tempC := v[1]
+        tempLvl := v[2] 
+        tempType :=v[3]
 
-    for k in ar {   
-        tempC := ar[k, 0]
-        tempLvl := ar[k, 1] 
-        tempType := ar[k, 2]   
-
-        loop, 20 {
+        loop, %MaxRowsCraftTable% {
             GuiControlGet, craftInGui,, craft_%A_Index%, value
             GuiControlGet, lvlInGui,, lvl_%A_Index%, value
-            if (craftInGui == ""){
+            if (craftInGui == "") {
                 insertIntoRow(A_Index, tempC, tempLvl, tempType)
+                isNeedSort := True
                 break
             } else if (craftInGui == tempC and lvlInGui == tempLvl) {
-                GuiControlGet, craftCount,, count_%A_index%                
+                GuiControlGet, craftCount,, count_%A_index%
                 craftCount += 1 
                 GuiControl,, count_%A_Index%, %craftCount%
                 break
-            }                    
+            }
         }
-    }    
+    }
+    if (isNeedSort) {
+        sortCraftTable()
+    }
 }
 
+sortCraftTable() {
+    craftsArr := []
+    loop, %MaxRowsCraftTable% {
+        row := getRowData("All", A_Index)
+       if (row[2] != "") {
+            craftsArr.push({"count": row[1], "craft": row[2], "price": row[3]
+                , "check": row[4], "lvl": row[6], "type": row[5]})
+       }
+    }
+    craftsArr := sortBy(craftsArr, "craft")
+    clearAll()
+    for k, v in craftsArr {
+        tempCraft := v["craft"]
+        tempC := v["count"]
+        tempLvl := v["lvl"] 
+        tempType := v["type"]
+        tempPrice := v["price"]
+        
+        GuiControl,harvestUI:, craft_%k%, %tempCraft%
+        GuiControl,harvestUI:, count_%k%, %tempC%
+        GuiControl,harvestUI:, lvl_%k%, %tempLvl%
+        GuiControl,harvestUI:, type_%k%, %tempType%
+       
+        GuiControl, harvestUI: , price_%k% , %tempPrice%
+    }
+}
 
 firstEmptyRow() {
     loop, %MaxRowsCraftTable% {
@@ -1496,13 +1472,12 @@ insertIntoRow(rowCounter, craft, lvl, type) {
 }
 
 ; === Discord message creation ===
-createPostRow(count,craft,price,group,lvl) {
+createPostRow(count, craft, price, group, lvl) {
     ;IniRead, outStyle, %SettingsPath%, Other, outStyle
     mySpaces := ""
     spacesCount := 0
-    if (price == "") {
-        price := " "
-    }    
+    price := (price == "") ? " " : price
+
     spacesCount := MaxLen - StrLen(craft) + 1
 
     loop, %spacesCount% {
@@ -1569,6 +1544,146 @@ getPostRow(count, craft, price, group, lvl) {
     return postRowString
 }
 
+getSortedPosts(type) {
+    posts := ""
+    postsArr := []
+    loop, %MaxRowsCraftTable% {
+        row := getRowData(type, A_Index)
+       if (row[4] == 1 and (row[5] == type or type == "All")) {
+            postsArr.push({"count": row[1], "craft": row[2], "price": row[3]
+                , "check": row[4], "lvl": row[6]})
+       }
+    }
+    postsArr := sortBy(postsArr, ["count", "craft"])
+    for Index, obj in postsArr {
+       posts .= getPostRow(obj["count"], obj["craft"], obj["price"]
+            , obj["check"], obj["lvl"])
+    }
+    return posts
+}
+
+_clone(param_value) {
+    if (isObject(param_value)) {
+        return param_value.Clone()
+    } else {
+        return param_value
+    }
+}
+
+_cloneDeep(param_array) {
+    Objs := {}
+    Obj := param_array.Clone()
+    Objs[&param_array] := Obj ; Save this new array
+    for key, value in Obj {
+        if (isObject(value)) ; if it is a subarray
+            Obj[key] := Objs[&value] ; if we already know of a refrence to this array
+            ? Objs[&value] ; Then point it to the new array
+            : _clone(value) ; Otherwise, clone this sub-array
+    }
+    return Obj
+}
+
+_internal_sort(param_collection, param_iteratees:="") {
+    l_array := _cloneDeep(param_collection)
+
+    ; associative arrays
+    if (param_iteratees != "") {
+        for Index, obj in l_array {
+            value := obj[param_iteratees]
+            if (!isNumber(value)) {
+                value := StrReplace(value, "+", "#")
+            }
+            out .= value "+" Index "|" ; "+" allows for sort to work with just the value
+            ; out will look like: value+index|value+index|
+        }
+        lastvalue := l_array[Index, param_iteratees]
+    } else {
+        ; regular arrays
+        for Index, obj in l_array {
+            value := obj
+            if (!isNumber(obj)) {
+                value := StrReplace(value, "+", "#")
+            }
+            out .= value "+" Index "|"
+        }
+        lastvalue := l_array[l_array.count()]
+    }
+
+    if (isNumber(lastvalue)) {
+        sortType := "N"
+    }
+    stringTrimRight, out, out, 1 ; remove trailing |
+    sort, out, % "D| " sortType
+    arrStorage := []
+    loop, parse, out, |
+    {
+        arrStorage.push(l_array[SubStr(A_LoopField, InStr(A_LoopField, "+") + 1)])
+    }
+    return arrStorage
+}
+
+sortBy(param_collection, param_iteratees:="__identity") {
+    l_array := []
+
+    ; create
+    ; no param_iteratees
+    if (param_iteratees == "__identity") {
+        return _internal_sort(param_collection)
+    }
+    ; property
+    if (isAlnum(param_iteratees)) {
+        return _internal_sort(param_collection, param_iteratees)
+    }
+    ; own method or function
+    ; if (isCallable(param_iteratees)) {
+        ; for key, value in param_collection {
+            ; l_array[A_Index] := {}
+            ; l_array[A_Index].value := value
+            ; l_array[A_Index].key := param_iteratees.call(value)
+        ; }
+        ; l_array := _internal_sort(l_array, "key")
+        ; return this.map(l_array, "value")
+    ; }
+    ; shorthand/multiple keys
+    if (isObject(param_iteratees)) {
+        l_array := _cloneDeep(param_collection)
+        ; sort the collection however many times is requested by the shorthand identity
+        for key, value in param_iteratees {
+            l_array := _internal_sort(l_array, value)
+        }
+        return l_array
+    }
+    return -1
+}
+
+isAlnum(param) {
+    if (isObject(param)) {
+        return false
+    }
+    if param is alnum
+    {
+        return true
+    }
+    return false
+}
+
+; isCallable(param) {
+    ; fn := numGet(&(_ := Func("InStr").bind()), "Ptr")
+    ; return (isFunc(param) || (isObject(param) && (numGet(&param, "Ptr") = fn)))
+; }
+
+isNumber(param) {
+    if (isObject(param)) {
+        return false
+    }
+    if param is number
+    {
+        return true
+    }
+    return false
+}
+;=============================================================================
+
 codeblockWrap() {
     if (outStyle == 1) {
         return outString
@@ -1591,14 +1706,21 @@ createPost(type) {
     tempLeague := RegExReplace(tempLeague, "SC", "Softcore")
     tempLeague := RegExReplace(tempLeague, "HC", "Hardcore")
     outString := ""
-    getMaxLenghts(type)
+    ;getMaxLenghts(type)
+    
+    ;added by Stregon#3347
+    maxLengths := {}
+    maxLengths.count := getMaxLenghtColunm("count")
+    maxLengths.craft := getMaxLenghtColunm("craft")
+    maxLengths.lvl := getMaxLenghtColunm("lvl")
     
     if (outStyle == 1) {
+        outString .= "**WTS " . tempLeague
         if (tempName != "") {
-            outString .= "**WTS " . tempLeague . "** -`` IGN: " . tempName . " |  generated by HarvestVendor```r`n" 
-        } else {
-            outString .= "**WTS " . tempLeague . "** ``|  generated by HarvestVendor```r`n"
+            tempName := RegExReplace(tempName, "\\*?_", "\_") ;fix for discord
+            outString .= "** - IGN: **" . tempName 
         }
+        outString .= "** ``|  generated by HarvestVendor```r`n"
         if (tempCustomText != "" and tempCustomTextCB == 1) {
             outString .= "   " . tempCustomText . "`r`n"
         }
@@ -1607,11 +1729,11 @@ createPost(type) {
         }
     }
     if (outStyle == 2) {
+        outString .= "#WTS " . tempLeague
         if (tempName != "") {
-            outString .= "#WTS " . tempLeague . " - IGN: " . tempName . " |  generated by HarvestVendor`r`n" 
-        } else {
-            outString .= "#WTS " . tempLeague . " |  generated by HarvestVendor`r`n"
+            outString .= " - IGN: " . tempName
         }
+        outString .= " |  generated by HarvestVendor`r`n"
         if (tempCustomText != "") {
             outString .= "  " . tempCustomText . "`r`n"
         }
@@ -1620,16 +1742,15 @@ createPost(type) {
         }
     }
     
-    loop, 20 {
-        row := getRowData(type,A_Index)
-        if (row[4] == 1 and row[5] == type) {
-            createPostRow(row[1],row[2],row[3],row[4],row[6])
-        } else if (row[4] == 1 and type == "All") {
-            createPostRow(row[1],row[2],row[3],row[4],row[6])
-        }
-    }
+    ; loop, %MaxRowsCraftTable% {
+        ; row := getRowData(type,A_Index)
+       ; if (row[4] == 1 and (row[5] == type or type == "All")) {
+            ; createPostRow(row[1], row[2], row[3], row[4], row[6])
+       ; }
+    ; }
+    outString .= getSortedPosts(type) ;added by Stregon#3347
     Clipboard := codeblockWrap()
-    readyTT()    
+    readyTT()
 }
 
 readyTT() {
@@ -1694,7 +1815,7 @@ getRow(elementVariable) {
 }
 
 getLVL(craft) {
-    map_levels := {"S1": "81", "Sz": "82", "SQ": "80"}
+    map_levels := {"S1": "81", "Sz": "82", "SQ": "80", "8i": "81"}
     lvlpos := RegExMatch(craft, "Oi)L[BEeOo]V[BEeOo][lI1] *(\w\w)", matchObj) ; + 6    
     lv := matchObj[1] ;substr(craft, lvlpos, 2)
     if RegExMatch(lv, "\d\d") > 0 {
@@ -1721,11 +1842,11 @@ sumPrices() {
         guiControlGet, countCraft,, count_%A_Index%, value
         
         if (InStr(TempCraft, "c") > 0) {
-            tempSumChaos += strReplace(Trim(StrReplace(TempCraft, "c")),",",".") * countCraft
+            tempSumChaos += strReplace(Trim(StrReplace(TempCraft, "c")), ",", ".") * countCraft
         }
         
         if (InStr(TempCraft, "ex") > 0) {
-            tempSumEx += strReplace(Trim(StrReplace(TempCraft, "ex")),",",".") * countCraft
+            tempSumEx += strReplace(Trim(StrReplace(TempCraft, "ex")), ",", ".") * countCraft
         }
     }
     ;tempSumChaos := tempSumChaos
@@ -2005,6 +2126,8 @@ getMonCount() {
    }
    return monOut
 }
+
+
 ; ========================================================================
 ; ======================== stuff i copied from internet ==================
 ; ========================================================================
@@ -2092,26 +2215,22 @@ Options: (White space separated)
 
         Gui %g%: Destroy
 
-        if (!SelectAreaEscapePressed)
-        {
-            if m = s ; Screen
-            {
+        if (!SelectAreaEscapePressed) {
+            if (m = "s") { ; Screen
                 MouseGetPos, MXend, MYend
-                If ( MX > MXend )
+                if (MX > MXend)
                     temp := MX, MX := MXend, MXend := temp ;* scale
-                If ( MY > MYend )
+                if (MY > MYend)
                     temp := MY, MY := MYend, MYend := temp ;* scale
-                areaRect := [MX,MXend,MY,MYend]
-            }
-            else ; Relative
-            {
+                areaRect := [MX, MXend, MY, MYend]
+            } else { ; Relative
                 CoordMode, Mouse, Relative
                 MouseGetPos, rMXend, rMYend
-                If ( rMX > rMXend )
+                if (rMX > rMXend)
                     temp := rMX, rMX := rMXend, rMXend := temp
-                If ( rMY > rMYend )
+                if (rMY > rMYend)
                     temp := rMY, rMY := rMYend, rMYend := temp
-                areaRect := [rMX,rMXend,rMY,rMYend]
+                areaRect := [rMX, rMXend, rMY, rMYend]
             }
         }
     }
@@ -2123,11 +2242,7 @@ Options: (White space separated)
     return areaRect
 }
 
-
-
-
-WM_MOUSEMOVE()
-{
+WM_MOUSEMOVE() {
     static CurrControl, PrevControl, _TT  ; _TT is kept blank for use by the ToolTip command below.
     CurrControl := A_GuiControl
     
