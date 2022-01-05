@@ -215,12 +215,12 @@ newGUI() {
 
     xColumnUpDn := xColumn2 + 23
 
-    xEditOffset2 := xColumn2+1
-    xEditOffset3 := xColumn3+3
-    xEditOffset4 := xColumn4+1
-    xEditOffset5 := xColumn5+1
-    xEditOffset6 := xColumn6+1
-    xEditOffset7 := xColumn7+1
+    xEditOffset2 := xColumn2 + 1
+    xEditOffset3 := xColumn3 + 3
+    xEditOffset4 := xColumn4 + 1
+    xEditOffset5 := xColumn5 + 1
+    xEditOffset6 := xColumn6 + 1
+    xEditOffset7 := xColumn7 + 1
     row := 90
 
 ; === Title and icon ===
@@ -293,13 +293,13 @@ gui, Font, s11 cA38D6D
     addCrafts := getImgWidth(A_ScriptDir . "\resources\addCrafts.png")
     gui add, picture, x%xColumn7% y114 w%addCrafts% h-1 gAdd_crafts vaddCrafts, resources\addCrafts.png
     lastArea := getImgWidth(A_ScriptDir . "\resources\lastArea.png")
-    gui add, picture, x%xColumn7% y136 w%lastArea% h-1 gLast_Area vrescanButton, resources\lastArea.png
+    gui add, picture, x%xColumn7% y137 w%lastArea% h-1 gLast_Area vrescanButton, resources\lastArea.png
     clear := getImgWidth(A_ScriptDir . "\resources\clear.png")
-    gui add, picture, x%xColumn7% y159 w%clear% h-1 gClear_All vclearAll, resources\clear.png
+    gui add, picture, x%xColumn7% y160 w%clear% h-1 gClear_All vclearAll, resources\clear.png
     settings := getImgWidth(A_ScriptDir . "\resources\settings.png")
-    gui add, picture, x%xColumn7% y182 w%settings% h-1 gSettings vsettings, resources\settings.png
+    gui add, picture, x%xColumn7% y183 w%settings% h-1 gSettings vsettings, resources\settings.png
     help := getImgWidth(A_ScriptDir . "\resources\help.png")
-    gui add, picture, x%xColumn7% y205 w%help% h-1 gHelp vhelp, resources\help.png
+    gui add, picture, x%xColumn7% y206 w%help% h-1 gHelp vhelp, resources\help.png
 
     ; === Post buttons ===
     createPost := getImgWidth(A_ScriptDir . "\resources\createPost.png")
@@ -1074,7 +1074,7 @@ Handle_Change(craftText, ByRef out) {
         lightVal := InStr(craftText, "Lightning")
 
         maxVal := max(fireVal, coldVal, lightVal)
-        if maxVal == fireVal {
+        if (maxVal == fireVal) {
             if (coldVal > 0) {
                 out.push(["Change Resist: Cold to Fire"
                     , getLVL(craftText)
@@ -1084,7 +1084,7 @@ Handle_Change(craftText, ByRef out) {
                     , getLVL(craftText)
                     , "Other"])
             }
-        } else if maxVal == coldVal {
+        } else if (maxVal == coldVal) {
             if (fireVal > 0) {
                 out.push(["Change Resist: Fire to Cold"
                     , getLVL(craftText)
@@ -1094,7 +1094,7 @@ Handle_Change(craftText, ByRef out) {
                     , getLVL(craftText)
                     , "Other"])
             }
-        } else if maxVal == lightVal {
+        } else if (maxVal == lightVal) {
             if (fireVal > 0) {
                 out.push(["Change Resist: Fire to Lightning"
                     , getLVL(craftText)
