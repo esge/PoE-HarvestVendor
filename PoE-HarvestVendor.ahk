@@ -224,23 +224,46 @@ newGUI() {
     row := 90
 
 ; === Title and icon ===
-    gui add, picture, x10 y10, resources\Vivid_Scalefruit_inventory_icon.png
-    gui add, picture, x%xColumn3% y10, resources\title.png
+    title_icon := getImgWidth(A_ScriptDir . "\resources\Vivid_Scalefruit_inventory_icon.png")
+    gui add, picture, x10 y10 w%title_icon% h-1, resources\Vivid_Scalefruit_inventory_icon.png
+    title := getImgWidth(A_ScriptDir . "\resources\title.png")
+    gui add, picture, x%xColumn3% y10 w%title% h-1, resources\title.png
     gui add, text, x380 y15, v%version%
 ; ======================
 ; === Text stuff ===
-    gui, Font, s11 cA38D6D
-        gui add, text, x%xColumn3% y40 vValue, You have:          ex            c in station   
-        gui add, text, x%xColumn3% y63 vStored, Augs:  `t`tRems:   `tRem/Adds:  `t`tOther: 
-        gui add, text, x412 y40 w100 vcrafts, Total Crafts: 
-    gui, Font, s11 cFFC555
-        gui add, text, x170 y40 w30 right vsumEx, 0
-        gui add, text, x220 y40 w30 right vsumChaos, 0
-        gui add, text, x485 y40 w30 vCraftsSum, 0
-        gui add, text, x150 y64 w20 vAcount,0
-        gui add, text, x250 y64 w20 vRcount,0
-        gui add, text, x375 y64 w20 vRAcount,0
-        gui add, text, x485 y64 w20 vOcount,0
+gui, Font, s11 cA38D6D
+        gui add, text, x%xColumn3% y40 w70 vValue +BackgroundTrans, You have: 
+        gui, Font, s11 cFFC555
+        gui add, text, xp+70 y40 w40 right +BackgroundTrans vsumEx, 0
+        gui, Font, s11 cA38D6D
+        gui add, text, xp+42 y40 w20 +BackgroundTrans, ex 
+        gui, Font, s11 cFFC555
+        gui add, text, xp+20 y40 w40 right +BackgroundTrans vsumChaos, 0
+        gui, Font, s11 cA38D6D
+        gui add, text, xp+42 y40 +BackgroundTrans, c 
+
+        gui add, text, x412 y40 w80 vcrafts +BackgroundTrans, Total Crafts:     
+        gui, Font, s11 cFFC555
+        gui add, text, xp+80 y40 w30 vCraftsSum, 0
+        gui, Font, s11 cA38D6D
+
+        gui add, text, x%xColumn3% y64 w40 +BackgroundTrans, Augs:  
+        gui, Font, s11 cFFC555
+        gui add, text, xp+40 y64 w50 +BackgroundTrans vAcount,0
+        gui, Font, s11 cA38D6D
+
+        gui add, text, xp+50 y64 w45 +BackgroundTrans, Rems: 
+        gui, Font, s11 cFFC555
+        gui add, text, xp+45 y64 w50 +BackgroundTrans vRcount,0
+        gui, Font, s11 cA38D6D
+        gui add, text, xp+50 y64 w75 +BackgroundTrans, Rem/Adds: 
+        gui, Font, s11 cFFC555
+        gui add, text, xp+75 y64 w50 +BackgroundTrans vRAcount,0
+        gui, Font, s11 cA38D6D
+        gui add, text, xp+50 y64 w40 +BackgroundTrans, Other: 
+        gui, Font, s11 cFFC555
+        gui add, text, xp+40 y64 w50 +BackgroundTrans vOcount,0
+        gui, Font, s11 cA38D6D
 ; ==================
     gui Font, s12
         gui add, text, x460 y10 cGreen vversionText, ! New Version Available !
@@ -267,15 +290,20 @@ newGUI() {
         Gui, HarvestUI:-AlwaysOnTop
     }
     
-    
-    gui add, picture, x%xColumn7% y114 gAdd_crafts vaddCrafts, resources\addCrafts.png
-    gui add, picture, x%xColumn7% y136 gLast_Area vrescanButton, resources\lastArea.png
-    gui add, picture, x%xColumn7% y159 gClear_All vclearAll, resources\clear.png
-    gui add, picture, x%xColumn7% y182 gSettings vsettings, resources\settings.png
-    gui add, picture, x%xColumn7% y205 gHelp vhelp, resources\help.png
+    addCrafts := getImgWidth(A_ScriptDir . "\resources\addCrafts.png")
+    gui add, picture, x%xColumn7% y114 w%addCrafts% h-1 gAdd_crafts vaddCrafts, resources\addCrafts.png
+    lastArea := getImgWidth(A_ScriptDir . "\resources\lastArea.png")
+    gui add, picture, x%xColumn7% y136 w%lastArea% h-1 gLast_Area vrescanButton, resources\lastArea.png
+    clear := getImgWidth(A_ScriptDir . "\resources\clear.png")
+    gui add, picture, x%xColumn7% y159 w%clear% h-1 gClear_All vclearAll, resources\clear.png
+    settings := getImgWidth(A_ScriptDir . "\resources\settings.png")
+    gui add, picture, x%xColumn7% y182 w%settings% h-1 gSettings vsettings, resources\settings.png
+    help := getImgWidth(A_ScriptDir . "\resources\help.png")
+    gui add, picture, x%xColumn7% y205 w%help% h-1 gHelp vhelp, resources\help.png
 
     ; === Post buttons ===
-    gui add, picture, x%xColumn7% y251 vpostAll gPost_all, resources\createPost.png
+    createPost := getImgWidth(A_ScriptDir . "\resources\createPost.png")
+    gui add, picture, x%xColumn7% y251 w%createPost% h-1 vpostAll gPost_all, resources\createPost.png
 
     ;gui add, picture, x%xColumn7% y251 gAug_post vaugPost, resources\postA.png
     ;gui add, picture, x%xColumn7% y274 gRem_post vremPost, resources\postR.png
@@ -303,7 +331,8 @@ newGUI() {
         name := ""
     }
     gui add, text, x%xColumn7% y440, IGN: 
-        gui add, picture, x%xColumn7% y458, resources\ign.png
+        ign := getImgWidth(A_ScriptDir . "\resources\ign.png")
+        gui add, picture, x%xColumn7% y458 w%ign% h-1, resources\ign.png
         gui, Font, s11 cA38D6D
             Gui Add, Edit, x%xEditOffset7% y459 w113 h18 -E0x200 +BackgroundTrans vign gIGN, %name%
         gui, Font, s11 cFFC555
@@ -317,7 +346,8 @@ newGUI() {
         guicontrol,,customText_cb, %tempCustomTextCB%
     ; ============================
     ; === custom text input ===
-        gui add, picture,  x%xColumn7% y504, resources\text.png
+        text := getImgWidth(A_ScriptDir . "\resources\text.png")
+        gui add, picture,  x%xColumn7% y504 w%text% h-1, resources\text.png
         iniRead tempCustomText, %SettingsPath%, Other, customText
         if (tempCustomText == "ERROR") { 
             tempCustomText := "" 
@@ -349,23 +379,28 @@ newGUI() {
             gui add, text, x%xColumn1% y%row2% vtype_%A_Index% gType w60 Right,
         gui, Font, s11 cFFC555
         
-        gui add, picture, x%xColumn2% y%row2% AltSubmit , % "HBITMAP:*" count_pic ;resources\count.png
+        count_ := getImgWidth(A_ScriptDir . "\resources\count.png")
+        gui add, picture, x%xColumn2% y%row2% w%count_% h-1 AltSubmit , % "HBITMAP:*" count_pic ;resources\count.png
             Gui Add, Edit, x%xEditOffset2% y%row2p% w35 h18 vcount_%A_Index% gPrice -E0x200 +BackgroundTrans Center
                 Gui Add, UpDown, Range0-20 vupDown_%A_Index%, 0
                 guicontrol, hide, upDown_%A_Index%
             gui add, picture, x%xColumnUpDn% y%row2p% gUp vUp_%A_Index%, % "HBITMAP:*" up_pic
             gui add, picture, x%xColumnUpDn% y%row2dn% gDn vDn_%A_Index%, % "HBITMAP:*" dn_pic
 
-        gui add, picture, x%xColumn3% y%row2% AltSubmit , % "HBITMAP:*" craft_pic ;resources\craft.png
-            gui add, edit, x%xEditOffset3% y%row2p% w295 h18 -E0x200  +BackgroundTrans vcraft_%A_Index% gcraft        
+        craft_ := getImgWidth(A_ScriptDir . "\resources\craft.png")
+        gui add, picture, x%xColumn3% y%row2% w%craft_% h-1 AltSubmit , % "HBITMAP:*" craft_pic ;resources\craft.png
+            gui add, edit, x%xEditOffset3% y%row2p% w295 h18 -E0x200 +BackgroundTrans vcraft_%A_Index% gcraft        
 
-        gui add, picture, x%xColumn4% y%row2% AltSubmit , % "HBITMAP:*" lvl_pic ;resources\lvl.png
+        lvl_ := getImgWidth(A_ScriptDir . "\resources\lvl.png")
+        gui add, picture, x%xColumn4% y%row2% w%lvl_% h-1 AltSubmit , % "HBITMAP:*" lvl_pic ;resources\lvl.png
             gui add, edit, x%xEditOffset4% y%row2p% w23 h18 -E0x200 +BackgroundTrans Center vlvl_%A_Index% glvl
 
-        gui add, picture, x%xColumn5% y%row2% AltSubmit , % "HBITMAP:*" price_pic ; resources\price.png
+        price_ := getImgWidth(A_ScriptDir . "\resources\price.png")
+        gui add, picture, x%xColumn5% y%row2% w%price_% h-1 AltSubmit , % "HBITMAP:*" price_pic ; resources\price.png
             gui add, edit, x%xEditOffset5% y%row2p% w44 h18 -E0x200 +BackgroundTrans Center vprice_%A_Index% gPrice
 
-        gui add, picture, x%xColumn6% y%row2del% vdel_%A_Index% gclearRow AltSubmit , % "HBITMAP:*" del_pic ;resources\del.png 
+        del_ := getImgWidth(A_ScriptDir . "\resources\del.png")
+        gui add, picture, x%xColumn6% y%row2del% w%del_% h-1 vdel_%A_Index% gclearRow AltSubmit , % "HBITMAP:*" del_pic ;resources\del.png 
             
     }
     gui, font    
@@ -1865,13 +1900,16 @@ sumTypes() {
         GuiControlget, tempType,, type_%A_Index%, value
         ;msgBox %tempType%
         if (tempType == "Aug") {
-            Acounter += 1
+            guicontrolget, tempAmount,, count_%A_Index%, value
+            Acounter += tempAmount
         }
         if (tempType == "Rem") {
-            Rcounter += 1
+            guicontrolget, tempAmount,, count_%A_Index%, value
+            Rcounter += tempAmount
         }
         if (tempType == "Rem/Add") {
-            RAcounter += 1
+            guicontrolget, tempAmount,, count_%A_Index%, value
+            RAcounter += tempAmount
         }
         if (tempType == "Other") {
             guicontrolget, tempAmount,, count_%A_Index%, value
@@ -2127,6 +2165,14 @@ getMonCount() {
    return monOut
 }
 
+getImgWidth(img) {
+    SplitPath, img, fn, dir
+    objShell := ComObjCreate("Shell.Application")
+    objFolder := objShell.NameSpace(dir)
+    objFolderItem := objFolder.ParseName(fn)
+    scale := StrSplit(RegExReplace(objFolder.GetDetailsOf(objFolderItem, 31), ".(.+).", "$1"), " x ")
+    Return scale.1 ; {w: scale.1, h: scale.2}
+}
 
 ; ========================================================================
 ; ======================== stuff i copied from internet ==================
