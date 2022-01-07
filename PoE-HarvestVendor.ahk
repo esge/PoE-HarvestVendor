@@ -169,6 +169,7 @@ OpenGui: ;ctrl+shift+g opens the gui, yo go from there
 Return
 
 Scan: ;ctrl+g launches straight into the capture, opens gui afterwards
+    rescan := ""
     _wasVisible := IsGuiVisible("HarvestUI")
     if (processCrafts(TempPath)) {  
         showGUI()
