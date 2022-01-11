@@ -1830,6 +1830,10 @@ getMaxLenghtColunm(column) {
     MaxLen_column := 0
     loop, %MaxRowsCraftTable% {
         GuiControlGet, columnLen,, %column%_%A_Index%, value
+        GuiControlGet, tempCount,, count_%A_Index%, value
+        if (tempCount == 0) {
+            continue
+        }
         if (StrLen(columnLen) > MaxLen_column) {
             MaxLen_column := StrLen(columnLen)
         }
