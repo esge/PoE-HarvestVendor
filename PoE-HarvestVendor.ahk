@@ -902,7 +902,7 @@ Handle_Reforge(craftText, ByRef out) {
     ; reforge rares
     remAddsClean := ["Caster", "Physical", "Fire", "Attack", "Life", "Cold"
         , "Speed", "Defence", "Lightning", "Chaos", "Critical", "Influence"]
-    if (InStr(craftText, "or Rare") > 0 or InStr(craftText, "orRare") > 0) { ; 'new random' text appears only in reforge rares
+    if (InStr(craftText, "including") > 0) { ; or InStr(craftText, "orRare") > 0) { ; 'new random' text appears only in reforge rares
         for k, v in remAddsClean {
             if (InStr(craftText, v) > 0) {
                 if (InStr(craftText, "more") > 0 ) {
