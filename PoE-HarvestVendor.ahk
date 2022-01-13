@@ -1007,7 +1007,7 @@ Handle_Reforge(craftText, ByRef out) {
         reforgeNonColor := ["non-Red", "non-Blue", "non-Green"]
         for k, v in reforgeNonColor {
             if InStr(craftText, v) > 0 {
-                out.push(["Reforge Сolour: " . v . " into " . StrReplace(v, "non-")
+                out.push(["Reforge Colour: " . v . " into " . StrReplace(v, "non-")
                     , getLVL(craftText)
                     , "Other"])
                 return
