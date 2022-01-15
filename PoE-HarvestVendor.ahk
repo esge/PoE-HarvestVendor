@@ -240,13 +240,13 @@ Scan: ;ctrl+g launches straight into the capture, opens gui afterwards
     _wasVisible := IsGuiVisible("HarvestUI")
     if (processCrafts(TempPath)) {  
         showGUI()
-        loadLastSession()
-        OnMessage(0x200, "WM_MOUSEMOVE") ;activates tooltip function
-        updateCraftTable(outArray)
         if (firstGuiOpen) {
-            rememberSession()
+            loadLastSession()
             firstGuiOpen := False
         }
+        OnMessage(0x200, "WM_MOUSEMOVE") ;activates tooltip function
+        updateCraftTable(outArray)
+        rememberSession()
     } else {
         ; If processCrafts failed (e.g. the user pressed Escape), we should show the
         ; HarvestUI only if it was visible to the user before they pressed Ctrl+G
