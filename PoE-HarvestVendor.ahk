@@ -7,17 +7,17 @@ global version := "0.8.1"
 ; === some global variables ===
 global outArray := {}
 global outArrayCount := 0
-global rescan
+global rescan := ""
 global x_start := 0
 global y_start := 0
 global x_end := 0
 global y_end := 0
-global firstGuiOpen := 1
-global outString
-global outStyle
+global firstGuiOpen := True
+global outString := ""
+global outStyle := 1
 global MaxLen
-global maxLengths
-global seenInstructions
+global maxLengths := {}
+global seenInstructions := 0
 global sessionLoading := False
 global MaxRowsCraftTable := 20
 global PID := DllCall("Kernel32\GetCurrentProcessId")
@@ -70,25 +70,25 @@ iniRead, seenInstructions,  %SettingsPath%, Other, seenInstructions
     }
 
 IniRead, GuiKey, %SettingsPath%, Other, GuiKey
-    checkValidChars := RegExMatch(GuiKey, "[a-zA-Z0-9]")
-    if (GuiKey == "ERROR" or GuiKey == "" or checkValidChars == 0) {
+    checkValidChars := RegExMatch(GuiKey, "[a-zA-Z0-9]") > 0
+    if (GuiKey == "ERROR" or GuiKey == "" or !checkValidChars) {
         IniWrite, ^+g, %SettingsPath%, Other, GuiKey
         sleep, 250
         IniRead, GuiKey, %SettingsPath%, Other, GuiKey
-        if (checkValidChars == 0) {
+        if (!checkValidChars) {
             msgBox, Open GUI hotkey was set to a non latin letter or number, it was reset to ctrl+shift+g
         }
     }
 hotkey, %GuiKey%, OpenGui
 
 IniRead, ScanKey, %SettingsPath%, Other, ScanKey
-    checkValidChars := RegExMatch(ScanKey, "[a-zA-Z0-9]")
-    if (ScanKey == "ERROR" or ScanKey == "" or checkValidChars == 0) {
+    checkValidChars := RegExMatch(ScanKey, "[a-zA-Z0-9]") > 0
+    if (ScanKey == "ERROR" or ScanKey == "" or !checkValidChars) {
         IniWrite, ^g, %SettingsPath%, Other, ScanKey
         sleep, 250
         IniRead, ScanKey, %SettingsPath%, Other, ScanKey
         ;ScanKey == "^g"
-        if (checkValidChars == 0) {
+        if (!checkValidChars) {
             msgBox, Scan hotkey was set to a non latin letter or number, it was reset to ctrl+g
         }
     }
@@ -142,9 +142,9 @@ Menu, Tray, Standard
     del_pic := LoadPicture("resources\del.png")
 ; =================================================================
 
-tooltip, loading... building GUI ;*[PoE-HarvestVendor]
+tooltip, loading... building GUI
 sleep, 250
-newGUI() ;*[PoE-HarvestVendor]
+newGUI()
 tooltip, ready
 sleep, 500
 Tooltip
@@ -156,9 +156,7 @@ return
 
 
 ExitFunc(ExitReason, ExitCode) {
-    if (firstGuiOpen == 0) {
-        saveWindowPosition()
-    }
+    saveWindowPosition()
     return 0
 }
 
@@ -171,6 +169,9 @@ WinGetPosPlus(winTitle, ByRef xPos, ByRef yPos) {
 }
 
 saveWindowPosition() {
+    if (firstGuiOpen) { ;wrong window pos(0,0) if dont show gui before
+        return
+    }
     winTitle := "PoE-HarvestVendor v" . version
     DetectHiddenWindows, On
     if WinExist(winTitle) {
@@ -184,19 +185,18 @@ saveWindowPosition() {
 }
 
 showGUI() {
-    if (firstGuiOpen == 1) {
-        IniRead, NewX, %SettingsPath%, window position, gui_position_x
-        IniRead, NewY, %SettingsPath%, window position, gui_position_y
-        if (NewX == "ERROR" or NewY == "ERROR")
-            or (NewX == -32000 or NewY == -32000)
-            or (NewX == 32000 or NewY == 32000) {
+    if (firstGuiOpen) {
+        IniRead, newX, %SettingsPath%, window position, gui_position_x
+        IniRead, newY, %SettingsPath%, window position, gui_position_y
+        if (newX == "ERROR" or newY == "ERROR")
+            or (newX == -32000 or newY == -32000) {
              Gui, HarvestUI:Show, w650 h585
              return
         } else {
             DetectHiddenWindows, On
-            Gui, HarvestUI:Show, w650 h585 Hide
-            WinTitle := "PoE-HarvestVendor v" . version
-            WinMove, %WinTitle%,, %NewX%, %NewY%
+            Gui, HarvestUI:Show, w650 h585 Hide ; Hide window before move
+            winTitle := "PoE-HarvestVendor v" . version
+            WinMove, %winTitle%,, %newX%, %newY%
             DetectHiddenWindows, Off
         }
     } 
@@ -210,7 +210,7 @@ OpenGui: ;ctrl+shift+g opens the gui, yo go from there
         guicontrol, HarvestUI:Show, versionLink
     }
     showGUI()
-    firstGuiOpen := 0
+    firstGuiOpen := False
     OnMessage(0x200, "WM_MOUSEMOVE")
     
 Return
@@ -223,9 +223,9 @@ Scan: ;ctrl+g launches straight into the capture, opens gui afterwards
         loadLastSession()
         OnMessage(0x200, "WM_MOUSEMOVE") ;activates tooltip function
         updateCraftTable(outArray)
-        if (firstGuiOpen == 1) {
+        if (firstGuiOpen) {
             rememberSession()
-            firstGuiOpen := 0
+            firstGuiOpen := False
         }
     } else {
         ; If processCrafts failed (e.g. the user pressed Escape), we should show the
@@ -238,9 +238,7 @@ return
 HarvestUIGuiEscape:
 HarvestUIGuiClose:
     rememberSession()
-    if (firstGuiOpen == 0) {
-        saveWindowPosition()
-    }
+    saveWindowPosition()
     Gui, HarvestUI:Hide
 return
 
@@ -329,13 +327,7 @@ gui, Font, s11 cA38D6D
             tempOnTop := 0 
         }
     guicontrol,,alwaysOnTop, %tempOnTop%
-    ;set window state
-    if (tempOnTop = 1) {
-        Gui, HarvestUI:+AlwaysOnTop
-    }
-    if (tempOnTop = 0) {
-        Gui, HarvestUI:-AlwaysOnTop
-    }
+    setWindowState(tempOnTop)
     
     addCrafts := getImgWidth(A_ScriptDir . "\resources\addCrafts.png")
     gui add, picture, x%xColumn7% y114 w%addCrafts% h-1 gAdd_crafts vaddCrafts, resources\addCrafts.png
@@ -418,9 +410,9 @@ gui, Font, s11 cA38D6D
 ; === table ===
     loop, %MaxRowsCraftTable% {
         row2 := row + 23 * A_Index
-        row2p := row2+1
-        row2dn := row2+10
-        row2del := row2+5
+        row2p := row2 + 1
+        row2dn := row2 + 10
+        row2del := row2 + 5
         ;gui add, picture, x%xColumn1% y%row2%, resources\type.png
         gui, Font, s11 cA38D6D
             gui add, text, x%xColumn1% y%row2% vtype_%A_Index% gType w60 Right,
@@ -655,13 +647,13 @@ return
 alwaysOnTop:
     guiControlGet, onTop,,alwaysOnTop, value
     iniWrite, %onTop%, %SettingsPath%, Other, alwaysOnTop
-    if (onTop = 1) {
-        Gui, HarvestUI:+AlwaysOnTop
-    }
-    if (onTop = 0) {
-        Gui, HarvestUI:-AlwaysOnTop
-    }
+    setWindowState(onTop)
 return
+
+setWindowState(onTop) {
+    mod := (onTop == 1) ? "+" : "-"
+    Gui, HarvestUI:%mod%AlwaysOnTop
+}
 ;====================================================
 ; === Settings UI ===================================
 settings:
