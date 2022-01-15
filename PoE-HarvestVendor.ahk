@@ -408,6 +408,11 @@ gui, Font, s11 cA38D6D
     gui add, text, x%xColumn5% y%row%, Price
 
 ; === table ===
+    count_ := getImgWidth(A_ScriptDir . "\resources\count.png")
+    craft_ := getImgWidth(A_ScriptDir . "\resources\craft.png")
+    lvl_ := getImgWidth(A_ScriptDir . "\resources\lvl.png")  
+    price_ := getImgWidth(A_ScriptDir . "\resources\price.png")
+    del_ := getImgWidth(A_ScriptDir . "\resources\del.png")
     loop, %MaxRowsCraftTable% {
         row2 := row + 23 * A_Index
         row2p := row2 + 1
@@ -418,7 +423,6 @@ gui, Font, s11 cA38D6D
             gui add, text, x%xColumn1% y%row2% vtype_%A_Index% gType w60 Right,
         gui, Font, s11 cFFC555
         
-        count_ := getImgWidth(A_ScriptDir . "\resources\count.png")
         gui add, picture, x%xColumn2% y%row2% w%count_% h-1 AltSubmit , % "HBITMAP:*" count_pic ;resources\count.png
             Gui Add, Edit, x%xEditOffset2% y%row2p% w35 h18 vcount_%A_Index% gPrice -E0x200 +BackgroundTrans Center
                 Gui Add, UpDown, Range0-20 vupDown_%A_Index%, 0
@@ -426,21 +430,16 @@ gui, Font, s11 cA38D6D
             gui add, picture, x%xColumnUpDn% y%row2p% gUp vUp_%A_Index%, % "HBITMAP:*" up_pic
             gui add, picture, x%xColumnUpDn% y%row2dn% gDn vDn_%A_Index%, % "HBITMAP:*" dn_pic
 
-        craft_ := getImgWidth(A_ScriptDir . "\resources\craft.png")
         gui add, picture, x%xColumn3% y%row2% w%craft_% h-1 AltSubmit , % "HBITMAP:*" craft_pic ;resources\craft.png
             gui add, edit, x%xEditOffset3% y%row2p% w295 h18 -E0x200 +BackgroundTrans vcraft_%A_Index% gcraft        
 
-        lvl_ := getImgWidth(A_ScriptDir . "\resources\lvl.png")
         gui add, picture, x%xColumn4% y%row2% w%lvl_% h-1 AltSubmit , % "HBITMAP:*" lvl_pic ;resources\lvl.png
             gui add, edit, x%xEditOffset4% y%row2p% w23 h18 -E0x200 +BackgroundTrans Center vlvl_%A_Index% glvl
 
-        price_ := getImgWidth(A_ScriptDir . "\resources\price.png")
         gui add, picture, x%xColumn5% y%row2% w%price_% h-1 AltSubmit , % "HBITMAP:*" price_pic ; resources\price.png
             gui add, edit, x%xEditOffset5% y%row2p% w44 h18 -E0x200 +BackgroundTrans Center vprice_%A_Index% gPrice
 
-        del_ := getImgWidth(A_ScriptDir . "\resources\del.png")
         gui add, picture, x%xColumn6% y%row2del% w%del_% h-1 vdel_%A_Index% gclearRow AltSubmit , % "HBITMAP:*" del_pic ;resources\del.png 
-            
     }
     gui, font    
     gui temp:hide
