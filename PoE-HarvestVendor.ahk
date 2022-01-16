@@ -199,22 +199,23 @@ showGUI() {
             WinMove, %winTitle%,, %newX%, %newY%
             DetectHiddenWindows, Off
         }
+        firstGuiOpen := False
     } 
     Gui, HarvestUI:Show
 }
 
 OpenGui: ;ctrl+shift+g opens the gui, yo go from there
-    loadLastSession()
+    if (firstGuiOpen) {
+        loadLastSession()
+    }
     if (version != getVersion()) {
         guicontrol, HarvestUI:Show, versionText
         guicontrol, HarvestUI:Show, versionLink
     }
     showGUI()
-    firstGuiOpen := False
     OnMessage(0x200, "WM_MOUSEMOVE")
     
 Return
-
 Scan: ;ctrl+g launches straight into the capture, opens gui afterwards
     rescan := ""
     _wasVisible := IsGuiVisible("HarvestUI")
