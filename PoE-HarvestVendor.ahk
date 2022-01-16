@@ -1520,7 +1520,7 @@ sortCraftTable() {
        }
     }
     craftsArr := sortBy(craftsArr, "craft")
-    clearAll()
+    ;insert a new sorted crafts
     for k, v in craftsArr {
         tempCraft := v["craft"]
         tempC := v["count"]
@@ -1534,6 +1534,12 @@ sortCraftTable() {
         GuiControl,harvestUI:, type_%k%, %tempType%
        
         GuiControl, harvestUI: , price_%k% , %tempPrice%
+    }
+    ;clear old crafts
+    index := craftsArr.Length()
+    loop, % MaxRowsCraftTable - craftsArr.Length() {
+        index++
+        clearRowData(index)
     }
 }
 
