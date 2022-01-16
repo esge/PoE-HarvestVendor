@@ -1501,8 +1501,7 @@ sortCraftTable() {
         GuiControl,harvestUI:, craft_%k%, %tempCraft%
         GuiControl,harvestUI:, count_%k%, %tempC%
         GuiControl,harvestUI:, lvl_%k%, %tempLvl%
-        GuiControl,harvestUI:, type_%k%, %tempType%
-       
+        GuiControl,harvestUI:, type_%k%, %tempType%       
         GuiControl, harvestUI: , price_%k% , %tempPrice%
     }
     ;clear old crafts
@@ -2055,13 +2054,17 @@ loadLastSession() {
     sessionLoading := False
 }
 
+clearRowData(rowIndex) {
+    GuiControl,, craft_%rowIndex%      
+    GuiControl,, count_%rowIndex%, 0        
+    GuiControl,, price_%rowIndex%
+    GuiControl,, type_%rowIndex%    
+    guiControl,, lvl_%rowIndex%    
+}
+
 clearAll() {
     loop, %MaxRowsCraftTable% {
-        GuiControl,, craft_%A_Index%      
-        GuiControl,, count_%A_Index%, 0        
-        GuiControl,, price_%A_Index%
-        GuiControl,, type_%A_Index%    
-        guiControl,, lvl_%A_Index%    
+        clearRowData(A_Index)  
     }
     outArray := []
     outArrayCount := 0
