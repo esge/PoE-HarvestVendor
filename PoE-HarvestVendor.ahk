@@ -1,4 +1,4 @@
-﻿#NoEnv
+#NoEnv
 #SingleInstance Force
 SetBatchLines -1
 SetWorkingDir %A_ScriptDir% 
@@ -206,9 +206,9 @@ showGUI() {
 }
 
 OpenGui: ;ctrl+shift+g opens the gui, yo go from there
-  ;  if (firstGuiOpen) {
+    if (firstGuiOpen) { 
         loadLastSession()
- ;   }
+    }
     if (version != getVersion()) {
         guicontrol, HarvestUI:Show, versionText
         guicontrol, HarvestUI:Show, versionLink
@@ -555,9 +555,27 @@ Githubpriceupdate:
             }
         }   
         FileDelete, %tftPrices%
-        ToolTip, Prices Updated
+        ToolTip, Updated prices loading in UI now
         sleep, 1000
         Tooltip
+        Loop, 20
+        {   
+            CraftLine := ""
+            tempP := ""
+            iniRead, CraftLine, %SettingsPath%, LastSession, craft_%A_Index%
+            if (CraftLine != "") 
+            {
+            CraftSplit := StrSplit(CraftLine,"|")
+            craft := CraftSplit[1]
+            iniRead, tempP, %PricesPath%, Prices, %craft%
+            if (tempP == "ERROR") {
+                tempP := ""
+            }
+            GuiControl, harvestUI: , price_%A_Index% , %tempP%
+            }
+            
+        }
+
     }
     IfMsgBox, No 
     {
