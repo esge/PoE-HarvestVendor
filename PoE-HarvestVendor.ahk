@@ -1,8 +1,8 @@
-#NoEnv
+﻿#NoEnv
 #SingleInstance Force
 SetBatchLines -1
 SetWorkingDir %A_ScriptDir% 
-global version := "0.8.1"
+global version := "0.8.1b"
 
 ; === some global variables ===
 global outArray := {}
@@ -453,11 +453,9 @@ gui, Font, s11 cA38D6D
 
 ; === Button actions ===
 Githubpriceupdate:
-    MSGBox, 4, , This will update all your local prices with TFT discord prices(Only those which are high confidence), are you sure you want to continue?
+    MSGBox, 4, , This will update all local prices with TFT discord prices(Only those which are high confidence, if there is no high confidence price for certain Harvest, they will be kept as it is in local file.), are you sure you want to continue?
     IfMsgBox, Yes
     {
-        FileDelete, %PricesPath%
-        FileAppend, [Prices]`n, %PricesPath%
         iniRead, leagueCheck, %SettingsPath%, selectedLeague, s
         ToolTip, Updating for %leagueCheck%
         sleep, 1000
@@ -498,15 +496,29 @@ Githubpriceupdate:
                 chaos := StrReplace(StrSplit(color, "^")[3], " chaos: ", "")
                 if exalt >= 1
                 {
-                    final := StrReplace(StrSplit(color, "^")[1], "name: ", "") . "=" . exalt . "ex"
+                    craftPrice := exalt . "ex"
+                    craftName := StrReplace(StrSplit(color, "^")[1], "name: ", "")
+                    
+                    iniRead, CheckLocalPrice, %PricesPath%, Prices, %craftName%
+                    if CheckLocalPrice != %craftPrice%
+                    {
+                        iniWrite, %craftPrice%, %PricesPath%, Prices, %craftName%
+                    }
                 }
                 else
                 {
-                    final := StrReplace(StrSplit(color, "^")[1], "name: ", "") . "=" . chaos . "c"
+                    craftPrice := chaos . "c"
+                    craftName := StrReplace(StrSplit(color, "^")[1], "name: ", "")
+                    
+                    iniRead, CheckLocalPrice, %PricesPath%, Prices, %craftName%
+                    if CheckLocalPrice != %craftPrice%
+                    {
+                        iniWrite, %craftPrice%, %PricesPath%, Prices, %craftName%
+                    }
                 }
 
                 
-                FileAppend, %final%`n, %PricesPath%
+
 
             }
             If InStr(color, "lowConfidence:false") ;it seems there is no space before 'false' in current json so adding this as well to handle both variation. Just in case it changes back to old one.
@@ -518,15 +530,28 @@ Githubpriceupdate:
                 chaos := StrReplace(StrSplit(color, "^")[3], "chaos:", "")
                 if exalt >= 1
                 {
-                    final := StrReplace(StrSplit(color, "^")[1], "name:", "") . "=" . exalt . "ex"
+                    craftPrice := exalt . "ex"
+                    craftName := StrReplace(StrSplit(color, "^")[1], "name:", "")
+                    
+                    iniRead, CheckLocalPrice, %PricesPath%, Prices, %craftName%
+                    if CheckLocalPrice != %craftPrice%
+                    {
+                        iniWrite, %craftPrice%, %PricesPath%, Prices, %craftName%
+                    }
                 }
                 else
                 {
-                    final := StrReplace(StrSplit(color, "^")[1], "name:", "") . "=" . chaos . "c"
+                    craftPrice := chaos . "c"
+                    craftName := StrReplace(StrSplit(color, "^")[1], "name:", "")
+                    
+                    iniRead, CheckLocalPrice, %PricesPath%, Prices, %craftName%
+                    if CheckLocalPrice != %craftPrice%
+                    {
+                        iniWrite, %craftPrice%, %PricesPath%, Prices, %craftName%
+                    }
                 }
 
-                
-                FileAppend, %final%`n, %PricesPath%   
+                  
             }
         }   
         FileDelete, %tftPrices%
@@ -541,6 +566,7 @@ Githubpriceupdate:
         Tooltip
     }
 return
+
 Up:
     GuiControlGet, cntrl, name, %A_GuiControl%
     tempRow := getRow(cntrl)
