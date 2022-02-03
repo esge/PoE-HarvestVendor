@@ -206,9 +206,9 @@ showGUI() {
 }
 
 OpenGui: ;ctrl+shift+g opens the gui, yo go from there
-    if (firstGuiOpen) {
+  ;  if (firstGuiOpen) {
         loadLastSession()
-    }
+ ;   }
     if (version != getVersion()) {
         guicontrol, HarvestUI:Show, versionText
         guicontrol, HarvestUI:Show, versionLink
