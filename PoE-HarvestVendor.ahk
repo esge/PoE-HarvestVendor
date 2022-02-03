@@ -1,4 +1,4 @@
-﻿#NoEnv
+#NoEnv
 #SingleInstance Force
 SetBatchLines -1
 SetWorkingDir %A_ScriptDir% 
@@ -33,6 +33,7 @@ global SettingsPath := RoamingDir . "\settings.ini"
 global PricesPath := RoamingDir . "\prices.ini"
 global LogPath := RoamingDir . "\log.csv"
 global TempPath := RoamingDir . "\temp.txt"
+global tftPrices := RoamingDir . "\tftprices.json"
 
 global CraftNames := {"Augment" : "Augment ", "Remove" : "Remove "
     , "Reforge" : "Reforge ", "Enchant" : "Enchant "
@@ -340,9 +341,12 @@ gui, Font, s11 cA38D6D
     help := getImgWidth(A_ScriptDir . "\resources\help.png")
     gui add, picture, x%xColumn7% y206 w%help% h-1 gHelp vhelp, resources\help.png
 
+    githubpriceupdate := getImgWidth(A_ScriptDir . "\resources\UpdatePrices.png")
+    gui add, picture, x%xColumn7% y229 w%githubpriceupdate% h-1 gGithubpriceupdate vgithubpriceupdate, resources\UpdatePrices.png
+
     ; === Post buttons ===
     createPost := getImgWidth(A_ScriptDir . "\resources\createPost.png")
-    gui add, picture, x%xColumn7% y251 w%createPost% h-1 vpostAll gPost_all, resources\createPost.png
+    gui add, picture, x%xColumn7% y252 w%createPost% h-1 vpostAll gPost_all, resources\createPost.png
 
     ;gui add, picture, x%xColumn7% y251 gAug_post vaugPost, resources\postA.png
     ;gui add, picture, x%xColumn7% y274 gRem_post vremPost, resources\postR.png
@@ -448,6 +452,95 @@ gui, Font, s11 cA38D6D
 
 
 ; === Button actions ===
+Githubpriceupdate:
+    MSGBox, 4, , This will update all your local prices with TFT discord prices(Only those which are high confidence), are you sure you want to continue?
+    IfMsgBox, Yes
+    {
+        FileDelete, %PricesPath%
+        FileAppend, [Prices]`n, %PricesPath%
+        iniRead, leagueCheck, %SettingsPath%, selectedLeague, s
+        ToolTip, Updating for %leagueCheck%
+        sleep, 1000
+        Tooltip
+
+        if InStr(leagueCheck, "Standard"){
+            UrlDownloadToFile, https://raw.githubusercontent.com/The-Forbidden-Trove/tft-data-prices/master/std/harvest.json, %tftPrices%    
+        }
+        else if InStr(leagueCheck, "SC"){
+            UrlDownloadToFile, https://raw.githubusercontent.com/The-Forbidden-Trove/tft-pricing-data/master/lsc/harvest.json, %tftPrices%    
+        }
+        else if InStr(leagueCheck, "Hardcore"){
+            UrlDownloadToFile, https://raw.githubusercontent.com/The-Forbidden-Trove/tft-data-prices/master/lhc/harvest.json, %tftPrices%    
+        }
+        
+        
+        FileRead, tftData, %tftPrices%
+        tftData := StrReplace(tftData, "`n", "")
+        tftData := StrReplace(tftData, "`r", "")
+        tftData := StrReplace(tftData, """", "")
+        tftData := StrReplace(tftData, "name:", "`r`nname:")
+        tftData := StrReplace(tftData, "  ", " ")
+        tftData := StrReplace(tftData, "  ", " ")
+        tftData := StrReplace(tftData, "  ", " ")
+        tftData := StrReplace(tftData, "  ", " ")
+        tftData := StrReplace(tftData, "  ", " ")
+        
+        for index, color in StrSplit(tftData, "`n"){
+
+
+            If InStr(color, "lowConfidence: false") ;In scourge league there was a space before 'false'
+            {
+                
+                color := StrReplace(color, ", exalt:", "^ exalt:")            
+                color := StrReplace(color, ", chaos:", "^ chaos:")            
+                color := StrReplace(color, ", lowConfidence:", "^ lowConfidence:")            
+                exalt := StrReplace(StrSplit(color, "^")[2], " exalt: ", "")
+                chaos := StrReplace(StrSplit(color, "^")[3], " chaos: ", "")
+                if exalt >= 1
+                {
+                    final := StrReplace(StrSplit(color, "^")[1], "name: ", "") . "=" . exalt . "ex"
+                }
+                else
+                {
+                    final := StrReplace(StrSplit(color, "^")[1], "name: ", "") . "=" . chaos . "c"
+                }
+
+                
+                FileAppend, %final%`n, %PricesPath%
+
+            }
+            If InStr(color, "lowConfidence:false") ;it seems there is no space before 'false' in current json so adding this as well to handle both variation. Just in case it changes back to old one.
+            {
+                color := StrReplace(color, ",exalt:", "^exalt:")            
+                color := StrReplace(color, ",chaos:", "^chaos:")            
+                color := StrReplace(color, ",lowConfidence:", "^ lowConfidence:")            
+                exalt := StrReplace(StrSplit(color, "^")[2], "exalt:", "")
+                chaos := StrReplace(StrSplit(color, "^")[3], "chaos:", "")
+                if exalt >= 1
+                {
+                    final := StrReplace(StrSplit(color, "^")[1], "name:", "") . "=" . exalt . "ex"
+                }
+                else
+                {
+                    final := StrReplace(StrSplit(color, "^")[1], "name:", "") . "=" . chaos . "c"
+                }
+
+                
+                FileAppend, %final%`n, %PricesPath%   
+            }
+        }   
+        FileDelete, %tftPrices%
+        ToolTip, Prices Updated
+        sleep, 1000
+        Tooltip
+    }
+    IfMsgBox, No 
+    {
+        ToolTip, Prices NOT Updated
+        sleep, 1000
+        Tooltip
+    }
+return
 Up:
     GuiControlGet, cntrl, name, %A_GuiControl%
     tempRow := getRow(cntrl)
@@ -831,11 +924,11 @@ Handle_Augment(craftText, ByRef out) {
         for k, v in augments {
             if (InStr(craftText, v) > 0) {
                 if (InStr(craftText, "Lucky") > 0) {
-                    out.push(["Augment non-influenced - " . v . " Lucky"
+                    out.push(["Augment " . v . " Lucky"
                         , getLVL(craftText)
                         , "Aug"])
                 } else {
-                    out.push(["Augment non-influenced - " . v
+                    out.push(["Augment " . v
                         , getLVL(craftText)
                         , "Aug"])
                 }
@@ -863,7 +956,7 @@ Handle_Remove(craftText, ByRef out) {
             if InStr(craftText, "non") > 0 {
                 for k, v in removes {
                     if InStr(craftText, v) > 0  {
-                        out.push(["Remove non-" . v . " add " . v
+                        out.push(["Remove non-" . v . " Add " . v
                             , getLVL(craftText)
                             , "Other"])
                         return
@@ -872,7 +965,7 @@ Handle_Remove(craftText, ByRef out) {
             } else if InStr(craftText, "non") = 0 {
                 for k, v in removes {
                     if InStr(craftText, v) > 0  {
-                        out.push(["Remove " . v . " add " . v
+                        out.push(["Remove " . v . " Add " . v
                             , getLVL(craftText)
                             , "Rem/Add"])
                         return
@@ -895,11 +988,11 @@ Handle_Remove(craftText, ByRef out) {
     }
     if (InStr(craftText, "add") > 0) {
         if InStr(craftText, "non") > 0 {
-            out.push(["Remove non-Influence add Influence"
+            out.push(["Remove Non-Influence Add Influence"
                 , getLVL(craftText)
                 , "Rem"])
         } else if (InStr(craftText, "non") = 0) {
-            out.push(["Remove Influence add Influence"
+            out.push(["Remove Influence Add Influence"
                 , getLVL(craftText)
                 , "Rem"])
         }
@@ -914,11 +1007,11 @@ Handle_Reforge(craftText, ByRef out) {
     ;prefixes
     if InStr(craftText, "Prefixes") > 0 {
         if InStr(craftText, "Lucky") > 0 {
-            out.push(["Reforge keep Prefixes Lucky"
+            out.push(["Reforge keep Prefix Lucky"
                 , getLVL(craftText)
                 , "Other"])
         } else {
-            out.push(["Reforge keep Prefixes"
+            out.push(["Reforge keep Prefix"
                 , getLVL(craftText)
                 , "Other"])
         }
@@ -927,11 +1020,11 @@ Handle_Reforge(craftText, ByRef out) {
     ;suffixes
     if InStr(craftText, "Suffixes") > 0 { 
         if InStr(craftText, "Lucky") > 0 {
-            out.push(["Reforge keep Suffixes Lucky"
+            out.push(["Reforge keep Suffix Lucky"
                 , getLVL(craftText)
                 , "Other"])
         } else {
-            out.push(["Reforge keep Suffixes"
+            out.push(["Reforge keep Suffix"
                 , getLVL(craftText)
                 , "Other"])
         }
@@ -944,11 +1037,11 @@ Handle_Reforge(craftText, ByRef out) {
         for k, v in remAddsClean {
             if (InStr(craftText, v) > 0) {
                 if (InStr(craftText, "more") > 0 ) {
-                    out.push(["Reforge Rare - " . v . " more common"
+                    out.push(["Reforge " . v . " More Common"
                         , getLVL(craftText)
                         , "Other"])
                 } else {
-                    out.push(["Reforge Rare - " . v
+                    out.push(["Reforge " . v
                         , getLVL(craftText)
                         , "Other"])
                 }
@@ -970,13 +1063,13 @@ Handle_Reforge(craftText, ByRef out) {
     ;} 
     ;reforge same mod
     if (InStr(craftText, "less likely") > 0) {
-        out.push(["Reforge Rare - Less Likely"
+        out.push(["Reforge Rare Less Likely"
             , getLVL(craftText)
             , "Other"])
         return
     }
     if (InStr(craftText, "more likely") > 0) {
-        out.push(["Reforge Rare - More Likely"
+        out.push(["Reforge Rare More Likely"
             , getLVL(craftText)
             , "Other"])
         return
@@ -984,11 +1077,11 @@ Handle_Reforge(craftText, ByRef out) {
     ;links
     if (InStr(craftText, "links") > 0 and InStr(craftText, "10 times") = 0) { 
         if InStr(craftText,"six") > 0 {
-            out.push(["Six link (6-link)"
+            out.push(["Six Links"
                 , getLVL(craftText)
                 , "Other"])
         } else if InStr(craftText, "five") > 0 {
-            out.push(["Five link (5-link)"
+            out.push(["Five Links"
                 , getLVL(craftText)
                 , "Other"])
         }
@@ -996,10 +1089,10 @@ Handle_Reforge(craftText, ByRef out) {
     }
     ;colour
     if (InStr(craftText, "colour") > 0 and InStr(craftText, "10 times") = 0) {
-        reforgeNonColor := ["non-Red", "non-Blue", "non-Green"]
+        reforgeNonColor := ["Non-Red", "Non-Blue", "Non-Green"]
         for k, v in reforgeNonColor {
             if InStr(craftText, v) > 0 {
-                out.push(["Reforge Colour: " . v . " into " . StrReplace(v, "non-")
+                out.push(["" . v . " into " . StrReplace(v, "Non-") . " Socket"
                     , getLVL(craftText)
                     , "Other"])
                 return
@@ -1009,7 +1102,7 @@ Handle_Reforge(craftText, ByRef out) {
             , "Red Blue and Green", "White"]
         for k, v in reforge2color {
             if InStr(craftText, v) > 0 {
-                out.push(["Reforge into " . StrReplace(v, "them ")
+                out.push(["Reforge into " . StrReplace(v, "them ") . " Socket"
                     , getLVL(craftText)
                     , "Other"])
                 return
@@ -1018,7 +1111,7 @@ Handle_Reforge(craftText, ByRef out) {
         return
     }
     if InStr(craftText, "Influence") > 0 {
-        out.push(["Reforge with Influence mod more common"
+        out.push(["Reforge Influence More Common"
             , getLVL(craftText)
             , "Other"])
         return
@@ -1043,7 +1136,7 @@ Handle_Enchant(craftText, ByRef out) {
     ;weapon
     if InStr(craftText, "Weapon") > 0 {
         weapEnchants := ["Critical Strike Chance", "Accuracy", "Attack Speed"
-            , "+1 Weapon Range", "Elemental", "Area of Effect"]
+            , "Weapon Range", "Elemental", "Area of Effect"]
         for k, enchant in weapEnchants {
             if InStr(craftText, enchant) > 0 {
                 if (enchant == "Elemental") { ; OCR was failing to detect "Elemental Damage" properly, but "Elemental" is unique enough for detection, just gotta add "damage" for the output
@@ -1051,7 +1144,7 @@ Handle_Enchant(craftText, ByRef out) {
                 } else {
                     tempEnch := enchant
                 }
-                out.push(["Enchant Weapon: " . tempEnch
+                out.push(["Enchant Weapon, " . tempEnch
                     , getLVL(craftText)
                     , "Other"])
                 return
@@ -1062,7 +1155,7 @@ Handle_Enchant(craftText, ByRef out) {
     ;body armour
     if InStr(craftText, "Armour") > 0 { 
         bodyEnchants := ["Maximum Life", "Maximum Mana", "Strength", "Dexterity"
-            , "Intelligence", "Fire Resistance", "Cold Resistance", "Lightning Resistance"]
+            , "Intelligence", "Fire Resist", "Cold Resist", "Lightning Resist"]
         for k, v in bodyEnchants {
             if InStr(craftText, v) > 0 {
                 out.push(["Enchant Body: " . v
@@ -1075,7 +1168,7 @@ Handle_Enchant(craftText, ByRef out) {
     }
     ;Map
     if InStr(craftText, "Sextant") > 0 {
-        out.push(["Enchant Map: no Sextant use"
+        out.push(["Enchant Map, Doesn't Consume Sextant"
             , getLVL(craftText)
             , "Other"])
         return
@@ -1091,7 +1184,7 @@ Handle_Enchant(craftText, ByRef out) {
 Handle_Attempt(craftText, ByRef out) {
     ;awaken
     if InStr(craftText, "Awaken") > 0 {
-        out.push(["Attempt to Awaken a level 20 Support Gem"
+        out.push(["Awaken Level 20 Support Gem"
             , getLVL(craftText)
             , "Other"])
         return
@@ -1115,31 +1208,31 @@ Handle_Change(craftText, ByRef out) {
         maxVal := max(fireVal, coldVal, lightVal)
         if (maxVal == fireVal) {
             if (coldVal > 0) {
-                out.push(["Change Resist: Cold to Fire"
+                out.push(["Cold to Fire Resist"
                     , getLVL(craftText)
                     , "Other"])
             } else if (lightVal > 0) {
-                out.push(["Change Resist: Lightning to Fire"
+                out.push(["Lightning to Fire Resist"
                     , getLVL(craftText)
                     , "Other"])
             }
         } else if (maxVal == coldVal) {
             if (fireVal > 0) {
-                out.push(["Change Resist: Fire to Cold"
+                out.push(["Fire to Cold Resist"
                     , getLVL(craftText)
                     , "Other"])
             } else if (lightVal > 0) {
-                out.push(["Change Resist: Lightning to Cold"
+                out.push(["Lightning to Cold Resist"
                     , getLVL(craftText)
                     , "Other"])
             }
         } else if (maxVal == lightVal) {
             if (fireVal > 0) {
-                out.push(["Change Resist: Fire to Lightning"
+                out.push(["Fire to Lightning Resist"
                     , getLVL(craftText)
                     , "Other"])
             } else if (coldVal > 0) {
-                out.push(["Change Resist: Cold to Lightning"
+                out.push(["Cold to Lightning Resist"
                     , getLVL(craftText)
                     , "Other"])
             }
@@ -1166,7 +1259,7 @@ Handle_Sacrifice(craftText, ByRef out) {
                         , getLVL(craftText)
                         , "Other"])
                 } else if InStr(craftText,"experience") {
-                    out.push(["Sacrifice gem, get " . v . " exp as Lens"
+                    out.push(["Sacrifice gem, " . v . " XP As Facetor Lens"
                         , getLVL(craftText)
                         , "Other"])
                 }
@@ -1178,7 +1271,7 @@ Handle_Sacrifice(craftText, ByRef out) {
     ;div cards gambling
     if InStr(craftText, "Divination") > 1 { 
         if InStr(craftText, "half a stack") > 1 {
-            out.push(["Sacrifice half stack for 0-2x return"
+            out.push(["Sacrifice Divination Card 0-2x"
                 , getLVL(craftText)
                 , "Other"])
         }
@@ -1252,7 +1345,7 @@ Handle_Randomise(craftText, ByRef out) {
         addInfluence := ["Weapon", "Armour", "Jewellery"]
         for k, v in addInfluence {
             if InStr(craftText, v) > 0 {
-                out.push(["Randomise Influence - " . v
+                out.push(["Randomise Influence " . v
                     , getLVL(craftText)
                     , "Other"])
                 return
@@ -1286,19 +1379,19 @@ Handle_Add(craftText, ByRef out) {
 
 Handle_Set(craftText, ByRef out) {
     if InStr(craftText, "Prismatic") > 0 {
-        out.push(["Set Implicit Basic Jewel"
+        out.push(["Set Implicit, Basic Jewel"
             , getLVL(craftText)
             , "Other"])
         return
     }
     if (InStr(craftText, "Timeless") > 0 or InStr(craftText, "Abyss") > 0) {
-        out.push(["Set Implicit Abyss/Timeless Jewel"
+        out.push(["Set Implicit, Abyss/Timeless Jewel"
             , getLVL(craftText)
             , "Other"])
         return
     }
     if InStr(craftText, "Cluster") > 0 {
-        out.push(["Set Implicit Cluster Jewel"
+        out.push(["Set Implicit, Cluster Jewel"
             , getLVL(craftText)
             , "Other"])
         return
