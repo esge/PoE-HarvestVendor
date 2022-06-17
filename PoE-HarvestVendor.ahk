@@ -454,7 +454,7 @@ gui, Font, s11 cA38D6D
 
 ; === Button actions ===
 Githubpriceupdate:
-    MSGBox, 4, , This will update all local prices with TFT discord prices(Only those which are high confidence, if there is no high confidence price for certain Harvest, they will be kept as it is in local file.), are you sure you want to continue?
+    MSGBox,  4100 , Notification, This will update all local prices with TFT discord prices(Only those which are high confidence, if there is no high confidence price for certain Harvest, they will be kept as it is in local file.), are you sure you want to continue?
     IfMsgBox, Yes
     {
         iniRead, leagueCheck, %SettingsPath%, selectedLeague, s

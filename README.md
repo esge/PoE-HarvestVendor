@@ -1,4 +1,8 @@
 # PoE-HarvestVendor
+```diff
+- I highly suggest also checking out Stregons Fork, he improved and added a lot of things. 
+```
+[https://github.com/Stregon/PoE-HarvestVendor](https://github.com/Stregon/PoE-HarvestVendor)
 
 ## A little status update (15.7.2021)
 - i think the tool as envisioned now is essentially feature complete
