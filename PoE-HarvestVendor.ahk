@@ -1,4 +1,4 @@
-#NoEnv
+﻿#NoEnv
 #SingleInstance Force
 SetBatchLines -1
 SetWorkingDir %A_ScriptDir% 
@@ -154,6 +154,7 @@ if (seenInstructions == 0) {
     goto help
 }
 return
+
 
 
 ExitFunc(ExitReason, ExitCode) {
@@ -1313,16 +1314,20 @@ Handle_Sacrifice(craftText, ByRef out) {
         return
     }
     ;div cards gambling
-    if InStr(craftText, "Divination") > 1 { 
-        if InStr(craftText, "half a stack") > 1 {
-            out.push(["Sacrifice Divination Card 0-2x"
-                , getLVL(craftText)
-                , "Other"])
-        }
-        return
+    ;for now removed at the request of TFT discord
+
+  ;  if InStr(craftText, "Divination") > 1 { 
+  ;      if InStr(craftText, "half a stack") > 1 {
+  ;          out.push(["Sacrifice Divination Card 0-2x"
+   ;             , getLVL(craftText)
+  ;              , "Other"])
+   ;     }
+  ;      return
         ;skipping this:
         ;   Sacrifice a stack of Divination Cards for that many different Divination Cards
-    }
+   ; }
+
+
     ;ignores the rest of sacrifice crafts:
         ;Sacrifice or Mortal Fragment into another random Fragment of that type
         ;Sacrificie Maps for same or lower tier stuff
