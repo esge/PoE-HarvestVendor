@@ -1,8 +1,6 @@
+## 3.19 Changes to harvest are making this tool obsolete, so obviously i am not developing this further, was a fun ride, hope you all enjoyed it :)
+
 # PoE-HarvestVendor
-```diff
-- I highly suggest also checking out Stregons Fork, he improved and added a lot of things. 
-```
-[https://github.com/Stregon/PoE-HarvestVendor](https://github.com/Stregon/PoE-HarvestVendor)
 
 ## A little status update (15.7.2021)
 - i think the tool as envisioned now is essentially feature complete
